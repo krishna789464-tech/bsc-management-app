@@ -2,8 +2,8 @@ import streamlit as st
 import requests
 from bs4 import BeautifulSoup
 import urllib.parse
-import google.generativeai as genai
 import os
+import streamlit.components.v1 as components
 
 # --- 1. CONFIGURATION & STYLING ---
 # Target local logo image location dynamically across absolute paths securely
@@ -30,15 +30,10 @@ st.markdown("""
 # --- SECURE TARGET CONFIGURATION ---
 ADMIN_EMAIL = "krishna5689@outlook.in"
 ADMIN_PHONE = "919451134541"
-DEFAULT_API_KEY = st.secrets.get("GEMINI_API_KEY", "AQ.Ab8RN6KSEnxgUh1R98MZigwwsySa2gu9PpW4eWTWkR9GsDvNQA")
 
 # --- 2. SIDEBAR NAVIGATION ---
 st.sidebar.title("🎓 Student Portal")
 st.sidebar.info(f"Admin: {ADMIN_EMAIL}")
-
-# Optional API Key override field
-user_api_key = st.sidebar.text_input("Gemini API Key (Leave blank for default)", type="password")
-ACTIVE_API_KEY = user_api_key.strip() if user_api_key.strip() else DEFAULT_API_KEY
 
 page = st.sidebar.radio("Go to:", ["Dashboard", "AI Assistant", "News & Announcements", "Study Material", "Report Registration Issue"])
 
@@ -88,40 +83,18 @@ if page == "Dashboard":
         st.button("📅 Academic Timetable", use_container_width=True)
         st.button("📊 Examination Results", use_container_width=True)
 
-# --- PAGE: AI ASSISTANT ---
+# --- PAGE: AI ASSISTANT (JOTFORMS EMBED) ---
 elif page == "AI Assistant":
     st.header("🤖 AI Student Counselor & Helper")
-    st.write("Ask me anything about your B.Sc Management subjects, academic syllabus, or Lucknow University rules.")
+    st.write("Our automated academic agent is loading below. If it does not open automatically, please look for a chat icon on the screen.")
     
-    try:
-        genai.configure(api_key=ACTIVE_API_KEY)
-        model = genai.GenerativeModel('gemini-pro')
-        
-        if "messages" not in st.session_state:
-            st.session_state.messages = []
-
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
-
-        if prompt := st.chat_input("Ask your helpful academic assistant..."):
-            sanitized_prompt = prompt.strip()
-            st.session_state.messages.append({"role": "user", "content": sanitized_prompt})
-            with st.chat_message("user"):
-                st.markdown(sanitized_prompt)
-            
-            with st.chat_message("assistant"):
-                with st.spinner("Thinking..."):
-                    helper_context = (
-                        "You are an empathetic, knowledgeable, and dedicated academic helper and counselor "
-                        "for B.Sc Management students at Lucknow University. Provide actionable, supportive, "
-                        f"and accurate answers to the student's request: {sanitized_prompt}"
-                    )
-                    response = model.generate_content(helper_context)
-                    st.markdown(response.text)
-                    st.session_state.messages.append({"role": "assistant", "content": response.text})
-    except Exception as e:
-        st.error("AI Assistant service is currently processing an initialization block. Verification required.")
+    # Render the external JavaScript widget safely within an HTML iframe container
+    jotform_script = """
+    <script
+      src='https://cdn.jotfor.ms/agent/embedjs/019e014489347343a7b79be9c9855b48569e/embed.js?autoOpenChatIn=1'>
+    </script>
+    """
+    components.html(jotform_script, height=600, scrolling=True)
 
 # --- PAGE: NEWS & ANNOUNCEMENTS ---
 elif page == "News & Announcements":
