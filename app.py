@@ -181,7 +181,7 @@ if submit_button:
     else:
         with st.spinner("Sending information to Admin..."):
             success = send_email(name, email, message)
-
+wa_text = f"Registration Issue Report\n\n*Name:* {name}\n..."
         if success:
             st.success("🎉 Form submitted successfully! Admin has been notified.")
                 # 3. PREPARE WHATSAPP REDIRECT
