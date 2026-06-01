@@ -173,7 +173,15 @@ with st.form(key="submission_form", clear_on_submit=True):
 
     # The Submit Button
     submit_button = st.form_submit_button(label="Submit to Admin")
+# Ensure 'with', 'success =', and 'if success:' line up correctly based on their blocks
 
+        with st.spinner("Sending information to Admin..."):
+            success = send_email(name, email, message)
+
+        if success:  # <-- Line 185: Make sure this aligns perfectly with 'with'
+            st.success(
+                "🎉 Form submitted successfully! Admin has been notified."
+            )
 # 3. Action when button is clicked
 if submit_button:
     if not name or not email or not message:
