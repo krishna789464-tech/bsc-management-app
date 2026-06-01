@@ -113,7 +113,35 @@ elif page == "Report Registration Issue":
                     st.toast("Email Notification Sent to Admin!", icon="📧")
                 except:
                     st.error("Email notification failed, but you can still use WhatsApp.")
+import { useState } from 'react';
 
+export default function ContactForm() {
+  const [result, setResult] = useState("");
+
+  const onSubmit = async (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    formData.append("access_key", "d5980fe8-57cb-47b6-ae8b-f455e493684b");
+
+    const response = await fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await response.json();
+    setResult(data.success ? "Success!" : "Error");
+  };
+
+  return (
+    <form onSubmit={onSubmit}>
+      <input type="text" name="name" required/>
+      <input type="email" name="email" required/>
+      <textarea name="message" required></textarea>
+      <button type="submit">Submit</button>
+      <p>{result}</p>
+    </form>
+  );
+}
                 # 3. PREPARE WHATSAPP REDIRECT
                 wa_text = f"*Registration Issue Report*\n\n*Name:* {name}\n*Roll No:* {roll_no}\n*Issue:* {issue_type}\n*Details:* {details}"
                 wa_url = f"https://wa.me/{admin_phone}?text={urllib.parse.quote(wa_text)}"
