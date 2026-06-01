@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 from bs4 import BeautifulSoup
 import urllib.parse
+import google.generativeai as genai
 
 # --- 1. CONFIGURATION & STYLING ---
 st.set_page_config(page_title="BSc Management Student Hub", layout="wide")
@@ -17,13 +18,19 @@ st.markdown("""
 # --- SYSTEM TARGET CONFIGURATION ---
 ADMIN_EMAIL = "krishna5689@outlook.in"
 ADMIN_PHONE = "919451134541"
+DEFAULT_API_KEY = "AQ.Ab8RN6KSEnxgUh1R98MZigwwsySa2gu9PpW4eWTWkR9GsDvNQA"
 
 # --- 2. SIDEBAR NAVIGATION ---
 st.sidebar.title("🎓 Student Portal")
 st.sidebar.info(f"Admin: {ADMIN_EMAIL}")
+
+# Optional API Key override field
+user_api_key = st.sidebar.text_input("Gemini API Key (Leave blank for default)", type="password")
+ACTIVE_API_KEY = user_api_key if user_api_key else DEFAULT_API_KEY
+
 page = st.sidebar.radio("Go to:", ["Dashboard", "AI Assistant", "News & Announcements", "Study Material", "Report Registration Issue"])
 
-# --- PAGE: DASHBOARD (Translated from React to Streamlit) ---
+# --- PAGE: DASHBOARD ---
 if page == "Dashboard":
     st.markdown("""
         <div style="background: linear-gradient(to right, #2563eb, #4f46e5); color: white; padding: 30px; border-radius: 20px; margin-bottom: 25px;">
@@ -34,7 +41,6 @@ if page == "Dashboard":
         </div>
     """, unsafe_allow_html=True)
     
-    # Metrics Grid
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.markdown('<div class="metric-card"><h3>Students</h3><h1 style="color: #2563eb; margin:0;">1,250</h1></div>', unsafe_allow_html=True)
@@ -69,15 +75,14 @@ if page == "Dashboard":
         st.button("📅 Academic Timetable", use_container_width=True)
         st.button("📊 Examination Results", use_container_width=True)
 
-# --- PAGE: AI ASSISTANT ---
+# --- PAGE: AI ASSISTANT (API KEY FIXED & ACTIVATED AS HELPER) ---
 elif page == "AI Assistant":
-    st.header("🤖 AI Student Counselor")
-    st.write("Ask questions about your management subjects or Lucknow University.")
-    import google.generativeai as genai
+    st.header("🤖 AI Student Counselor & Helper")
+    st.write("Ask me anything about your B.Sc Management subjects, academic syllabus, or Lucknow University rules.")
     
-    api_key = st.sidebar.text_input("Enter Gemini API Key", type="password")
-    if api_key:
-        genai.configure(api_key=api_key)
+    try:
+        # Configure using the determined active API key
+        genai.configure(api_key=ACTIVE_API_KEY)
         model = genai.GenerativeModel('gemini-pro')
         
         if "messages" not in st.session_state:
@@ -87,17 +92,24 @@ elif page == "AI Assistant":
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
-        if prompt := st.chat_input("Ask me anything..."):
+        if prompt := st.chat_input("Ask your helpful academic assistant..."):
             st.session_state.messages.append({"role": "user", "content": prompt})
             with st.chat_message("user"):
                 st.markdown(prompt)
             
             with st.chat_message("assistant"):
-                response = model.generate_content(f"You are a BSc Management assistant for Lucknow University. Question: {prompt}")
-                st.markdown(response.text)
-                st.session_state.messages.append({"role": "assistant", "content": response.text})
-    else:
-        st.warning("Please enter your Gemini API Key in the sidebar to talk to the AI.")
+                with st.spinner("Thinking..."):
+                    # Structured system contextual framing for helper response optimization
+                    helper_context = (
+                        "You are an empathetic, knowledgeable, and dedicated academic helper and counselor "
+                        "for B.Sc Management students at Lucknow University. Provide actionable, supportive, "
+                        f"and accurate answers to the student's request: {prompt}"
+                    )
+                    response = model.generate_content(helper_context)
+                    st.markdown(response.text)
+                    st.session_state.messages.append({"role": "assistant", "content": response.text})
+    except Exception as e:
+        st.error(f"AI Assistant Initialization error. Please check your API key status. Details: {e}")
 
 # --- PAGE: NEWS & ANNOUNCEMENTS ---
 elif page == "News & Announcements":
@@ -127,59 +139,4 @@ elif page == "Study Material":
     with st.container():
         st.subheader("BSc Management Core")
         st.info("Classroom Code: shf3hsat")
-        st.link_button("Open Google Classroom", "https://classroom.google.com/c/ODU0MzQ2NjI2MDQ2?cjc=shf3hsat")
-    
-    st.divider()
-    st.write("More subjects will be added here soon.")
-
-# --- PAGE: REPORT REGISTRATION ISSUE ---
-elif page == "Report Registration Issue":
-    st.header("❗ Report an Issue")
-    st.write("Submitting this form logs your information, routes an email to the admin system, and builds your WhatsApp confirmation route.")
-
-    with st.form("issue_form", clear_on_submit=False):
-        student_email = st.text_input("Your Email Address *", placeholder="student@example.com")
-        name = st.text_input("Full Name *")
-        roll_no = st.text_input("Roll Number / Student ID *")
-        issue_type = st.selectbox("Issue Category", ["Login Problem", "Subject Not Showing", "Document Error", "Other"])
-        details = st.text_area("Detailed Description *")
-        
-        submitted = st.form_submit_button("Submit & Notify Admin")
-        
-    if submitted:
-        if student_email and name and roll_no and details:
-            
-            email_payload = {
-                "email": student_email,
-                "Student Name": name,
-                "Roll Number": roll_no,
-                "Issue Type": issue_type,
-                "Detailed Description": details,
-                "_subject": f"🚨 Urgent: Registration Issue from {name}",
-                "_captcha": "false"
-            }
-            
-            with st.spinner("Processing form with target server..."):
-                try:
-                    response = requests.post(f"https://formsubmit.co/ajax/{ADMIN_EMAIL}", data=email_payload)
-                    if response.status_code == 200:
-                        st.toast("Form processed! Email confirmation sent.", icon="📧")
-                    else:
-                        st.error(f"Server rejected delivery. Status Code: {response.status_code}")
-                except Exception as e:
-                    st.error(f"Network error trying to contact the email relay: {e}")
-
-            # 2. WHATSAPP GENERATION PROTOCOL
-            wa_text = f"*Registration Issue Report*\n\n*Name:* {name}\n*Roll No:* {roll_no}\n*Email:* {student_email}\n*Issue:* {issue_type}\n*Details:* {details}"
-            wa_url = f"https://wa.me/{ADMIN_PHONE}?text={urllib.parse.quote(wa_text)}"
-            
-            st.success("🎉 Local data entry recorded successfully!")
-            st.write("Click below to pass execution control to WhatsApp and notify the Admin directly:")
-            st.link_button("Finalize via WhatsApp Message ✅", wa_url)
-            st.balloons()
-        else:
-            st.error("⚠️ Validation failure: Please fill out all required fields marked with (*).")
-
-# --- FOOTER ---
-st.markdown("---")
-st.markdown("<center style='color: gray; font-size: 12px;'>Powered by Google Workspace • MicroHNM Technologies</center>", unsafe_allow_html=True)
+        st.link_button("Open Google Classroom", "
