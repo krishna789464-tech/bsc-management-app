@@ -1,92 +1,125 @@
 import streamlit as st
-import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+import urllib.parse
 
-# --- SETTINGS ---
-st.set_page_config(page_title="BSc Management Portal", layout="wide")
+# --- 1. CONFIGURATION & STYLING ---
+st.set_page_config(page_title="BSc Management Student Hub", layout="wide")
 
-# --- UI STYLING ---
 st.markdown("""
     <style>
-    .stApp { background-color: #f8f9fa; }
-    .card { padding: 20px; border-radius: 10px; background-color: white; border: 1px solid #ddd; margin-bottom: 15px; }
+    .stApp { background-color: #f4f7f6; }
+    .main-card { padding: 20px; border-radius: 15px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     </style>
     """, unsafe_allow_html=True)
 
-# --- SIDEBAR NAVIGATION ---
-st.sidebar.title("🎓 BSc Management")
-page = st.sidebar.radio("Menu", ["News & Announcements", "Study Material", "Report Registration Issue"])
+# --- 2. SIDEBAR NAVIGATION ---
+st.sidebar.title("🎓 Student Portal")
+st.sidebar.info("Admin: krishna5689@outlook.in")
+page = st.sidebar.radio("Go to:", ["AI Assistant", "News & Announcements", "Study Material", "Report Registration Issue"])
 
-# --- PAGE 1: NEWS & ANNOUNCEMENTS ---
-if page == "News & Announcements":
-    st.header("📢 News & Announcements")
+# --- PAGE: AI ASSISTANT ---
+if page == "AI Assistant":
+    st.header("🤖 AI Student Counselor")
+    st.write("Ask questions about your management subjects or Lucknow University.")
+    import google.generativeai as genai
     
-    col1, col2 = st.columns(2)
+    api_key = st.sidebar.text_input("Enter Gemini API Key", type="password")
+    if api_key:
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-pro')
+        
+        if "messages" not in st.session_state:
+            st.session_state.messages = []
+
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+
+        if prompt := st.chat_input("Ask me anything..."):
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            with st.chat_message("user"):
+                st.markdown(prompt)
+            
+            with st.chat_message("assistant"):
+                response = model.generate_content(f"You are a BSc Management assistant for Lucknow University. Question: {prompt}")
+                st.markdown(response.text)
+                st.session_state.messages.append({"role": "assistant", "content": response.text})
+    else:
+        st.warning("Please enter your Gemini API Key in the sidebar to talk to the AI.")
+
+# --- PAGE: NEWS & ANNOUNCEMENTS ---
+elif page == "News & Announcements":
+    st.header("📢 Official Notices")
+    lu_url = "https://www.lkouniv.ac.in/en/news?Newslistslug=en-notices&cd=MwAzADcA"
     
-    with col1:
-        st.subheader("University of Lucknow Notices")
-        # Scraper for LU
-        lu_url = "https://www.lkouniv.ac.in/en/news?Newslistslug=en-notices&cd=MwAzADcA"
-        st.caption(f"Fetching live data from LU Website...")
+    if st.button("Check for Latest Updates"):
         try:
-            res = requests.get(lu_url, timeout=5)
+            res = requests.get(lu_url)
             soup = BeautifulSoup(res.content, 'html.parser')
-            # Look for links that usually contain notices
             links = soup.find_all('a', href=True)
-            count = 0
+            found = 0
             for link in links:
-                if "news" in link['href'] and len(link.text.strip()) > 20 and count < 8:
-                    full_link = link['href'] if link['href'].startswith('http') else "https://www.lkouniv.ac.in" + link['href']
-                    st.markdown(f"✅ [{link.text.strip()}]({full_link})")
-                    count += 1
+                if "news" in link['href'] and len(link.text.strip()) > 15:
+                    url = link['href'] if link['href'].startswith('http') else "https://www.lkouniv.ac.in" + link['href']
+                    st.success(f"🔗 [{link.text.strip()}]({url})")
+                    found += 1
+                if found > 10: break
         except:
-            st.error("Could not load live news. [Visit Official Site]("+lu_url+")")
+            st.error("Live feed unavailable. [Click here for LU News Site]("+lu_url+")")
 
-    with col2:
-        st.subheader("📤 Upload Custom Notice")
-        custom_title = st.text_input("Notice Headline")
-        custom_file = st.file_uploader("Upload PDF or Image", type=['pdf', 'png', 'jpg'])
-        if st.button("Publish Locally"):
-            if custom_title and custom_file:
-                st.success(f"Published: {custom_title}")
-                st.info("Note: Files uploaded here are visible during this session.")
-
-# --- PAGE 2: STUDY MATERIAL ---
+# --- PAGE: STUDY MATERIAL ---
 elif page == "Study Material":
-    st.header("📚 Study Material Section")
-    st.write("Click a subject to open the Google Classroom folder.")
+    st.header("📚 Study Materials")
+    st.write("Click the buttons below to access your Google Classrooms.")
+    
+    with st.container():
+        st.subheader("BSc Management Core")
+        st.info("Classroom Code: shf3hsat")
+        st.link_button("Open Google Classroom", "https://classroom.google.com/c/ODU0MzQ2NjI2MDQ2?cjc=shf3hsat")
+    
+    st.divider()
+    st.write("More subjects will be added here soon.")
 
-    # SUBJECT LIST - EASY TO EDIT
-    subjects = [
-        {"name": "BSc Management Core (Group)", "url": "https://classroom.google.com/c/ODU0MzQ2NjI2MDQ2?cjc=shf3hsat"},
-        # To add more subjects, copy the line below and change name/url:
-        # {"name": "Business Finance", "url": "LINK_HERE"},
-    ]
-
-    for sub in subjects:
-        st.markdown(f"""
-        <div class="card">
-            <h3>{sub['name']}</h3>
-            <p>Access notes, assignments, and links.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        st.link_button(f"Open {sub['name']}", sub['url'])
-
-# --- PAGE 3: REGISTRATION ISSUES ---
+# --- PAGE: REGISTRATION ISSUES (WITH WHATSAPP & EMAIL) ---
 elif page == "Report Registration Issue":
     st.header("❗ Report an Issue")
-    st.write("Fill out this form for app or course registration problems.")
-    
-    with st.form("issue_form"):
-        name = st.text_input("Your Name")
-        roll = st.text_input("Roll Number")
-        category = st.selectbox("Issue Type", ["App Registration", "Login Error", "Incorrect Subject", "Other"])
-        desc = st.text_area("Details")
+    st.write("Submitting this form will notify the admin via Email and redirect you to WhatsApp.")
+
+    with st.form("issue_form", clear_on_submit=True):
+        name = st.text_input("Full Name *")
+        roll_no = st.text_input("Roll Number / Student ID *")
+        issue_type = st.selectbox("Issue Category", ["Login Problem", "Subject Not Showing", "Document Error", "Other"])
+        details = st.text_area("Detailed Description *")
         
-        if st.form_submit_button("Submit to Admin"):
-            if name and desc:
-                st.success("Issue submitted successfully!")
+        submitted = st.form_submit_button("Submit & Notify Admin")
+        
+        if submitted:
+            if name and roll_no and details:
+                # 1. PREPARE DATA
+                admin_email = "krishna5689@outlook.in"
+                admin_phone = "919451134541"
+                
+                # 2. TRIGGER EMAIL NOTIFICATION (Using FormSubmit.co API)
+                email_payload = {
+                    "Name": name,
+                    "RollNo": roll_no,
+                    "Issue": issue_type,
+                    "Details": details,
+                    "_subject": f"New Registration Issue from {name}"
+                }
+                try:
+                    requests.post(f"https://formsubmit.co/ajax/{admin_email}", data=email_payload)
+                    st.toast("Email Notification Sent to Admin!", icon="📧")
+                except:
+                    st.error("Email notification failed, but you can still use WhatsApp.")
+
+                # 3. PREPARE WHATSAPP REDIRECT
+                wa_text = f"*Registration Issue Report*\n\n*Name:* {name}\n*Roll No:* {roll_no}\n*Issue:* {issue_type}\n*Details:* {details}"
+                wa_url = f"https://wa.me/{admin_phone}?text={urllib.parse.quote(wa_text)}"
+                
+                st.success("Issue recorded! Please click the button below to finalize submission via WhatsApp.")
+                st.link_button("Finalize on WhatsApp ✅", wa_url)
                 st.balloons()
             else:
-                st.warning("Please fill in all fields.")
+                st.error("Please fill in all required fields.")
