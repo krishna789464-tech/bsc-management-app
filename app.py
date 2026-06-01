@@ -2,6 +2,9 @@ import streamlit as st
 import requests
 from bs4 import BeautifulSoup
 import urllib.parse
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 # --- 1. CONFIGURATION & STYLING ---
 st.set_page_config(page_title="BSc Management Student Hub", layout="wide")
@@ -13,9 +16,59 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
+# --- EMAIL CONFIGURATION SYSTEM ---
+SMTP_SERVER = "smtp.gmail.com"  # Change this if not using Gmail (e.g., smtp.office365.com for Outlook)
+SMTP_PORT = 587
+SENDER_EMAIL = "your_system_email@gmail.com"   # The email account used to dispatch notifications
+SENDER_PASSWORD = "your_app_password"          # The App Password generated for the system email
+ADMIN_EMAIL = "krishna5689@outlook.in"         # The target admin inbox receiving alerts
+ADMIN_PHONE = "919451134541"                   # WhatsApp Target Phone Number
+
+def send_admin_email(student_name, roll_no, issue_type, details):
+    """Handles SMTP connection secure delivery to the administrator."""
+    try:
+        # Setup MIME structures
+        message = MIMEMultipart()
+        message["From"] = SENDER_EMAIL
+        message["To"] = ADMIN_EMAIL
+        message["Subject"] = f"🚨 New Registration Issue from {student_name}"
+
+        # Formulate Email Text Body
+        body = f"""
+Dear Admin,
+
+A new registration issue has been flagged on the Student Portal.
+
+[STUDENT DETAILS]
+--------------------------------------
+Name: {student_name}
+Roll Number / ID: {roll_no}
+Issue Category: {issue_type}
+
+[DESCRIPTION]
+--------------------------------------
+{details}
+
+Please take appropriate action.
+
+Best regards,
+Student Hub Automation Engine
+        """
+        message.attach(MIMEText(body, "plain"))
+
+        # Connect, upgrade security protocols, and transmit
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server.starttls()  
+        server.login(SENDER_EMAIL, SENDER_PASSWORD)
+        server.send_message(message)
+        server.quit()
+        return True
+    except Exception as e:
+        return False
+
 # --- 2. SIDEBAR NAVIGATION ---
 st.sidebar.title("🎓 Student Portal")
-st.sidebar.info("Admin: krishna5689@outlook.in")
+st.sidebar.info(f"Admin Liaison: {ADMIN_EMAIL}")
 page = st.sidebar.radio("Go to:", ["AI Assistant", "News & Announcements", "Study Material", "Report Registration Issue"])
 
 # --- PAGE: AI ASSISTANT ---
@@ -66,7 +119,7 @@ elif page == "News & Announcements":
                     found += 1
                 if found > 10: break
         except:
-            st.error("Live feed unavailable. [Click here for LU News Site]("+lu_url+")")
+            st.error(f"Live feed unavailable. [Click here for LU News Site]({lu_url})")
 
 # --- PAGE: STUDY MATERIAL ---
 elif page == "Study Material":
@@ -81,123 +134,37 @@ elif page == "Study Material":
     st.divider()
     st.write("More subjects will be added here soon.")
 
-# --- PAGE: REGISTRATION ISSUES (WITH WHATSAPP & EMAIL) ---
+# --- PAGE: REGISTRATION ISSUES (EMAIL & WHATSAPP INTEGRATION) ---
 elif page == "Report Registration Issue":
     st.header("❗ Report an Issue")
-    st.write("Submitting this form will notify the admin via Email and redirect you to WhatsApp.")
+    st.write("Submitting this form will silently alert the admin via automated email and generate your custom WhatsApp submission link.")
 
-    with st.form("issue_form", clear_on_submit=True):
+    with st.form("issue_form", clear_on_submit=False):
         name = st.text_input("Full Name *")
         roll_no = st.text_input("Roll Number / Student ID *")
         issue_type = st.selectbox("Issue Category", ["Login Problem", "Subject Not Showing", "Document Error", "Other"])
         details = st.text_area("Detailed Description *")
         
-        submitted = st.form_submit_button("Submit & Notify Admin")
+        submitted = st.form_submit_button("Submit & Process Notifications")
         
-        if submitted:
-            if name and roll_no and details:
-                # 1. PREPARE DATA
-                admin_email = "krishna5689@outlook.in"
-                admin_phone = "919451134541"
-                
-                # 2. TRIGGER EMAIL NOTIFICATION (d5980fe8-57cb-47b6-ae8b-f455e493684b)
-                email_payload = {
-                    "Name": name,
-                    "RollNo": roll_no,
-                    "Issue": issue_type,
-                    "Details": details,
-                    "_subject": f"New Registration Issue from {name}"
-                }
-                try:
-                    requests.post(f"https://formsubmit.co/ajax/{admin_email}", data=email_payload)
-                    st.toast("Email Notification Sent to Admin!", icon="📧")
-                except:
-                    st.error("Email notification failed, but you can still use WhatsApp.")
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-import streamlit as st
-
-# 1. Configuration (Set your email details here)
-SMTP_SERVER = "smtp.gmail.com"  # e.g., smtp.gmail.com for Gmail
-SMTP_PORT = 587
-SENDER_EMAIL = "your_admin_email@gmail.com"
-# For Gmail, this must be an "App Password", NOT your regular password
-SENDER_PASSWORD = "your_app_password"
-RECEIVER_EMAIL = "target_admin_email@gmail.com"
-
-
-def send_email(user_name, user_email, user_message):
-    """Functions to handle the SMTP connection and send the email."""
-    try:
-        # Setup the MIME
-        message = MIMEMultipart()
-        message["From"] = SENDER_EMAIL
-        message["To"] = RECEIVER_EMAIL
-        message["Subject"] = f" New Form Submission from {user_name}"
-
-        # Email Body Content
-        body = f"""
-        You have received a new form submission:
-        
-        Name: {user_name}
-        Email: {user_email}
-        Message: {user_message}
-        """
-        message.attach(MIMEText(body, "plain"))
-
-        # Connect to the server and send
-        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
-        server.starttls()  # Secure the connection
-        server.login(SENDER_EMAIL, SENDER_PASSWORD)
-        server.send_message(message)
-        server.quit()
-
-        return True
-    except Exception as e:
-        st.error(f"Failed to send email: {e}")
-        return False
-
-
-# 2. Streamlit UI Form Creation
-st.title("📩 User Submission Form")
-st.write("Fill out the form below to send information to the Admin.")
-
-# Creating the Form Container
-with st.form(key="submission_form", clear_on_submit=True):
-    name = st.text_input("Full Name", placeholder="John Doe")
-    email = st.text_input("Your Email Address", placeholder="john@example.com")
-    message = st.text_area(
-        "Message/Information", placeholder="Type your notes here..."
-    )
-
-    # The Submit Button
-    submit_button = st.form_submit_button(label="Submit to Admin")
-# Ensure 'with', 'success =', and 'if success:' line up correctly based on their blocks
-
-        with st.spinner("Sending information to Admin..."):
-            success = send_email(name, email, message)
-
-        if success:  # <-- Line 185: Make sure this aligns perfectly with 'with'
-            st.success(
-                "🎉 Form submitted successfully! Admin has been notified."
-            )
-# 3. Action when button is clicked
-if submit_button:
-    if not name or not email or not message:
-        st.warning("⚠️ Please fill out all fields before submitting.")
-    else:
-        with st.spinner("Sending information to Admin..."):
-            success = send_email(name, email, message)
-wa_text = f"Registration Issue Report\n\n*Name:* {name}\n..."
-        if success:
-            st.success("🎉 Form submitted successfully! Admin has been notified.")
-                # 3. PREPARE WHATSAPP REDIRECT
-                wa_text = f"*Registration Issue Report*\n\n*Name:* {name}\n*Roll No:* {roll_no}\n*Issue:* {issue_type}\n*Details:* {details}"
-                wa_url = f"https://wa.me/{admin_phone}?text={urllib.parse.quote(wa_text)}"
-                
-                st.success("Issue recorded! Please click the button below to finalize submission via WhatsApp.")
-                st.link_button("Finalize on WhatsApp ✅", wa_url)
-                st.balloons()
+    if submitted:
+        if name and roll_no and details:
+            with st.spinner("Processing your report and updating admin via email..."):
+                # Run the backend email function
+                email_sent = send_admin_email(name, roll_no, issue_type, details)
+            
+            if email_sent:
+                st.toast("Email notice sent directly to Admin inbox!", icon="📧")
             else:
-                st.error("Please fill in all required fields.")
+                st.error("Admin Email pipeline failed, but you can still proceed to complete it manually using the WhatsApp step below.")
+            
+            # Formulate the WhatsApp string URL format
+            wa_text = f"*Registration Issue Report*\n\n*Name:* {name}\n*Roll No:* {roll_no}\n*Issue:* {issue_type}\n*Details:* {details}"
+            wa_url = f"https://wa.me/{ADMIN_PHONE}?text={urllib.parse.quote(wa_text)}"
+            
+            st.success("🎉 Registration problem logged successfully into the portal system!")
+            st.write("Please click the confirmation link below to finalize the submission to your admin's mobile device directly.")
+            st.link_button("Finalize Submission on WhatsApp ✅", wa_url)
+            st.balloons()
+        else:
+            st.error("⚠️ All fields marked with (*) are strict requirements. Please populate them before submitting.")
