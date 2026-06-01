@@ -1,0 +1,84 @@
+import streamlit as st
+import requests
+from bs4 import BeautifulSoup
+import google.generativeai as genai
+
+# --- 1. AI AGENT SETUP ---
+# Replace 'YOUR_GEMINI_API_KEY' with your actual key or use a sidebar input
+API_KEY = st.sidebar.text_input("Enter Gemini API Key", type="password")
+
+if API_KEY:
+    genai.configure(api_key=API_KEY)
+    model = genai.GenerativeModel('gemini-pro')
+
+# --- 2. APP CONFIG ---
+st.set_page_config(page_title="BSc Management Hub + AI", layout="wide")
+
+# --- 3. SIDEBAR ---
+st.sidebar.title("🎓 Student Portal")
+page = st.sidebar.radio("Navigate", ["AI Student Assistant", "News & Announcements", "Study Material", "Registration Issues"])
+
+# --- PAGE 1: AI AGENT (NEW) ---
+if page == "AI Student Assistant":
+    st.header("🤖 AI Student Counselor")
+    st.write("Ask me anything about your studies, management subjects, or how to use this app.")
+
+    if not API_KEY:
+        st.warning("Please enter your Google Gemini API Key in the sidebar to start the AI.")
+    else:
+        if "messages" not in st.session_state:
+            st.session_state.messages = []
+
+        # Display chat history
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+
+        # Chat Input
+        if prompt := st.chat_input("How can I help you today?"):
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            with st.chat_message("user"):
+                st.markdown(prompt)
+
+            with st.chat_message("assistant"):
+                # System instructions to make it act like a counselor
+                full_prompt = f"You are a helpful AI assistant for BSc Management students at Lucknow University. Context: The app has a news section and a Google Classroom for study materials. User asks: {prompt}"
+                
+                response = model.generate_content(full_prompt)
+                st.markdown(response.text)
+                st.session_state.messages.append({"role": "assistant", "content": response.text})
+
+# --- PAGE 2: NEWS ---
+elif page == "News & Announcements":
+    st.header("📢 News & Announcements")
+    # (Scraper code from previous steps)
+    lu_url = "https://www.lkouniv.ac.in/en/news?Newslistslug=en-notices&cd=MwAzADcA"
+    try:
+        res = requests.get(lu_url, timeout=5)
+        soup = BeautifulSoup(res.content, 'html.parser')
+        links = soup.find_all('a', href=True)
+        for link in links[:8]:
+            if "news" in link['href']:
+                st.write(f"🔗 [{link.text.strip()}](https://www.lkouniv.ac.in{link['href']})")
+    except:
+        st.write("Visit [LU Website](%s)" % lu_url)
+
+# --- PAGE 3: STUDY MATERIAL ---
+elif page == "Study Material":
+    st.header("📚 Study Material")
+    st.info("Classroom Code: shf3hsat")
+    st.link_button("Go to Google Classroom", "https://classroom.google.com/c/ODU0MzQ2NjI2MDQ2?cjc=shf3hsat")
+    
+    # Adding a block for future subjects
+    with st.expander("➕ Future Subjects (Coming Soon)"):
+        st.write("- Business Economics")
+        st.write("- Financial Accounting")
+
+# --- PAGE 4: ISSUES ---
+elif page == "Registration Issues":
+    st.header("❗ Report an Issue")
+    with st.form("issue_form"):
+        u_name = st.text_input("Name")
+        u_issue = st.text_area("Describe the registration problem")
+        if st.form_submit_button("Submit"):
+            st.success("Thank you. Our team will look into it.")
