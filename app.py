@@ -34,7 +34,6 @@ DEFAULT_API_KEY = st.secrets.get("GEMINI_API_KEY", "AQ.Ab8RN6KSEnxgUh1R98MZigwws
 st.sidebar.title("🎓 Student Portal")
 st.sidebar.info(f"Admin: {ADMIN_EMAIL}")
 
-# --- NEW FEATURE: AI COMMAND/PROMPT INJECTION SECTION ---
 st.sidebar.subheader("⚙️ AI System Prompt Configuration")
 default_instructions = (
     "You are an empathetic, knowledgeable, and dedicated academic helper and counselor "
@@ -42,7 +41,6 @@ default_instructions = (
     "and accurate answers to the student's request."
 )
 
-# Text area where you can dynamically command the AI how to behave
 custom_system_prompt = st.sidebar.text_area(
     "Master AI Commands / Instructions:",
     value=default_instructions,
@@ -50,7 +48,6 @@ custom_system_prompt = st.sidebar.text_area(
     height=150
 )
 
-# Optional API Key override field
 user_api_key = st.sidebar.text_input("Gemini API Key (Leave blank for default)", type="password")
 ACTIVE_API_KEY = user_api_key.strip() if user_api_key.strip() else DEFAULT_API_KEY
 
@@ -98,70 +95,3 @@ if page == "Dashboard":
     with right_col:
         st.subheader("⚡ Quick Access Controls")
         st.button("📋 Attendance Tracker", use_container_width=True)
-        st.button("📝 Assignment Portal", use_container_width=True)
-        st.button("📅 Academic Timetable", use_container_width=True)
-        st.button("📊 Examination Results", use_container_width=True)
-
-# --- PAGE: AI ASSISTANT (DYNAMICALLY USING YOUR INJECTED COMMANDS) ---
-elif page == "AI Assistant":
-    st.header("🤖 AI Student Counselor & Helper")
-    st.write("Ask me anything about your B.Sc Management subjects, academic syllabus, or Lucknow University rules.")
-    
-    try:
-        genai.configure(api_key=ACTIVE_API_KEY)
-        model = genai.GenerativeModel('gemini-pro')
-        
-        if "messages" not in st.session_state:
-            st.session_state.messages = []
-
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
-
-        if prompt := st.chat_input("Ask your helpful academic assistant..."):
-            sanitized_prompt = prompt.strip()
-            st.session_state.messages.append({"role": "user", "content": sanitized_prompt})
-            with st.chat_message("user"):
-                st.markdown(sanitized_prompt)
-            
-            with st.chat_message("assistant"):
-                with st.spinner("Thinking..."):
-                    # FIXED: Combines your custom input command section directly into the prompt payload securely
-                    helper_context = f"{custom_system_prompt.strip()}\n\nStudent User Query: {sanitized_prompt}"
-                    response = model.generate_content(helper_context)
-                    st.markdown(response.text)
-                    st.session_state.messages.append({"role": "assistant", "content": response.text})
-    except Exception as e:
-        st.error("AI Assistant service is currently processing an initialization block. Verification required.")
-
-# --- PAGE: NEWS & ANNOUNCEMENTS ---
-elif page == "News & Announcements":
-    st.header("📢 Official Notices")
-    lu_url = "https://www.lkouniv.ac.in/en/news?Newslistslug=en-notices&cd=MwAzADcA"
-    
-    if st.button("Check for Latest Updates"):
-        try:
-            res = requests.get(lu_url, timeout=10)
-            soup = BeautifulSoup(res.content, 'html.parser')
-            links = soup.find_all('a', href=True)
-            found = 0
-            for link in links:
-                if "news" in link['href'] and len(link.text.strip()) > 15:
-                    clean_text = link.text.strip().replace("[", "").replace("]", "")
-                    href_val = link['href']
-                    url = href_val if href_val.startswith('http') else "https://www.lkouniv.ac.in" + href_val
-                    st.success(f"🔗 [{clean_text}]({url})")
-                    found += 1
-                if found > 10: break
-        except Exception:
-            st.error(f"Live feed temporarily unavailable. [Click here for LU News Site]({lu_url})")
-
-# --- PAGE: STUDY MATERIAL ---
-elif page == "Study Material":
-    st.header("📚 Study Materials")
-    st.write("Click the buttons below to access your Google Classrooms.")
-    
-    with st.container():
-        st.subheader("BSc Management Core")
-        st.info("Classroom Code: shf3hsat")
-        st.link_button("Open Google Classroom", "
