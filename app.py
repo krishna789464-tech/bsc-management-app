@@ -25,7 +25,7 @@ if page == "AI Assistant":
     import google.generativeai as genai
     
     api_key = st.sidebar.text_input("Enter Gemini API Key", type="password")
-    if api_key:AQ.Ab8RN6K9YHV1krRLkfiTE534bLiSteyTKjgMtAmvidcbgq89jQ
+    if api_key:
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-pro')
         
