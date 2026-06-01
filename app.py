@@ -3,9 +3,21 @@ import requests
 from bs4 import BeautifulSoup
 import urllib.parse
 import google.generativeai as genai
+import os
 
 # --- 1. CONFIGURATION & STYLING ---
-st.set_page_config(page_title="BSc Management Student Hub", layout="wide")
+# Target local logo image location dynamically across absolute paths securely
+LOGO_PATH = r"C:\Users\ADMIN\Desktop\app logo.png"
+
+# Fallback mechanism to keep the application from crashing if the file is moved or renamed
+if not os.path.exists(LOGO_PATH):
+    LOGO_PATH = "🎓" # Fallback to a default emoji if path is missing
+
+st.set_page_config(
+    page_title="Company Dashboard",
+    page_icon=LOGO_PATH,
+    layout="wide"
+)
 
 st.markdown("""
     <style>
@@ -18,9 +30,6 @@ st.markdown("""
 # --- SECURE TARGET CONFIGURATION ---
 ADMIN_EMAIL = "krishna5689@outlook.in"
 ADMIN_PHONE = "919451134541"
-
-# CYBERSECURITY BEST PRACTICE: Avoid plaintext hardcoded API keys in source files.
-# Fallback provided for immediate execution, but production should use st.secrets.
 DEFAULT_API_KEY = st.secrets.get("GEMINI_API_KEY", "AQ.Ab8RN6KSEnxgUh1R98MZigwwsySa2gu9PpW4eWTWkR9GsDvNQA")
 
 # --- 2. SIDEBAR NAVIGATION ---
@@ -35,6 +44,7 @@ page = st.sidebar.radio("Go to:", ["Dashboard", "AI Assistant", "News & Announce
 
 # --- PAGE: DASHBOARD ---
 if page == "Dashboard":
+    st.title("Welcome to the Dashboard")
     st.markdown("""
         <div style="background: linear-gradient(to right, #2563eb, #4f46e5); color: white; padding: 30px; border-radius: 20px; margin-bottom: 25px;">
             <h1 style="margin: 0; color: white;">B.Sc Student Management Portal</h1>
