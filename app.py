@@ -10,6 +10,7 @@ st.markdown("""
     <style>
     .stApp { background-color: #f4f7f6; }
     .main-card { padding: 20px; border-radius: 15px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .metric-card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -20,10 +21,56 @@ ADMIN_PHONE = "919451134541"
 # --- 2. SIDEBAR NAVIGATION ---
 st.sidebar.title("🎓 Student Portal")
 st.sidebar.info(f"Admin: {ADMIN_EMAIL}")
-page = st.sidebar.radio("Go to:", ["AI Assistant", "News & Announcements", "Study Material", "Report Registration Issue"])
+page = st.sidebar.radio("Go to:", ["Dashboard", "AI Assistant", "News & Announcements", "Study Material", "Report Registration Issue"])
+
+# --- PAGE: DASHBOARD (Translated from React to Streamlit) ---
+if page == "Dashboard":
+    st.markdown("""
+        <div style="background: linear-gradient(to right, #2563eb, #4f46e5); color: white; padding: 30px; border-radius: 20px; margin-bottom: 25px;">
+            <h1 style="margin: 0; color: white;">B.Sc Student Management Portal</h1>
+            <p style="opacity: 0.9; margin-top: 5px; font-size: 16px;">
+                Smart academic platform for study materials, notices, classroom access, and student issue management.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    # Metrics Grid
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.markdown('<div class="metric-card"><h3>Students</h3><h1 style="color: #2563eb; margin:0;">1,250</h1></div>', unsafe_allow_html=True)
+    with col2:
+        st.markdown('<div class="metric-card"><h3>Courses</h3><h1 style="color: #16a34a; margin:0;">18</h1></div>', unsafe_allow_html=True)
+    with col3:
+        st.markdown('<div class="metric-card"><h3>Notices</h3><h1 style="color: #ea580c; margin:0;">6</h1></div>', unsafe_allow_html=True)
+    with col4:
+        st.markdown('<div class="metric-card"><h3>Pending Issues</h3><h1 style="color: #dc2626; margin:0;">12</h1></div>', unsafe_allow_html=True)
+        
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    left_col, right_col = st.columns([2, 1])
+    
+    with left_col:
+        st.subheader("📚 Quick Overview: Connected Materials")
+        materials = [
+            {"subject": "Structural Geology", "teacher": "Dr. Sharma"},
+            {"subject": "Mineralogy", "teacher": "Prof. Singh"},
+            {"subject": "Engineering Mathematics", "teacher": "Dr. Verma"}
+        ]
+        for item in materials:
+            with st.container():
+                st.markdown(f"**{item['subject']}** — Teacher: {item['teacher']}")
+                st.caption("🟢 Google Classroom Sync Active")
+                st.divider()
+                
+    with right_col:
+        st.subheader("⚡ Quick Access Controls")
+        st.button("📋 Attendance Tracker", use_container_width=True)
+        st.button("📝 Assignment Portal", use_container_width=True)
+        st.button("📅 Academic Timetable", use_container_width=True)
+        st.button("📊 Examination Results", use_container_width=True)
 
 # --- PAGE: AI ASSISTANT ---
-if page == "AI Assistant":
+elif page == "AI Assistant":
     st.header("🤖 AI Student Counselor")
     st.write("Ask questions about your management subjects or Lucknow University.")
     import google.generativeai as genai
@@ -90,7 +137,6 @@ elif page == "Report Registration Issue":
     st.header("❗ Report an Issue")
     st.write("Submitting this form logs your information, routes an email to the admin system, and builds your WhatsApp confirmation route.")
 
-    # Using standard Streamlit form fields for layout but targeting the formsubmit backend underneath
     with st.form("issue_form", clear_on_submit=False):
         student_email = st.text_input("Your Email Address *", placeholder="student@example.com")
         name = st.text_input("Full Name *")
@@ -103,22 +149,19 @@ elif page == "Report Registration Issue":
     if submitted:
         if student_email and name and roll_no and details:
             
-            # FormSubmit payload matching the HTML Form data parameters perfectly
             email_payload = {
-                "email": student_email, # Corresponds to <input type="email" name="email">
+                "email": student_email,
                 "Student Name": name,
                 "Roll Number": roll_no,
                 "Issue Type": issue_type,
                 "Detailed Description": details,
                 "_subject": f"🚨 Urgent: Registration Issue from {name}",
-                "_captcha": "false" # Bypasses captcha to process dynamically via backend API
+                "_captcha": "false"
             }
             
             with st.spinner("Processing form with target server..."):
                 try:
-                    # Executes the exact matching POST action to https://formsubmit.co/krishna5689@outlook.in
                     response = requests.post(f"https://formsubmit.co/ajax/{ADMIN_EMAIL}", data=email_payload)
-                    
                     if response.status_code == 200:
                         st.toast("Form processed! Email confirmation sent.", icon="📧")
                     else:
@@ -134,235 +177,9 @@ elif page == "Report Registration Issue":
             st.write("Click below to pass execution control to WhatsApp and notify the Admin directly:")
             st.link_button("Finalize via WhatsApp Message ✅", wa_url)
             st.balloons()
-            export default function BSCStudentManagementApp() {
-  const notices = [
-    {
-      title: 'Semester Exam Form Notice',
-      date: '31 May 2026',
-      desc: 'All B.Sc students must submit semester examination forms before 10 June 2026.',
-    },
-    {
-      title: 'Google Classroom Integration Live',
-      date: '28 May 2026',
-      desc: 'Students can now access study materials directly from connected Google Classrooms.',
-    },
-  ];
-
-  const registrationIssues = [
-    'Low attendance issue',
-    'Exam form submission pending',
-    'Samarth portal login problem',
-    'Fee payment verification pending',
-  ];
-
-  const studyMaterials = [
-    {
-      subject: 'Structural Geology',
-      teacher: 'Dr. Sharma',
-      classroom: 'Google Classroom Connected',
-    },
-    {
-      subject: 'Mineralogy',
-      teacher: 'Prof. Singh',
-      classroom: 'Google Classroom Connected',
-    },
-    {
-      subject: 'Engineering Mathematics',
-      teacher: 'Dr. Verma',
-      classroom: 'Google Classroom Connected',
-    },
-  ];
-
-  return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-3xl p-8 shadow-xl mb-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div>
-              <h1 className="text-4xl font-bold mb-2">B.Sc Student Management Portal</h1>
-              <p className="text-lg opacity-90">
-                Smart academic platform for study materials, notices, classroom access, and student issue management.
-              </p>
-            </div>
-
-            <button className="bg-white text-blue-700 px-6 py-3 rounded-2xl font-semibold shadow-md hover:scale-105 transition-transform">
-              Login with Google
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-2">Students</h2>
-            <p className="text-4xl font-bold text-blue-600">1,250</p>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-2">Courses</h2>
-            <p className="text-4xl font-bold text-green-600">18</p>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-2">Notices</h2>
-            <p className="text-4xl font-bold text-orange-500">6</p>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-2">Pending Issues</h2>
-            <p className="text-4xl font-bold text-red-500">12</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-3xl shadow-lg p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">Study Materials</h2>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition">
-                  Sync Google Classroom
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                {studyMaterials.map((item, index) => (
-                  <div
-                    key={index}
-                    className="border border-gray-200 rounded-2xl p-5 hover:shadow-md transition"
-                  >
-                    <div className="flex flex-col md:flex-row justify-between gap-4">
-                      <div>
-                        <h3 className="text-xl font-semibold">{item.subject}</h3>
-                        <p className="text-gray-600">Teacher: {item.teacher}</p>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
-                          {item.classroom}
-                        </span>
-
-                        <button className="bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 transition">
-                          Open Classroom
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-white rounded-3xl shadow-lg p-6">
-              <h2 className="text-2xl font-bold mb-6">News & Notices</h2>
-
-              <div className="space-y-4">
-                {notices.map((notice, index) => (
-                  <div
-                    key={index}
-                    className="border-l-4 border-blue-600 bg-gray-50 p-4 rounded-xl"
-                  >
-                    <div className="flex justify-between items-center mb-2">
-                      <h3 className="text-lg font-semibold">{notice.title}</h3>
-                      <span className="text-sm text-gray-500">{notice.date}</span>
-                    </div>
-
-                    <p className="text-gray-700">{notice.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <div className="bg-white rounded-3xl shadow-lg p-6">
-              <h2 className="text-2xl font-bold mb-5">Registration Issues</h2>
-
-              <div className="space-y-3">
-                {registrationIssues.map((issue, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between bg-red-50 border border-red-100 p-4 rounded-2xl"
-                  >
-                    <p className="font-medium text-gray-700">{issue}</p>
-                    <button className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600 transition">
-                      Resolve
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-white rounded-3xl shadow-lg p-6">
-              <h2 className="text-2xl font-bold mb-5">Quick Access</h2>
-
-              <div className="grid grid-cols-2 gap-4">
-                <button className="bg-blue-100 text-blue-700 py-4 rounded-2xl font-semibold hover:scale-105 transition-transform">
-                  Attendance
-                </button>
-
-                <button className="bg-green-100 text-green-700 py-4 rounded-2xl font-semibold hover:scale-105 transition-transform">
-                  Assignments
-                </button>
-
-                <button className="bg-orange-100 text-orange-700 py-4 rounded-2xl font-semibold hover:scale-105 transition-transform">
-                  Timetable
-                </button>
-
-                <button className="bg-purple-100 text-purple-700 py-4 rounded-2xl font-semibold hover:scale-105 transition-transform">
-                  Results
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-indigo-600 to-purple-700 text-white rounded-3xl p-6 shadow-lg">
-              <h2 className="text-2xl font-bold mb-3">Admin Panel</h2>
-              <p className="mb-4 opacity-90">
-                Manage student records, notices, classroom connections, and registration support requests.
-              </p>
-
-              <button className="bg-white text-indigo-700 px-5 py-3 rounded-2xl font-semibold hover:scale-105 transition-transform">
-                Open Dashboard
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-8 text-center text-gray-500 text-sm">
-          Powered by Google Workspace • MicroHNM Technologies
-
-/*
-DEPLOYMENT GUIDE
-
-1. Install Node.js
-2. Create React App using Vite or Next.js
-3. Copy this component into App.jsx
-4. Run:
-   npm install
-   npm run dev
-
-5. Publish on Vercel:
-   - Upload project to GitHub
-   - Go to vercel.com
-   - Import GitHub repository
-   - Click Deploy
-
-6. Optional Backend Integration:
-   - Firebase Authentication
-   - Firestore Database
-   - Google Classroom API
-   - Google OAuth Login
-
-7. Recommended Features:
-   - Student Login System
-   - Admin Dashboard
-   - Attendance Tracking
-   - Assignment Upload
-   - PDF Study Material Viewer
-   - Notice Push Notifications
-*/
-        </div>
-      </div>
-    </div>
-  );
-}
-
         else:
             st.error("⚠️ Validation failure: Please fill out all required fields marked with (*).")
+
+# --- FOOTER ---
+st.markdown("---")
+st.markdown("<center style='color: gray; font-size: 12px;'>Powered by Google Workspace • MicroHNM Technologies</center>", unsafe_allow_html=True)
