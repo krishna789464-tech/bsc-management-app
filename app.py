@@ -113,35 +113,77 @@ elif page == "Report Registration Issue":
                     st.toast("Email Notification Sent to Admin!", icon="📧")
                 except:
                     st.error("Email notification failed, but you can still use WhatsApp.")
-import { useState } from 'react';
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+import streamlit as st
 
-export default function ContactForm() {
-  const [result, setResult] = useState("");
+# 1. Configuration (Set your email details here)
+SMTP_SERVER = "smtp.gmail.com"  # e.g., smtp.gmail.com for Gmail
+SMTP_PORT = 587
+SENDER_EMAIL = "your_admin_email@gmail.com"
+# For Gmail, this must be an "App Password", NOT your regular password
+SENDER_PASSWORD = "your_app_password"
+RECEIVER_EMAIL = "target_admin_email@gmail.com"
 
-  const onSubmit = async (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    formData.append("access_key", "d5980fe8-57cb-47b6-ae8b-f455e493684b");
 
-    const response = await fetch("https://api.web3forms.com/submit", {
-      method: "POST",
-      body: formData
-    });
+def send_email(user_name, user_email, user_message):
+    """Functions to handle the SMTP connection and send the email."""
+    try:
+        # Setup the MIME
+        message = MIMEMultipart()
+        message["From"] = SENDER_EMAIL
+        message["To"] = RECEIVER_EMAIL
+        message["Subject"] = f" New Form Submission from {user_name}"
 
-    const data = await response.json();
-    setResult(data.success ? "Success!" : "Error");
-  };
+        # Email Body Content
+        body = f"""
+        You have received a new form submission:
+        
+        Name: {user_name}
+        Email: {user_email}
+        Message: {user_message}
+        """
+        message.attach(MIMEText(body, "plain"))
 
-  return (
-    <form onSubmit={onSubmit}>
-      <input type="text" name="name" required/>
-      <input type="email" name="email" required/>
-      <textarea name="message" required></textarea>
-      <button type="submit">Submit</button>
-      <p>{result}</p>
-    </form>
-  );
-}
+        # Connect to the server and send
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server.starttls()  # Secure the connection
+        server.login(SENDER_EMAIL, SENDER_PASSWORD)
+        server.send_message(message)
+        server.quit()
+
+        return True
+    except Exception as e:
+        st.error(f"Failed to send email: {e}")
+        return False
+
+
+# 2. Streamlit UI Form Creation
+st.title("📩 User Submission Form")
+st.write("Fill out the form below to send information to the Admin.")
+
+# Creating the Form Container
+with st.form(key="submission_form", clear_on_submit=True):
+    name = st.text_input("Full Name", placeholder="John Doe")
+    email = st.text_input("Your Email Address", placeholder="john@example.com")
+    message = st.text_area(
+        "Message/Information", placeholder="Type your notes here..."
+    )
+
+    # The Submit Button
+    submit_button = st.form_submit_button(label="Submit to Admin")
+
+# 3. Action when button is clicked
+if submit_button:
+    if not name or not email or not message:
+        st.warning("⚠️ Please fill out all fields before submitting.")
+    else:
+        with st.spinner("Sending information to Admin..."):
+            success = send_email(name, email, message)
+
+        if success:
+            st.success("🎉 Form submitted successfully! Admin has been notified.")
                 # 3. PREPARE WHATSAPP REDIRECT
                 wa_text = f"*Registration Issue Report*\n\n*Name:* {name}\n*Roll No:* {roll_no}\n*Issue:* {issue_type}\n*Details:* {details}"
                 wa_url = f"https://wa.me/{admin_phone}?text={urllib.parse.quote(wa_text)}"
