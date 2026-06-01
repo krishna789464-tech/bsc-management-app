@@ -95,7 +95,6 @@ elif page == "AI Assistant":
                 st.markdown(message["content"])
 
         if prompt := st.chat_input("Ask your helpful academic assistant..."):
-            # Clean string validation
             sanitized_prompt = prompt.strip()
             st.session_state.messages.append({"role": "user", "content": sanitized_prompt})
             with st.chat_message("user"):
@@ -121,7 +120,6 @@ elif page == "News & Announcements":
     
     if st.button("Check for Latest Updates"):
         try:
-            # Set request timeouts to prevent denial-of-service hanging conditions
             res = requests.get(lu_url, timeout=10)
             soup = BeautifulSoup(res.content, 'html.parser')
             links = soup.find_all('a', href=True)
@@ -145,7 +143,6 @@ elif page == "Study Material":
     with st.container():
         st.subheader("BSc Management Core")
         st.info("Classroom Code: shf3hsat")
-        # FIXED: Resolved unterminated string literal error securely
         st.link_button("Open Google Classroom", "https://classroom.google.com/c/ODU0MzQ2NjI2MDQ2?cjc=shf3hsat")
     
     st.divider()
@@ -168,7 +165,6 @@ elif page == "Report Registration Issue":
     if submitted:
         if student_email and name and roll_no and details:
             
-            # Context validation sanitization to stop basic form injection vectors
             email_payload = {
                 "email": student_email.strip(),
                 "Student Name": name.strip(),
@@ -193,5 +189,17 @@ elif page == "Report Registration Issue":
                 except Exception as e:
                     st.error("Automated transmission pipeline timeout. Proceeding to direct alternative routing.")
 
-            # 2. WHATSAPP GENERATION PROTOCOL
+            # WHATSAPP GENERATION PROTOCOL
             wa_text = f"*Registration Issue Report*\n\n*Name:* {name}\n*Roll No:* {roll_no}\n*Email:* {student_email}\n*Issue:* {issue_type}\n*Details:* {details}"
+            wa_url = f"https://wa.me/{ADMIN_PHONE}?text={urllib.parse.quote(wa_text)}"
+            
+            st.success("🎉 Local data entry recorded successfully!")
+            st.write("Click below to pass execution control to WhatsApp and notify the Admin directly:")
+            st.link_button("Finalize via WhatsApp Message ✅", wa_url)
+            st.balloons()
+        else:
+            st.error("⚠️ Validation failure: Please fill out all required fields marked with (*).")
+
+# --- FOOTER ---
+st.markdown("---")
+st.markdown("<center style='color: gray; font-size: 12px;'>Powered by Google Workspace and Microhnm Technologies</center>", unsafe_allow_html=True)
