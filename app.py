@@ -13,7 +13,7 @@ LOGO_PATH = r"C:\Users\ADMIN\Desktop\app logo.png"
 # Fallback mechanism to keep the application from crashing if the file is moved or renamed
 logo_exists = os.path.exists(LOGO_PATH)
 if logo_exists:
-    # Open the image using PIL for native browser tab support
+    # Open the image using PIL for better compatibility with page_icon
     app_logo = Image.open(LOGO_PATH)
     page_icon_val = app_logo
 else:
@@ -26,11 +26,11 @@ st.set_page_config(
     layout="wide"
 )
 
-# Render the application logo inside the navigation sidebar if the file exists
+# Display the logo in the app sidebar if it exists
 if logo_exists and app_logo:
-    st.logo(LOGO_PATH)
+    st.logo(LOGO_PATH) # Displays your logo at the top-left of the app/sidebar
 else:
-    st.sidebar.markdown("# 🎓") # Fallback icon header if file is missing
+    st.sidebar.markdown("# 🎓") # Fallback header icon
 
 st.markdown("""
     <style>
@@ -109,4 +109,91 @@ elif page == "AI Assistant":
     components.html(jotform_script, height=600, scrolling=True)
 
 # --- PAGE: NEWS & ANNOUNCEMENTS ---
-elif page == "News
+elif page == "News & Announcements":
+    st.header("📢 Official Notices")
+    lu_url = "https://www.lkouniv.ac.in/en/news?Newslistslug=en-notices&cd=MwAzADcA"
+    
+    if st.button("Check for Latest Updates"):
+        try:
+            res = requests.get(lu_url, timeout=10)
+            soup = BeautifulSoup(res.content, 'html.parser')
+            links = soup.find_all('a', href=True)
+            found = 0
+            for link in links:
+                if "news" in link['href'] and len(link.text.strip()) > 15:
+                    clean_text = link.text.strip().replace("[", "").replace("]", "")
+                    href_val = link['href']
+                    url = href_val if href_val.startswith('http') else "https://www.lkouniv.ac.in" + href_val
+                    st.success(f"🔗 [{clean_text}]({url})")
+                    found += 1
+                if found > 10: break
+        except Exception:
+            st.error(f"Live feed temporarily unavailable. [Click here for LU News Site]({lu_url})")
+
+# --- PAGE: STUDY MATERIAL ---
+elif page == "Study Material":
+    st.header("📚 Study Materials")
+    st.write("Click the buttons below to access your Google Classrooms.")
+    
+    with st.container():
+        st.subheader("BSc Management Core")
+        st.info("Classroom Code: shf3hsat")
+        st.link_button("Open Google Classroom", "https://classroom.google.com/c/ODU0MzQ2NjI2MDQ2?cjc=shf3hsat")
+    
+    st.divider()
+    st.write("More subjects will be added here soon.")
+
+# --- PAGE: REPORT REGISTRATION ISSUE ---
+elif page == "Report Registration Issue":
+    st.header("❗ Report an Issue")
+    st.write("Submitting this form logs your information, routes an email to the admin system, and builds your WhatsApp confirmation route.")
+
+    with st.form("issue_form", clear_on_submit=False):
+        student_email = st.text_input("Your Email Address *", placeholder="student@example.com")
+        name = st.text_input("Full Name *")
+        roll_no = st.text_input("Roll Number / Student ID *")
+        issue_type = st.selectbox("Issue Category", ["Login Problem", "Subject Not Showing", "Document Error", "Other"])
+        details = st.text_area("Detailed Description *")
+        
+        submitted = st.form_submit_button("Submit & Notify Admin")
+        
+    if submitted:
+        if student_email and name and roll_no and details:
+            
+            email_payload = {
+                "email": student_email.strip(),
+                "Student Name": name.strip(),
+                "Roll Number": roll_no.strip(),
+                "Issue Type": issue_type,
+                "Detailed Description": details.strip(),
+                "_subject": f"🚨 Urgent: Registration Issue from {name.strip()}",
+                "_captcha": "false"
+            }
+            
+            with st.spinner("Processing form with target server..."):
+                try:
+                    response = requests.post(
+                        f"https://formsubmit.co/ajax/{ADMIN_EMAIL}", 
+                        data=email_payload,
+                        timeout=10
+                    )
+                    if response.status_code == 200:
+                        st.toast("Form processed! Email confirmation sent.", icon="📧")
+                    else:
+                        st.error(f"Endpoint verification issue encountered. Status Code: {response.status_code}")
+                except Exception as e:
+                    st.error("Automated transmission pipeline timeout. Proceeding to direct alternative routing.")
+
+            wa_text = f"*Registration Issue Report*\n\n*Name:* {name}\n*Roll No:* {roll_no}\n*Email:* {student_email}\n*Issue:* {issue_type}\n*Details:* {details}"
+            wa_url = f"https://wa.me/{ADMIN_PHONE}?text={urllib.parse.quote(wa_text)}"
+            
+            st.success("🎉 Local data entry recorded successfully!")
+            st.write("Click below to pass execution control to WhatsApp and notify the Admin directly:")
+            st.link_button("Finalize via WhatsApp Message ✅", wa_url)
+            st.balloons()
+        else:
+            st.error("⚠️ Validation failure: Please fill out all required fields marked with (*).")
+
+# --- FOOTER ---
+st.markdown("---")
+st.markdown("<center style='color: gray; font-size: 12px;'>Powered by Google Workspace and Microhnm Technologies</center>", unsafe_allow_html=True)
