@@ -11,7 +11,7 @@ from PIL import Image
 if "font_scale" not in st.session_state:
     st.session_state.font_scale = 100  # Default font percentage
 if "bg_theme" not in st.session_state:
-    st.session_state.bg_theme = "light"  # Default brightness theme
+    st.session_state.bg_theme = "light"  # Default theme
 
 # --- 2. CONFIGURATION & STYLING ---
 LOGO_PATH = r"C:\Users\ADMIN\Desktop\app logo.png"
@@ -34,18 +34,26 @@ st.set_page_config(
     layout="wide"
 )
 
-# Theme Background & Font Scaling Calculations
-bg_color = "#f8fafc" if st.session_state.bg_theme == "light" else "#0f172a"
-card_bg = "#ffffff" if st.session_state.bg_theme == "light" else "#1e293b"
-text_color = "#1e293b" if st.session_state.bg_theme == "light" else "#f1f5f9"
-sub_text_color = "#64748b" if st.session_state.bg_theme == "light" else "#94a3b8"
-border_color = "#e2e8f0" if st.session_state.bg_theme == "light" else "#334155"
+# Live Theme Colors Selection
+if st.session_state.bg_theme == "light":
+    bg_color = "#f8fafc"
+    card_bg = "#ffffff"
+    text_color = "#1e293b"
+    sub_text_color = "#64748b"
+    border_color = "#e2e8f0"
+else:
+    bg_color = "#0f172a"
+    card_bg = "#1e293b"
+    text_color = "#f1f5f9"
+    sub_text_color = "#94a3b8"
+    border_color = "#334155"
 
+# Dynamic CSS Injector
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap');
 
-    /* Global Accessibility Adjustments */
+    /* Accessibility Font Scaling */
     html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"], p, span, label, h1, h2, h3, h4, h5, h6 {{
         font-family: 'Inter', sans-serif !important;
         font-size: {st.session_state.font_scale}% !important;
@@ -56,7 +64,6 @@ st.markdown(f"""
         background-color: {bg_color} !important;
     }}
 
-    /* Main Dashboard Layout Blocks */
     .main-card {{
         padding: 24px;
         border-radius: 12px;
@@ -77,11 +84,7 @@ st.markdown(f"""
     .metric-card:hover {{
         transform: translateY(-2px);
     }}
-    .metric-card h4 {{
-        color: {sub_text_color} !important;
-    }}
 
-    /* Top Tabs Styling adjustment based on color configuration selection */
     div[data-testid="stTabs"] [data-baseweb="tab-list"] {{
         gap: 8px;
         background-color: {card_bg};
@@ -102,21 +105,24 @@ st.markdown(f"""
         color: white !important;
     }}
 
-    /* Floating Panel container targeted strictly to top-right corner wrapper */
-    div.floating-control-container {{
+    /* Top-Right Small Floating Suite Container */
+    div.floating-suite {{
         position: fixed;
-        top: 60px;
+        top: 45px;
         right: 20px;
         z-index: 999999;
         background-color: {card_bg};
-        padding: 12px 18px;
-        border-radius: 12px;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        padding: 6px 12px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         border: 1px solid {border_color};
-        max-width: 300px;
+    }}
+    
+    /* Minimize selectbox labels inside the suite */
+    div.floating-suite label {{
+        display: none !important;
     }}
 
-    /* Hide unneeded default branding frames wrapper */
     div[data-testid="stAppDeployButton"] {{ display: none !important; }}
     #MainMenu {{ visibility: hidden !important; }}
     div[data-testid="stToolbar"] {{ display: none !important; }}
@@ -135,44 +141,40 @@ st.markdown(f"""
 ADMIN_EMAIL = "krishna5689@outlook.in"
 ADMIN_PHONE = "919451134541"
 
-# --- 3. DYNAMIC TOP-RIGHT SYSTEM CONTROLS WORKFLOW ---
-# Creating an isolated structural column right above the workspace framework to host the control menu natively
-with st.sidebar:
-    # Optional fallback toggle just in case the floating layout gets covered by screen items
-    st.markdown("### ⚙️ Quick System View")
-    st.write("Adjust themes via the floating widget in the top right window quadrant contextually.")
+# --- 3. FLOATING TOP-RIGHT ACCESSIBILITY & BRIGHTNESS SUITE ---
+st.markdown('<div class="floating-suite">', unsafe_allow_html=True)
+suite_col1, suite_col2 = st.columns(2)
 
-# Rendering the floating control block dynamically on screen using columns
-st.markdown('<div class="floating-control-container">', unsafe_allow_html=True)
-c_control1, c_control2 = st.columns(2)
-with c_control1:
+with suite_col1:
+    theme_idx = 0 if st.session_state.bg_theme == "light" else 1
     theme_choice = st.selectbox(
-        "Brightness", 
-        ["☀️ Light Mode", "🌙 Dark Mode"], 
-        index=0 if st.session_state.bg_theme == "light" else 1,
-        key="theme_select_widget"
+        "Theme",
+        ["☀️ Light", "🌙 Dark"],
+        index=theme_idx,
+        key="suite_theme_select"
     )
-    new_theme = "light" if "Light" in theme_choice else "dark"
-    if new_theme != st.session_state.bg_theme:
-        st.session_state.bg_theme = new_theme
+    selected_theme = "light" if "Light" in theme_choice else "dark"
+    if selected_theme != st.session_state.bg_theme:
+        st.session_state.bg_theme = selected_theme
         st.rerun()
 
-with c_control2:
+with suite_col2:
+    font_idx = 0 if st.session_state.font_scale == 100 else (1 if st.session_state.font_scale == 120 else 2)
     font_choice = st.selectbox(
-        "Text Size", 
-        ["Normal (100%)", "Large (120%)", "Huge (140%)"],
-        index=0 if st.session_state.font_scale == 100 else (1 if st.session_state.font_scale == 120 else 2),
-        key="font_select_widget"
+        "Font Size",
+        ["🔍 100%", "🔍 120%", "🔍 140%"],
+        index=font_idx,
+        key="suite_font_select"
     )
-    new_scale = 100 if "Normal" in font_choice else (120 if "Large" in font_choice else 140)
-    if new_scale != st.session_state.font_scale:
-        st.session_state.font_scale = new_scale
+    selected_scale = 100 if "100%" in font_choice else (120 if "120%" in font_choice else 140)
+    if selected_scale != st.session_state.font_scale:
+        st.session_state.font_scale = selected_scale
         st.rerun()
 st.markdown('</div>', unsafe_allow_html=True)
 
 # --- 4. HEADER BRANDING ---
-st.markdown(f"<h2 style='margin: 0; color: #1e3a8a; font-weight:700;'>🎓 Academic Student Portal</h2>", unsafe_allow_html=True)
-st.markdown(f"Verification Tier: B.Sc Undergraduate • Helpdesk: <a href='mailto:{ADMIN_EMAIL}' style='color:#2563eb;'>{ADMIN_EMAIL}</a>", unsafe_allow_html=True)
+st.markdown("<h2 style='margin: 0; color: #1e3a8a; font-weight:700;'>🎓 Academic Student Portal</h2>", unsafe_allow_html=True)
+st.markdown(f"Verification Tier: B.Sc Undergraduate • Helpdesk: <a href='mailto:{ADMIN_EMAIL}'>{ADMIN_EMAIL}</a>", unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
 # --- 5. TOP TABS NAVIGATION ---
@@ -190,10 +192,10 @@ tab_dashboard, tab_ai, tab_news, tab_study, tab_perf, tab_focus, tab_report = ta
 
 # --- TAB: DASHBOARD ---
 with tab_dashboard:
-    st.markdown(f"""
-        <div style="background: linear-gradient(135deg, #1e40af, #3b82f6); color: white !important; padding: 32px; border-radius: 16px; margin-bottom: 28px; margin-top: 10px;">
-            <h1 style="margin: 0; color: white !important; font-weight:700; font-size:28px;">B.Sc Student Management Portal</h1>
-            <p style="opacity: 0.9; margin-top: 8px; font-size: 15px; max-width: 700px; color: white !important;">
+    st.markdown("""
+        <div style="background: linear-gradient(135deg, #1e40af, #3b82f6); color: white; padding: 32px; border-radius: 16px; margin-bottom: 28px; margin-top: 10px;">
+            <h1 style="margin: 0; color: white; font-weight:700; font-size:28px;">B.Sc Student Management Portal</h1>
+            <p style="opacity: 0.9; margin-top: 8px; font-size: 15px; max-width: 700px;">
                 Central administrative hub optimized for real-time classroom updates, digital asset access, performance management, and direct administrative escalation pathways.
             </p>
         </div>
@@ -201,13 +203,13 @@ with tab_dashboard:
     
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.markdown('<div class="metric-card"><h4>Total Cohort</h4><h1 style="color: #2563eb !important; margin:8px 0 0 0; font-weight:700;">1,250</h1></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h4 style="margin:0; font-size:14px;">Total Cohort</h4><h1 style="color: #2563eb; margin:8px 0 0 0; font-weight:700;">1,250</h1></div>', unsafe_allow_html=True)
     with col2:
-        st.markdown('<div class="metric-card"><h4>Active Courses</h4><h1 style="color: #16a34a !important; margin:8px 0 0 0; font-weight:700;">18</h1></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h4 style="margin:0; font-size:14px;">Active Courses</h4><h1 style="color: #16a34a; margin:8px 0 0 0; font-weight:700;">18</h1></div>', unsafe_allow_html=True)
     with col3:
-        st.markdown('<div class="metric-card"><h4>Active System Notices</h4><h1 style="color: #ea580c !important; margin:8px 0 0 0; font-weight:700;">6</h1></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h4 style="margin:0; font-size:14px;">Active System Notices</h4><h1 style="color: #ea580c; margin:8px 0 0 0; font-weight:700;">6</h1></div>', unsafe_allow_html=True)
     with col4:
-        st.markdown('<div class="metric-card"><h4>Pending Form Inquiries</h4><h1 style="color: #dc2626 !important; margin:8px 0 0 0; font-weight:700;">12</h1></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h4 style="margin:0; font-size:14px;">Pending Form Inquiries</h4><h1 style="color: #dc2626; margin:8px 0 0 0; font-weight:700;">12</h1></div>', unsafe_allow_html=True)
         
     st.markdown("<br>", unsafe_allow_html=True)
     
@@ -355,7 +357,7 @@ with tab_focus:
                 break
                 
             mins, secs = divmod(int(remaining), 60)
-            timer_display.markdown(f"<h1 style='font-size:48px; color:#1e40af;'>{mins:02d}:{secs:02d}</h1>", unsafe_allow_html=True)
+            timer_display.markdown(f"<h1 style='font-size:48px;'>{mins:02d}:{secs:02d}</h1>", unsafe_allow_html=True)
             percentage_completion = min(elapsed / target_seconds, 1.0)
             progress_bar.progress(percentage_completion)
             time.sleep(1)
@@ -411,4 +413,4 @@ with tab_report:
 
 # --- FOOTER ---
 st.markdown("---")
-st.markdown("<center style='color: #94a3b8; font-size: 12px;'>Powered by Google Workspace Infrastructure and Microhnm Technologies</center>", unsafe_allow_html=True)
+st.markdown("<center style='font-size: 12px;'>Powered by Google Workspace Infrastructure and Microhnm Technologies</center>", unsafe_allow_html=True)
