@@ -7,7 +7,13 @@ import time
 import streamlit.components.v1 as components
 from PIL import Image
 
-# --- 1. CONFIGURATION & STYLING ---
+# --- 1. ACCESSIBILITY & BRIGHTNESS SESSION STATE ---
+if "font_scale" not in st.session_state:
+    st.session_state.font_scale = 100  # Default font percentage
+if "bg_theme" not in st.session_state:
+    st.session_state.bg_theme = "light"  # Default brightness theme
+
+# --- 2. CONFIGURATION & STYLING ---
 LOGO_PATH = r"C:\Users\ADMIN\Desktop\app logo.png"
 logo_exists = os.path.exists(LOGO_PATH)
 
@@ -28,83 +34,148 @@ st.set_page_config(
     layout="wide"
 )
 
-# Professional Theme Styling
-st.markdown("""
+# Theme Background & Font Scaling Calculations
+bg_color = "#f8fafc" if st.session_state.bg_theme == "light" else "#0f172a"
+card_bg = "#ffffff" if st.session_state.bg_theme == "light" else "#1e293b"
+text_color = "#1e293b" if st.session_state.bg_theme == "light" else "#f1f5f9"
+sub_text_color = "#64748b" if st.session_state.bg_theme == "light" else "#94a3b8"
+border_color = "#e2e8f0" if st.session_state.bg_theme == "light" else "#334155"
+
+st.markdown(f"""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap');
 
-    html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
+    /* Global Accessibility Adjustments */
+    html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"], p, span, label, h1, h2, h3, h4, h5, h6 {{
         font-family: 'Inter', sans-serif !important;
-    }
+        font-size: {st.session_state.font_scale}% !important;
+        color: {text_color} !important;
+    }}
 
-    .stApp {
-        background-color: #f8fafc;
-    }
+    .stApp {{
+        background-color: {bg_color} !important;
+    }}
 
-    .main-card {
+    /* Main Dashboard Layout Blocks */
+    .main-card {{
         padding: 24px;
         border-radius: 12px;
-        background: #ffffff;
-        box-shadow: 0 1px 3px 0 rgba(0,0,0,0.05), 0 1px 2px 0 rgba(0,0,0,0.03);
-        border: 1px solid #e2e8f0;
-    }
+        background: {card_bg};
+        box-shadow: 0 1px 3px 0 rgba(0,0,0,0.05);
+        border: 1px solid {border_color};
+    }}
 
-    .metric-card {
-        background: #ffffff;
+    .metric-card {{
+        background: {card_bg} !important;
         padding: 22px;
         border-radius: 12px;
         box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
         text-align: center;
-        border: 1px solid #e2e8f0;
+        border: 1px solid {border_color} !important;
         transition: transform 0.2s ease;
-    }
-    .metric-card:hover {
+    }}
+    .metric-card:hover {{
         transform: translateY(-2px);
-    }
+    }}
+    .metric-card h4 {{
+        color: {sub_text_color} !important;
+    }}
 
-    div[data-testid="stTabs"] [data-baseweb="tab-list"] {
+    /* Top Tabs Styling adjustment based on color configuration selection */
+    div[data-testid="stTabs"] [data-baseweb="tab-list"] {{
         gap: 8px;
-        background-color: #ffffff;
+        background-color: {card_bg};
         padding: 8px;
         border-radius: 12px;
-        border: 1px solid #e2e8f0;
-    }
+        border: 1px solid {border_color};
+    }}
 
-    div[data-testid="stTabs"] [data-baseweb="tab"] {
+    div[data-testid="stTabs"] [data-baseweb="tab"] {{
         padding: 8px 16px;
         border-radius: 8px;
         font-weight: 500;
-        color: #475569;
-    }
+        color: {sub_text_color} !important;
+    }}
 
-    div[data-testid="stTabs"] [aria-selected="true"] {
+    div[data-testid="stTabs"] [aria-selected="true"] {{
         background-color: #2563eb !important;
         color: white !important;
-    }
+    }}
 
-    div[data-testid="stAppDeployButton"] { display: none !important; }
-    #MainMenu { visibility: hidden !important; }
-    div[data-testid="stToolbar"] { display: none !important; }
-    footer { visibility: hidden !important; }
+    /* Floating Panel container targeted strictly to top-right corner wrapper */
+    div.floating-control-container {{
+        position: fixed;
+        top: 60px;
+        right: 20px;
+        z-index: 999999;
+        background-color: {card_bg};
+        padding: 12px 18px;
+        border-radius: 12px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        border: 1px solid {border_color};
+        max-width: 300px;
+    }}
 
-    .stForm {
-        background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
+    /* Hide unneeded default branding frames wrapper */
+    div[data-testid="stAppDeployButton"] {{ display: none !important; }}
+    #MainMenu {{ visibility: hidden !important; }}
+    div[data-testid="stToolbar"] {{ display: none !important; }}
+    footer {{ visibility: hidden !important; }}
+
+    .stForm {{
+        background: {card_bg} !important;
+        border: 1px solid {border_color} !important;
         border-radius: 12px !important;
         padding: 24px !important;
-    }
+    }}
     </style>
     """, unsafe_allow_html=True)
 
+# --- SECURE TARGET CONFIGURATION ---
 ADMIN_EMAIL = "krishna5689@outlook.in"
 ADMIN_PHONE = "919451134541"
 
-# --- 2. HEADER BRANDING ---
-st.markdown("<h2 style='margin: 0; color: #1e3a8a; font-weight:700;'>🎓 Academic Student Portal</h2>", unsafe_allow_html=True)
-st.markdown(f"Verification Tier: B.Sc Undergraduate • Helpdesk: <a href='mailto:{ADMIN_EMAIL}'>{ADMIN_EMAIL}</a>", unsafe_allow_html=True)
+# --- 3. DYNAMIC TOP-RIGHT SYSTEM CONTROLS WORKFLOW ---
+# Creating an isolated structural column right above the workspace framework to host the control menu natively
+with st.sidebar:
+    # Optional fallback toggle just in case the floating layout gets covered by screen items
+    st.markdown("### ⚙️ Quick System View")
+    st.write("Adjust themes via the floating widget in the top right window quadrant contextually.")
+
+# Rendering the floating control block dynamically on screen using columns
+st.markdown('<div class="floating-control-container">', unsafe_allow_html=True)
+c_control1, c_control2 = st.columns(2)
+with c_control1:
+    theme_choice = st.selectbox(
+        "Brightness", 
+        ["☀️ Light Mode", "🌙 Dark Mode"], 
+        index=0 if st.session_state.bg_theme == "light" else 1,
+        key="theme_select_widget"
+    )
+    new_theme = "light" if "Light" in theme_choice else "dark"
+    if new_theme != st.session_state.bg_theme:
+        st.session_state.bg_theme = new_theme
+        st.rerun()
+
+with c_control2:
+    font_choice = st.selectbox(
+        "Text Size", 
+        ["Normal (100%)", "Large (120%)", "Huge (140%)"],
+        index=0 if st.session_state.font_scale == 100 else (1 if st.session_state.font_scale == 120 else 2),
+        key="font_select_widget"
+    )
+    new_scale = 100 if "Normal" in font_choice else (120 if "Large" in font_choice else 140)
+    if new_scale != st.session_state.font_scale:
+        st.session_state.font_scale = new_scale
+        st.rerun()
+st.markdown('</div>', unsafe_allow_html=True)
+
+# --- 4. HEADER BRANDING ---
+st.markdown(f"<h2 style='margin: 0; color: #1e3a8a; font-weight:700;'>🎓 Academic Student Portal</h2>", unsafe_allow_html=True)
+st.markdown(f"Verification Tier: B.Sc Undergraduate • Helpdesk: <a href='mailto:{ADMIN_EMAIL}' style='color:#2563eb;'>{ADMIN_EMAIL}</a>", unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
-# --- 3. TOP TABS NAVIGATION ---
+# --- 5. TOP TABS NAVIGATION ---
 tabs = st.tabs([
     "📊 Dashboard",
     "🤖 AI Assistant",
@@ -119,10 +190,10 @@ tab_dashboard, tab_ai, tab_news, tab_study, tab_perf, tab_focus, tab_report = ta
 
 # --- TAB: DASHBOARD ---
 with tab_dashboard:
-    st.markdown("""
-        <div style="background: linear-gradient(135deg, #1e40af, #3b82f6); color: white; padding: 32px; border-radius: 16px; margin-bottom: 28px; margin-top: 10px;">
-            <h1 style="margin: 0; color: white; font-weight:700; font-size:28px;">B.Sc Student Management Portal</h1>
-            <p style="opacity: 0.9; margin-top: 8px; font-size: 15px; max-width: 700px;">
+    st.markdown(f"""
+        <div style="background: linear-gradient(135deg, #1e40af, #3b82f6); color: white !important; padding: 32px; border-radius: 16px; margin-bottom: 28px; margin-top: 10px;">
+            <h1 style="margin: 0; color: white !important; font-weight:700; font-size:28px;">B.Sc Student Management Portal</h1>
+            <p style="opacity: 0.9; margin-top: 8px; font-size: 15px; max-width: 700px; color: white !important;">
                 Central administrative hub optimized for real-time classroom updates, digital asset access, performance management, and direct administrative escalation pathways.
             </p>
         </div>
@@ -130,14 +201,13 @@ with tab_dashboard:
     
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        # FIXED: Line 137 syntax cleaned and verified completely inline
-        st.markdown('<div class="metric-card"><h4 style="color:#64748b; margin:0; font-size:14px;">Total Cohort</h4><h1 style="color: #2563eb; margin:8px 0 0 0; font-weight:700;">1,250</h1></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h4>Total Cohort</h4><h1 style="color: #2563eb !important; margin:8px 0 0 0; font-weight:700;">1,250</h1></div>', unsafe_allow_html=True)
     with col2:
-        st.markdown('<div class="metric-card"><h4 style="color:#64748b; margin:0; font-size:14px;">Active Courses</h4><h1 style="color: #16a34a; margin:8px 0 0 0; font-weight:700;">18</h1></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h4>Active Courses</h4><h1 style="color: #16a34a !important; margin:8px 0 0 0; font-weight:700;">18</h1></div>', unsafe_allow_html=True)
     with col3:
-        st.markdown('<div class="metric-card"><h4 style="color:#64748b; margin:0; font-size:14px;">Active System Notices</h4><h1 style="color: #ea580c; margin:8px 0 0 0; font-weight:700;">6</h1></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h4>Active System Notices</h4><h1 style="color: #ea580c !important; margin:8px 0 0 0; font-weight:700;">6</h1></div>', unsafe_allow_html=True)
     with col4:
-        st.markdown('<div class="metric-card"><h4 style="color:#64748b; margin:0; font-size:14px;">Pending Form Inquiries</h4><h1 style="color: #dc2626; margin:8px 0 0 0; font-weight:700;">12</h1></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h4>Pending Form Inquiries</h4><h1 style="color: #dc2626 !important; margin:8px 0 0 0; font-weight:700;">12</h1></div>', unsafe_allow_html=True)
         
     st.markdown("<br>", unsafe_allow_html=True)
     
