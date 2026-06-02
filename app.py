@@ -124,7 +124,7 @@ page = st.sidebar.radio(
     ],
     label_visibility="collapsed"
 )
-
+st.sidebar.markdown("<vdiv style='flex:1;'></div>", unsafe_allow_html=True) # Spacer
 st.sidebar.markdown("<div style='flex:1;'></div>", unsafe_allow_html=True)
 st.sidebar.caption("System Status: Operational • v2.1.0")
 
