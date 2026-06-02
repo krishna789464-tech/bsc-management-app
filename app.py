@@ -8,81 +8,96 @@ import streamlit.components.v1 as components
 from PIL import Image
 from datetime import date
 
-# --- 1. CONFIGURATION & STYLING ---
-LOGO_PATH = r"C:\Users\ADMIN\Desktop\app logo.png"
+# --- 1. THEME CONFIGURATION & FONTS ---
+# Standardize professional font rendering and structural styling
+st.markdown("""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    html, body, [data-testid="stAppViewContainer"], .stWidgetForm {
+        font-family: 'Inter', sans-serif !important;
+    }
+    
+    .metric-card {
+        background-color: rgba(128, 128, 128, 0.05);
+        border: 1px solid rgba(128, 128, 128, 0.15);
+        padding: 22px;
+        border-radius: 12px;
+        text-align: center;
+        margin-bottom: 12px;
+    }
+    
+    .notice-card {
+        padding: 16px;
+        border-radius: 10px;
+        border-left: 4px solid #2563eb;
+        background-color: rgba(37, 99, 235, 0.03);
+        margin-bottom: 12px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    }
+    
+    .stButton>button {
+        border-radius: 8px !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
-# Fallback mechanism for logo path
+# Target local logo image location securely
+LOGO_PATH = r"C:\Users\ADMIN\Desktop\app logo.png"
 logo_exists = os.path.exists(LOGO_PATH)
+app_logo = None
+
 if logo_exists:
     try:
         app_logo = Image.open(LOGO_PATH)
         page_icon_val = app_logo
     except Exception:
-        app_logo = None
-        page_icon_val = "🎓"
-else:
-    app_logo = None
+        logo_exists = False
+
+if not logo_exists:
     page_icon_val = "🎓"
 
 st.set_page_config(
-    page_title="B.Sc Student Portal",
+    page_title="B.Sc Student Management Portal",
     page_icon=page_icon_val,
     layout="wide"
 )
 
-# Render logo
+# Render Application Logo natively in Sidebar
 if logo_exists and app_logo:
     try:
         st.logo(LOGO_PATH)
     except AttributeError:
-        # Fallback if older Streamlit version is used
-        st.sidebar.image(app_logo, width=150)
+        # Fallback block for older execution environments
+        st.sidebar.image(app_logo, width=130)
 else:
-    st.sidebar.markdown("<h1 style='text-align: center;'>🎓</h1>", unsafe_allow_html=True)
+    st.sidebar.markdown("<h2 style='text-align: center; margin-bottom: 0;'>🎓</h2>", unsafe_allow_html=True)
 
-# Custom responsive CSS targeting better visual separation
-st.markdown("""
-    <style>
-    .metric-card {
-        background-color: var(--background-color);
-        border: 1px solid rgba(128, 128, 128, 0.2);
-        padding: 20px;
-        border-radius: 10px;
-        text-align: center;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    .notice-card {
-        padding: 15px;
-        border-radius: 8px;
-        border-left: 5px solid #2563eb;
-        background-color: rgba(37, 99, 235, 0.05);
-        margin-bottom: 10px;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-# --- SECURE TARGET CONFIGURATION ---
+# --- 2. SECURE ADMIN CONFIGURATION ---
 ADMIN_EMAIL = "krishna5689@outlook.in"
 ADMIN_PHONE = "919451134541"
 
-# --- 2. SESSION STATE MANAGEMENT & ROUTING ---
-# Allows quick access links on dashboard to redirect the user to other pages smoothly
-if "page" not in st.session_state:
-    st.session_state.page = "Dashboard"
+# --- 3. SESSION STATE CONFIGURATION ---
+# Initialize navigation key
+if "nav_radio" not in st.session_state:
+    st.session_state.nav_radio = "Dashboard"
 
+# Initialize Study Planner base items
 if "tasks" not in st.session_state:
     st.session_state.tasks = [
-        {"task": "Submit Structural Geology Practical File", "due": str(date.today()), "completed": False},
-        {"task": "Review Mineralogy Lecture 4 notes", "due": str(date.today()), "completed": True}
+        {"task": "Submit Structural Geology Practical File", "due": date.today(), "completed": False},
+        {"task": "Review Mineralogy Lecture 4 Notes", "due": date.today(), "completed": True},
+        {"task": "Prepare for Math Revision Test", "due": date.today(), "completed": False}
     ]
 
-# Callback to update page selection programmatically
+# Navigation handler function
 def navigate_to(page_name):
-    st.session_state.page = page_name
+    st.session_state.nav_radio = page_name
+    st.rerun()
 
-# --- 3. SIDEBAR NAVIGATION ---
+# --- 4. SIDEBAR SELECTION SYSTEM ---
 st.sidebar.title("🎓 Student Portal")
-st.sidebar.info(f"Admin: {ADMIN_EMAIL}")
+st.sidebar.caption(f"Developer Contact: {ADMIN_EMAIL}")
 
 page_options = [
     "Dashboard", 
@@ -94,70 +109,67 @@ page_options = [
     "Report Registration Issue"
 ]
 
-# Sync sidebar radio selection with session state
-current_index = page_options.index(st.session_state.page) if st.session_state.page in page_options else 0
-selected_page = st.sidebar.radio("Go to:", page_options, index=current_index, key="nav_radio")
-
-# Ensure state updates correctly
-if selected_page != st.session_state.page:
-    st.session_state.page = selected_page
-    st.rerun()
+# Primary menu implementation
+selected_page = st.sidebar.radio(
+    "Go to:", 
+    page_options, 
+    key="nav_radio"
+)
 
 # --- PAGE: DASHBOARD ---
-if st.session_state.page == "Dashboard":
-    st.title("Welcome to the Dashboard")
+if selected_page == "Dashboard":
+    st.title("Academic Dashboard")
     st.markdown("""
-        <div style="background: linear-gradient(to right, #2563eb, #4f46e5); color: white; padding: 30px; border-radius: 15px; margin-bottom: 25px;">
-            <h1 style="margin: 0; color: white;">B.Sc Student Management Portal</h1>
-            <p style="opacity: 0.9; margin-top: 5px; font-size: 16px;">
-                Smart academic platform for accessing study materials, viewing schedules, calculation utilities, and direct administration queries.
+        <div style="background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; padding: 28px; border-radius: 14px; margin-bottom: 25px;">
+            <h1 style="margin: 0; color: white; font-size: 28px; font-weight: 700;">B.Sc Student Management Portal</h1>
+            <p style="opacity: 0.9; margin-top: 8px; font-size: 15px;">
+                Central hub to track coursework schedules, academic standing, live notices, and support documentation.
             </p>
         </div>
     """, unsafe_allow_html=True)
     
-    # Modernized metrics layout
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.markdown('<div class="metric-card"><h4>Enrolled Students</h4><h2 style="color: #2563eb; margin:0;">1,250</h2></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h4>Enrolled Students</h4><h2 style="color: #2563eb; margin:0; font-weight: 700;">1,250</h2></div>', unsafe_allow_html=True)
     with col2:
-        st.markdown('<div class="metric-card"><h4>B.Sc Specializations</h4><h2 style="color: #16a34a; margin:0;">4</h2></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h4>Courses Offered</h4><h2 style="color: #10b981; margin:0; font-weight: 700;">18</h2></div>', unsafe_allow_html=True)
     with col3:
-        st.markdown('<div class="metric-card"><h4>Active Classrooms</h4><h2 style="color: #ea580c; margin:0;">8</h2></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h4>Live Notices</h4><h2 style="color: #f59e0b; margin:0; font-weight: 700;">10+</h2></div>', unsafe_allow_html=True)
     with col4:
-        st.markdown('<div class="metric-card"><h4>Pending System Issues</h4><h2 style="color: #dc2626; margin:0;">12</h2></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h4>Resolved Tickets</h4><h2 style="color: #6b7280; margin:0; font-weight: 700;">94%</h2></div>', unsafe_allow_html=True)
         
     st.markdown("<br>", unsafe_allow_html=True)
     
     left_col, right_col = st.columns([2, 1])
     
     with left_col:
-        st.subheader("📚 Quick Overview: Connected Materials")
-        materials = [
-            {"subject": "Structural Geology", "teacher": "Dr. Sharma", "code": "shf3hsat"},
-            {"subject": "Mineralogy", "teacher": "Prof. Singh", "code": "min-202"},
-            {"subject": "Engineering Mathematics", "teacher": "Dr. Verma", "code": "math-301"}
+        st.subheader("📚 Subject Stream Overview")
+        subjects_list = [
+            {"subject": "Structural Geology", "faculty": "Dr. Sharma", "status": "Active Class"},
+            {"subject": "Mineralogy & Crystallography", "faculty": "Prof. Singh", "status": "Lab Active"},
+            {"subject": "Engineering Mathematics", "faculty": "Dr. Verma", "status": "Active Class"}
         ]
-        for item in materials:
+        for item in subjects_list:
             with st.container():
-                st.markdown(f"**{item['subject']}** — Instructor: *{item['teacher']}*")
-                st.caption(f"🟢 Google Classroom Active (Code: `{item['code']}`)")
+                st.markdown(f"**{item['subject']}** — Instructor: *{item['faculty']}*")
+                st.caption(f"🟢 Synchronized via Google Workspace — `{item['status']}`")
                 st.divider()
                 
     with right_col:
-        st.subheader("⚡ Quick Access Controls")
-        if st.button("📅 View Academic Timetable", use_container_width=True):
+        st.subheader("⚡ Quick Navigation")
+        if st.button("📅 View Class Timetable", use_container_width=True):
             navigate_to("Timetable & Calendar")
-        if st.button("📖 Access Study Materials", use_container_width=True):
+        if st.button("📖 Download Study Materials", use_container_width=True):
             navigate_to("Study Material")
-        if st.button("📊 CGPA Calculator & Planner", use_container_width=True):
+        if st.button("📊 Calculate CGPA/SGPA", use_container_width=True):
             navigate_to("GPA Calculator & Planner")
-        if st.button("🚨 Report a Registration Issue", use_container_width=True):
+        if st.button("🚨 Report Student Portal Issue", use_container_width=True):
             navigate_to("Report Registration Issue")
 
 # --- PAGE: AI ASSISTANT ---
-elif st.session_state.page == "AI Assistant":
-    st.header("🤖 AI Student Counselor & Helper")
-    st.write("Our automated academic helper is loading below. If it does not display automatically, please locate the chat widget on your screen.")
+elif selected_page == "AI Assistant":
+    st.header("🤖 AI Student Counselor & Assistant")
+    st.write("Interact with our automated system to solve minor scheduling questions, queries, or policy reviews.")
     
     jotform_script = """
     <script
@@ -167,163 +179,152 @@ elif st.session_state.page == "AI Assistant":
     components.html(jotform_script, height=600, scrolling=True)
 
 # --- PAGE: NEWS & ANNOUNCEMENTS ---
-elif st.session_state.page == "News & Announcements":
-    st.header("📢 Official Notices & Live Feed")
-    st.write("Fetch real-time updates directly from the Lucknow University notifications board.")
+elif selected_page == "News & Announcements":
+    st.header("📢 Official Notices & Bulletins")
+    st.write("Dynamic, real-time announcements sourced directly from the Lucknow University database.")
     
     lu_url = "https://www.lkouniv.ac.in/en/news?Newslistslug=en-notices&cd=MwAzADcA"
     
-    if st.button("Fetch Latest Bulletins", type="primary"):
-        with st.spinner("Checking University Servers..."):
+    if st.button("Fetch Live University Bulletins", type="primary"):
+        with st.spinner("Accessing Lucknow University news servers..."):
             try:
-                res = requests.get(lu_url, timeout=10)
+                # Add professional headers to mimic an interactive web browser
+                headers = {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+                }
+                res = requests.get(lu_url, headers=headers, timeout=12)
                 soup = BeautifulSoup(res.content, 'html.parser')
                 links = soup.find_all('a', href=True)
                 found = 0
                 
                 for link in links:
                     link_text = link.text.strip().replace("[", "").replace("]", "")
-                    if "news" in link['href'] and len(link_text) > 15:
+                    # Match standard notice and practical examination routes
+                    if ("news" in link['href'] or "upload" in link['href']) and len(link_text) > 15:
                         href_val = link['href']
                         url = href_val if href_val.startswith('http') else "https://www.lkouniv.ac.in" + href_val
                         
                         st.markdown(f"""
                         <div class="notice-card">
-                            <strong style="color: #2563eb;">📌 Update</strong><br>
+                            <strong style="color: #2563eb;">📌 Official Circular</strong><br>
                             <a href="{url}" target="_blank" style="text-decoration: none; font-weight: 500;">{link_text}</a>
                         </div>
                         """, unsafe_allow_html=True)
                         found += 1
-                    if found >= 10: 
+                        
+                    if found >= 8: 
                         break
                 if found == 0:
-                    st.info("No formatted announcements matching filter targets were found on the homepage structure.")
+                    st.info("No active circular elements were identified on the landing page layout.")
             except Exception:
-                st.error(f"Live feed temporarily unresponsive. You can access the website directly:")
-                st.link_button("Go to LU News Portal 🔗", lu_url)
+                st.warning("The automated university query timed out. Please access the live site directly:")
+                st.link_button("Access Official News Site 🔗", lu_url)
 
 # --- PAGE: STUDY MATERIAL ---
-elif st.session_state.page == "Study Material":
-    st.header("📚 Study Materials & Resources")
-    st.write("Organized repository categorized by academic level. Click directly to launch classrooms.")
+elif selected_page == "Study Material":
+    st.header("📚 Digital Classrooms & Resources")
+    st.write("Retrieve syllabi, dynamic class folders, and assignment portals mapped to academic tiers.")
     
-    tab1, tab2, tab3 = st.tabs(["Semester I & II", "Semester III & IV", "Semester V & VI"])
+    tab1, tab2 = st.tabs(["Semester I & II (First Year)", "Advanced Levels (Semester III-VI)"])
     
     with tab1:
-        st.subheader("First Year B.Sc Core")
+        st.subheader("B.Sc Core Modules")
         col1, col2 = st.columns(2)
         with col1:
-            st.markdown("### 🪨 Geology & Mineralogy")
-            st.write("Course Syllabus covering crystallography, crystal optics, and basic rock types.")
-            st.info("Classroom Code: **shf3hsat**")
-            st.link_button("Join Classroom", "https://classroom.google.com/c/ODU0MzQ2NjI2MDQ2?cjc=shf3hsat", use_container_width=True)
+            st.markdown("#### 🪨 Structural Geology & Mineralogy")
+            st.write("Foundational study paths of mineral characteristics, optical properties, and physical crust formations.")
+            st.info("Google Classroom Entry Code: **shf3hsat**")
+            st.link_button("Open Classroom Terminal", "https://classroom.google.com/c/ODU0MzQ2NjI2MDQ2?cjc=shf3hsat", use_container_width=True)
         with col2:
-            st.markdown("### 📐 Mathematics & Mechanics")
-            st.write("Calculus, analytical geometry, and core mechanical theories.")
-            st.info("Classroom Code: **math-101**")
-            st.link_button("Join Classroom", "https://classroom.google.com", use_container_width=True)
+            st.markdown("#### 📐 Calculus & Advanced Algebra")
+            st.write("Analytical vectors, matrices, differential mathematical modeling, and core equations.")
+            st.info("Google Classroom Entry Code: **math-302**")
+            st.link_button("Open Classroom Terminal", "https://classroom.google.com", use_container_width=True)
             
     with tab2:
-        st.subheader("Second Year Advanced Core")
-        st.write("More structured classroom streams will load below as semester modules deploy.")
-        st.caption("No custom class configurations are active for Semester III & IV currently.")
-        
-    with tab3:
-        st.subheader("Third Year Specialization Tracks")
-        st.write("Practical labs, project files, and dynamic curriculum files.")
-        st.link_button("View Standard Project Guidelines (PDF)", "https://classroom.google.com")
+        st.subheader("B.Sc Senior Semesters")
+        st.write("Assigned folders will activate sequentially in accordance with your registered course choices.")
+        st.caption("Consult your academic advisor if your specialized subjects are currently not populated.")
 
 # --- PAGE: TIMETABLE & CALENDAR ---
-elif st.session_state.page == "Timetable & Calendar":
-    st.header("📅 Academic Timetable & Schedules")
-    st.write("Plan your week. Switch tabs below to check schedules by day.")
+elif selected_page == "Timetable & Calendar":
+    st.header("📅 Weekly Academic Schedules")
+    st.write("Review active lecture halls, laboratory periods, and assigned professors.")
     
-    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-    tabs = st.tabs(days)
+    days_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    tabs = st.tabs(days_of_week)
     
     schedule_data = {
         "Monday": [
-            {"Time": "09:00 AM - 10:00 AM", "Subject": "Structural Geology", "Room": "L-12", "Teacher": "Dr. Sharma"},
-            {"Time": "10:15 AM - 11:15 AM", "Subject": "Mineralogy Lab", "Room": "Lab C", "Teacher": "Prof. Singh"},
-            {"Time": "11:30 AM - 12:30 PM", "Subject": "Applied Mathematics", "Room": "LH-2", "Teacher": "Dr. Verma"}
+            {"Hour": "09:00 AM - 10:00 AM", "Subject": "Structural Geology", "Lecture Hall": "Room 102", "Faculty": "Dr. Sharma"},
+            {"Hour": "10:15 AM - 11:15 AM", "Subject": "Mineralogy Laboratory", "Lecture Hall": "Mineral Lab C", "Faculty": "Prof. Singh"},
+            {"Hour": "11:30 AM - 12:30 PM", "Subject": "Engineering Math", "Lecture Hall": "Hall 4", "Faculty": "Dr. Verma"}
         ],
         "Tuesday": [
-            {"Time": "09:00 AM - 10:00 AM", "Subject": "Physics Principles", "Room": "LH-4", "Teacher": "Dr. Gupta"},
-            {"Time": "10:15 AM - 11:15 AM", "Subject": "Structural Geology", "Room": "L-12", "Teacher": "Dr. Sharma"}
+            {"Hour": "09:00 AM - 10:00 AM", "Subject": "Physics Foundations", "Lecture Hall": "Room 205", "Faculty": "Dr. Gupta"},
+            {"Hour": "10:15 AM - 11:15 AM", "Subject": "Structural Geology", "Lecture Hall": "Room 102", "Faculty": "Dr. Sharma"}
         ],
         "Wednesday": [
-            {"Time": "09:00 AM - 10:00 AM", "Subject": "Structural Geology", "Room": "L-12", "Teacher": "Dr. Sharma"},
-            {"Time": "10:15 AM - 11:15 AM", "Subject": "Mineralogy Theory", "Room": "LH-1", "Teacher": "Prof. Singh"},
-            {"Time": "11:30 AM - 12:30 PM", "Subject": "Applied Mathematics", "Room": "LH-2", "Teacher": "Dr. Verma"}
+            {"Hour": "09:00 AM - 10:00 AM", "Subject": "Structural Geology", "Lecture Hall": "Room 102", "Faculty": "Dr. Sharma"},
+            {"Hour": "10:15 AM - 11:15 AM", "Subject": "Mineralogy Core", "Lecture Hall": "Room 104", "Faculty": "Prof. Singh"},
+            {"Hour": "11:30 AM - 12:30 PM", "Subject": "Engineering Math", "Lecture Hall": "Hall 4", "Faculty": "Dr. Verma"}
         ],
         "Thursday": [
-            {"Time": "09:00 AM - 10:00 AM", "Subject": "Physics Lab", "Room": "Physics Lab A", "Teacher": "Dr. Gupta"},
-            {"Time": "01:30 PM - 02:30 PM", "Subject": "Extra Curricular Activity", "Room": "Ground", "Teacher": "N/A"}
+            {"Hour": "09:00 AM - 11:00 AM", "Subject": "Practical Physics Lab", "Lecture Hall": "Physics Wing", "Faculty": "Dr. Gupta"}
         ],
         "Friday": [
-            {"Time": "10:15 AM - 11:15 AM", "Subject": "Mineralogy Theory", "Room": "LH-1", "Teacher": "Prof. Singh"},
-            {"Time": "11:30 AM - 12:30 PM", "Subject": "Applied Mathematics", "Room": "LH-2", "Teacher": "Dr. Verma"}
+            {"Hour": "10:15 AM - 11:15 AM", "Subject": "Mineralogy Core", "Lecture Hall": "Room 104", "Faculty": "Prof. Singh"},
+            {"Hour": "11:30 AM - 12:30 PM", "Subject": "Engineering Math", "Lecture Hall": "Hall 4", "Faculty": "Dr. Verma"}
         ],
         "Saturday": [
-            {"Time": "09:00 AM - 11:00 AM", "Subject": "Fieldwork/Practical Seminars", "Room": "Seminar Hall", "Teacher": "Department Faculty"}
+            {"Hour": "09:00 AM - 11:00 AM", "Subject": "Practical Presentation / Seminar", "Lecture Hall": "Auditorium-B", "Faculty": "Geology Dept"}
         ]
     }
     
-    for i, day in enumerate(days):
-        with tabs[i]:
-            day_classes = schedule_data.get(day, [])
-            if day_classes:
-                df = pd.DataFrame(day_classes)
+    for idx, day in enumerate(days_of_week):
+        with tabs[idx]:
+            day_schedule = schedule_data.get(day, [])
+            if day_schedule:
+                df = pd.DataFrame(day_schedule)
                 st.dataframe(df, use_container_width=True, hide_index=True)
             else:
-                st.info("No lectures scheduled for this day.")
+                st.info("No active lecture sessions are booked for this day.")
 
-# --- PAGE: CGPA CALCULATOR & PLANNER ---
-elif st.session_state.page == "GPA Calculator & Planner":
-    st.header("📊 Interactive Academic Planner")
+# --- PAGE: GPA CALCULATOR & PLANNER ---
+elif selected_page == "GPA Calculator & Planner":
+    st.header("📊 Performance & Task Planner")
     
-    plan_tab, calc_tab = st.tabs(["📋 To-Do & Task Tracker", "🧮 SGPA Calculator"])
+    tab_planner, tab_gpa = st.tabs(["📋 Study Task Planner", "🧮 CBCS Grade Point Calculator"])
     
-    with plan_tab:
-        st.subheader("Manage Study Tasks & Assignments")
+    with tab_planner:
+        st.subheader("Course Task Tracker")
+        st.write("Organize and manage upcoming assignments, practical logbooks, or test prep natively:")
         
-        # Display current tasks
-        for idx, task_item in enumerate(st.session_state.tasks):
-            col1, col2, col3 = st.columns([0.1, 0.6, 0.3])
-            with col1:
-                # Use a unique key for each dynamic checkbox
-                is_completed = st.checkbox("", value=task_item["completed"], key=f"task_{idx}")
-                st.session_state.tasks[idx]["completed"] = is_completed
-            with col2:
-                if is_completed:
-                    st.markdown(f"~~{task_item['task']}~~")
-                else:
-                    st.markdown(f"**{task_item['task']}**")
-            with col3:
-                st.caption(f"📅 Due: {task_item['due']}")
-                
-        # Add new task form
-        st.divider()
-        st.write("Add New Study Goal:")
-        with st.form("new_task_form", clear_on_submit=True):
-            new_title = st.text_input("Task/Assignment Name")
-            due_date = st.date_input("Due Date", min_value=date.today())
-            submitted_task = st.form_submit_button("Add Task")
-            
-            if submitted_task and new_title:
-                st.session_state.tasks.append({
-                    "task": new_title,
-                    "due": str(due_date),
-                    "completed": False
-                })
-                st.toast("New academic task added successfully!", icon="✅")
-                st.rerun()
+        # Build DataFrame from task list safely
+        df_tasks = pd.DataFrame(st.session_state.tasks)
+        
+        # Render a structured interactive data editor
+        edited_df = st.data_editor(
+            df_tasks,
+            column_config={
+                "task": st.column_config.TextColumn("Academic Assignment / Objective", width="large", required=True),
+                "due": st.column_config.DateColumn("Target Due Date", format="YYYY-MM-DD", required=True),
+                "completed": st.column_config.CheckboxColumn("Completed State", default=False)
+            },
+            num_rows="dynamic", # Dynamic row additions/removals natively enabled
+            use_container_width=True,
+            key="task_editor"
+        )
+        
+        # Save edits back to session state stably
+        if st.session_state.get("task_editor") is not None:
+            st.session_state.tasks = edited_df.to_dict("records")
 
-    with calc_tab:
-        st.subheader("Semester SGPA Calculator")
-        st.write("Estimate your performance using standard Choice Based Credit System (CBCS) scales:")
+    with tab_gpa:
+        st.subheader("CBCS Semester SGPA Estimator")
+        st.write("Provide course credits and grade letters based on the standard 10-point scale:")
         
-        grade_scale = {
+        grade_system = {
             "O (Outstanding) [10]": 10,
             "A+ (Excellent) [9]": 9,
             "A (Very Good) [8]": 8,
@@ -334,102 +335,101 @@ elif st.session_state.page == "GPA Calculator & Planner":
             "F (Fail) [0]": 0
         }
         
-        num_subjects = st.number_input("How many subjects are in your semester?", min_value=1, max_value=10, value=5)
+        subject_count = st.number_input("Input Number of Core/Elective Subjects:", min_value=1, max_value=12, value=4)
         
-        total_credits = 0
-        weighted_points = 0
+        accumulated_credits = 0
+        cumulative_grades = 0
         
-        col_names, col_grades, col_credits = st.columns([3, 2, 2])
-        
-        with col_names:
-            st.caption("Subject Name")
-        with col_grades:
-            st.caption("Grade Received")
-        with col_credits:
-            st.caption("Course Credits")
+        col_name, col_grade, col_credit = st.columns([3, 2, 2])
+        with col_name:
+            st.caption("Class Name")
+        with col_grade:
+            st.caption("Obtained Grade")
+        with col_credit:
+            st.caption("Course Weight (Credits)")
             
-        for i in range(int(num_subjects)):
+        for i in range(int(subject_count)):
             col1, col2, col3 = st.columns([3, 2, 2])
             with col1:
-                st.text_input(f"Subject {i+1}", value=f"Course {i+1}", key=f"subj_name_{i}", label_visibility="collapsed")
+                st.text_input(f"Course Name {i+1}", value=f"Course Module {i+1}", key=f"title_c_{i}", label_visibility="collapsed")
             with col2:
-                selected_grade = st.selectbox("", list(grade_scale.keys()), index=2, key=f"subj_grade_{i}", label_visibility="collapsed")
-                grade_val = grade_scale[selected_grade]
+                selected_grade_lbl = st.selectbox("", list(grade_system.keys()), index=2, key=f"val_g_{i}", label_visibility="collapsed")
+                numerical_grade = grade_system[selected_grade_lbl]
             with col3:
-                credits_val = st.number_input("", min_value=1, max_value=8, value=4, key=f"subj_credit_{i}", label_visibility="collapsed")
+                allocated_credit = st.number_input("", min_value=1, max_value=8, value=4, key=f"val_c_{i}", label_visibility="collapsed")
                 
-            total_credits += credits_val
-            weighted_points += (grade_val * credits_val)
+            accumulated_credits += allocated_credit
+            cumulative_grades += (numerical_grade * allocated_credit)
             
         st.divider()
-        if total_credits > 0:
-            sgpa = weighted_points / total_credits
-            col_res1, col_res2 = st.columns(2)
-            with col_res1:
-                st.metric("Estimated Semester SGPA", f"{sgpa:.2f} / 10.00")
-            with col_res2:
-                if sgpa >= 9.0:
-                    st.success("Remark: Outstanding Academic Performance!")
-                elif sgpa >= 7.5:
-                    st.success("Remark: First Class with Distinction!")
-                elif sgpa >= 6.0:
-                    st.info("Remark: First Division")
-                elif sgpa >= 5.0:
-                    st.warning("Remark: Second Division")
+        if accumulated_credits > 0:
+            sgpa_score = cumulative_grades / accumulated_credits
+            col_met, col_rem = st.columns(2)
+            with col_met:
+                st.metric("Estimated Semester SGPA", f"{sgpa_score:.2f} / 10.00")
+            with col_rem:
+                if sgpa_score >= 9.00:
+                    st.success("Outcome Classification: Outstanding Performance Class")
+                elif sgpa_score >= 7.50:
+                    st.success("Outcome Classification: First Division with Distinction")
+                elif sgpa_score >= 6.00:
+                    st.info("Outcome Classification: First Division Pass")
+                elif sgpa_score >= 5.00:
+                    st.warning("Outcome Classification: Second Division Pass")
                 else:
-                    st.error("Remark: Needs Improvement")
+                    st.error("Outcome Classification: Below Standard (Requires Consultation)")
 
 # --- PAGE: REPORT REGISTRATION ISSUE ---
-elif st.session_state.page == "Report Registration Issue":
-    st.header("❗ Report registration anomalies")
-    st.write("Submitting this form logs your information, routes an email to the admin system, and builds your WhatsApp confirmation route.")
+elif selected_page == "Report Registration Issue":
+    st.header("🚨 Report System & Portal Anomaly")
+    st.write("Submit technical issues, access problems, or course verification errors to the administration console.")
 
-    with st.form("issue_form", clear_on_submit=False):
-        student_email = st.text_input("Your Email Address *", placeholder="student@example.com")
-        name = st.text_input("Full Name *")
-        roll_no = st.text_input("Roll Number / Student ID *")
-        issue_type = st.selectbox("Issue Category", ["Login Problem", "Subject Not Showing", "Document Error", "Other"])
-        details = st.text_area("Detailed Description *")
+    with st.form("issue_submission_form", clear_on_submit=False):
+        student_email = st.text_input("University Email Address *", placeholder="e.g., student@lkouniv.edu")
+        student_name = st.text_input("Registered Full Name *")
+        student_id = st.text_input("Enrollment/Roll Number *")
+        issue_cat = st.selectbox("Categorize the Problem", ["System Login Issue", "Missing Subject Selection", "Document Verification Error", "Other Tech Failure"])
+        issue_desc = st.text_area("Detailed System Error Description *")
         
-        submitted = st.form_submit_button("Submit & Notify Admin")
+        trigger_submission = st.form_submit_button("Submit Form & Alert Administration")
         
-    if submitted:
-        if student_email and name and roll_no and details:
+    if trigger_submission:
+        if student_email and student_name and student_id and issue_desc:
             
-            email_payload = {
+            payload = {
                 "email": student_email.strip(),
-                "Student Name": name.strip(),
-                "Roll Number": roll_no.strip(),
-                "Issue Type": issue_type,
-                "Detailed Description": details.strip(),
-                "_subject": f"🚨 Urgent: Registration Issue from {name.strip()}",
+                "Student Name": student_name.strip(),
+                "Enrollment Number": student_id.strip(),
+                "Issue Type": issue_cat,
+                "Detailed Description": issue_desc.strip(),
+                "_subject": f"⚠️ Ticket: Student Portal Issue - {student_name.strip()}",
                 "_captcha": "false"
             }
             
-            with st.spinner("Processing form with target server..."):
+            with st.spinner("Submitting technical payload directly to secure routing servers..."):
                 try:
                     response = requests.post(
                         f"https://formsubmit.co/ajax/{ADMIN_EMAIL}", 
-                        data=email_payload,
-                        timeout=10
+                        data=payload,
+                        timeout=12
                     )
                     if response.status_code == 200:
-                        st.toast("Form processed! Email confirmation sent.", icon="📧")
+                        st.toast("Administrative payload delivered successfully.", icon="📨")
                     else:
-                        st.error(f"Endpoint verification issue encountered. Status Code: {response.status_code}")
+                        st.error("Submission was acknowledged but could not complete automated verification.")
                 except Exception:
-                    st.error("Automated transmission pipeline timeout. Proceeding to direct alternative routing.")
+                    st.error("Primary transfer timeout. Proceeding via active fallback channel.")
 
-            wa_text = f"*Registration Issue Report*\n\n*Name:* {name}\n*Roll No:* {roll_no}\n*Email:* {student_email}\n*Issue:* {issue_type}\n*Details:* {details}"
-            wa_url = f"https://wa.me/{ADMIN_PHONE}?text={urllib.parse.quote(wa_text)}"
+            whatsapp_msg = f"*Student System Defect Submission*\n\n*Name:* {student_name}\n*Enrollment ID:* {student_id}\n*Email:* {student_email}\n*Type:* {issue_cat}\n*Log Description:* {issue_desc}"
+            whatsapp_link = f"https://wa.me/{ADMIN_PHONE}?text={urllib.parse.quote(whatsapp_msg)}"
             
-            st.success("🎉 Local data entry recorded successfully!")
-            st.write("Click below to pass execution control to WhatsApp and notify the Admin directly:")
-            st.link_button("Finalize via WhatsApp Message ✅", wa_url)
+            st.success("Entry registered in state storage!")
+            st.write("To verify routing or initiate immediate support with administrative staff, finalize via direct message below:")
+            st.link_button("Initiate Direct Administrative WhatsApp Help ✅", whatsapp_link)
             st.balloons()
         else:
-            st.error("⚠️ Validation failure: Please fill out all required fields marked with (*).")
+            st.error("Form validation failed. Please populate all fields marked with an asterisk (*).")
 
 # --- FOOTER ---
 st.markdown("---")
-st.markdown("<center style='color: gray; font-size: 12px;'>Powered by Google Workspace and Microhnm Technologies</center>", unsafe_allow_html=True)
+st.markdown("<center style='color: gray; font-size: 11px;'>Core Infrastructure Supported by Google Workspace APIs & Microhnm Technologies</center>", unsafe_allow_html=True)
