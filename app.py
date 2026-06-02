@@ -26,17 +26,36 @@ st.set_page_config(
     layout="wide"
 )
 
-# Display the logo in the app sidebar if it exists
-if logo_exists and app_logo:
-    st.logo(LOGO_PATH) # Displays your logo at the top-left of the app/sidebar
-else:
-    st.sidebar.markdown("# 🎓") # Fallback header icon
-
+# Custom Styling for App and Components
 st.markdown("""
     <style>
+    /* App background */
     .stApp { background-color: #f4f7f6; }
+    
+    /* Custom cards */
     .main-card { padding: 20px; border-radius: 15px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     .metric-card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; }
+    
+    /* Professional Sidebar adjustments */
+    section[data-testid="stSidebar"] {
+        background-color: #ffffff !important;
+        border-right: 1px solid #e5e7eb;
+    }
+    div[data-testid="stSidebarNav"] {
+        padding-top: 10px;
+    }
+    .sidebar-meta {
+        font-size: 13px;
+        color: #4b5563;
+        background-color: #f3f4f6;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid #e5e7eb;
+    }
+    .sidebar-meta strong {
+        color: #1f2937;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -44,11 +63,38 @@ st.markdown("""
 ADMIN_EMAIL = "krishna5689@outlook.in"
 ADMIN_PHONE = "919451134541"
 
-# --- 2. SIDEBAR NAVIGATION ---
-st.sidebar.title("🎓 Student Portal")
-st.sidebar.info(f"Admin: {ADMIN_EMAIL}")
+# --- 2. PROFESSIONAL SIDEBAR NAVIGATION ---
+# Top Logo Section
+if logo_exists and app_logo:
+    st.logo(LOGO_PATH) 
+else:
+    st.sidebar.markdown("<h2 style='margin-top: 0; color: #2563eb;'>🎓 Portal</h2>", unsafe_allow_html=True)
 
-page = st.sidebar.radio("Go to:", ["Dashboard", "AI Assistant", "News & Announcements", "Study Material", "Report Registration Issue"])
+# System / Meta Info Block
+with st.sidebar:
+    st.markdown(f"""
+    <div class="sidebar-meta">
+        <strong>🏫 Academic System</strong><br>
+        <span style="opacity: 0.85;">Role: Student Access</span><br>
+        <hr style="margin: 8px 0; border: 0; border-top: 1px solid #d1d5db;">
+        <strong>📧 Support Contact</strong><br>
+        <a href="mailto:{ADMIN_EMAIL}" style="color: #2563eb; text-decoration: none;">{ADMIN_EMAIL}</a>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<p style='font-weight: 600; font-size: 14px; margin-bottom: 5px; color:#4b5563;'>NAVIGATION</p>", unsafe_allow_html=True)
+
+# Main Navigation using Streamlit Selectbox/Radio
+page = st.sidebar.radio(
+    label="Navigation Menu",
+    options=["Dashboard", "AI Assistant", "News & Announcements", "Study Material", "Report Registration Issue"],
+    label_visibility="collapsed"
+)
+
+# Optional Footer Info at bottom of Sidebar
+st.sidebar.markdown("<vdiv style='flex:1;'></div>", unsafe_allow_html=True) # Spacer
+st.sidebar.caption("v1.2.0 • Secure Session")
+
 
 # --- PAGE: DASHBOARD ---
 if page == "Dashboard":
