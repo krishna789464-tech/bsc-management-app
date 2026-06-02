@@ -137,7 +137,7 @@ if selected_page == "Dashboard":
         st.markdown('<div class="metric-card"><h4>Live Notices</h4><h2 style="color: #f59e0b; margin:0; font-weight: 700;">10+</h2></div>', unsafe_allow_html=True)
     with col4:
         st.markdown('<div class="metric-card"><h4>Resolved Tickets</h4><h2 style="color: #6b7280; margin:0; font-weight: 700;">94%</h2></div>', unsafe_allow_html=True)
-        
+         
     st.markdown("<br>", unsafe_allow_html=True)
     
     left_col, right_col = st.columns([2, 1])
@@ -154,7 +154,7 @@ if selected_page == "Dashboard":
                 st.markdown(f"**{item['subject']}** — Instructor: *{item['faculty']}*")
                 st.caption(f"🟢 Synchronized via Google Workspace — `{item['status']}`")
                 st.divider()
-                
+                 
     with right_col:
         st.subheader("⚡ Quick Navigation")
         if st.button("📅 View Class Timetable", use_container_width=True):
@@ -211,7 +211,7 @@ elif selected_page == "News & Announcements":
                         </div>
                         """, unsafe_allow_html=True)
                         found += 1
-                        
+                         
                     if found >= 8: 
                         break
                 if found == 0:
@@ -240,7 +240,7 @@ elif selected_page == "Study Material":
             st.write("Analytical vectors, matrices, differential mathematical modeling, and core equations.")
             st.info("Google Classroom Entry Code: **math-302**")
             st.link_button("Open Classroom Terminal", "https://classroom.google.com", use_container_width=True)
-            
+             
     with tab2:
         st.subheader("B.Sc Senior Semesters")
         st.write("Assigned folders will activate sequentially in accordance with your registered course choices.")
@@ -311,7 +311,7 @@ elif selected_page == "GPA Calculator & Planner":
                 "due": st.column_config.DateColumn("Target Due Date", format="YYYY-MM-DD", required=True),
                 "completed": st.column_config.CheckboxColumn("Completed State", default=False)
             },
-            num_rows="dynamic", # Dynamic row additions/removals natively enabled
+            num_rows="dynamic",
             use_container_width=True,
             key="task_editor"
         )
@@ -335,10 +335,10 @@ elif selected_page == "GPA Calculator & Planner":
             "F (Fail) [0]": 0
         }
         
-        subject_count = st.number_input("Input Number of Core/Elective Subjects:", min_value=1, max_value=12, value=4)
+        subject_count = st.number_input("Input Number of Core/Elective Subjects:", min_value=1, max_value=12, value=4, step=1)
         
         accumulated_credits = 0
-        cumulative_grades = 0
+        cumulative_grades = 0.0
         
         col_name, col_grade, col_credit = st.columns([3, 2, 2])
         with col_name:
@@ -347,20 +347,20 @@ elif selected_page == "GPA Calculator & Planner":
             st.caption("Obtained Grade")
         with col_credit:
             st.caption("Course Weight (Credits)")
-            
+         
         for i in range(int(subject_count)):
             col1, col2, col3 = st.columns([3, 2, 2])
             with col1:
                 st.text_input(f"Course Name {i+1}", value=f"Course Module {i+1}", key=f"title_c_{i}", label_visibility="collapsed")
             with col2:
-                selected_grade_lbl = st.selectbox("", list(grade_system.keys()), index=2, key=f"val_g_{i}", label_visibility="collapsed")
+                selected_grade_lbl = st.selectbox("Grade", list(grade_system.keys()), index=2, key=f"val_g_{i}", label_visibility="collapsed")
                 numerical_grade = grade_system[selected_grade_lbl]
             with col3:
-                allocated_credit = st.number_input("", min_value=1, max_value=8, value=4, key=f"val_c_{i}", label_visibility="collapsed")
-                
+                allocated_credit = st.number_input("Credits", min_value=1, max_value=8, value=4, key=f"val_c_{i}", label_visibility="collapsed")
+                 
             accumulated_credits += allocated_credit
             cumulative_grades += (numerical_grade * allocated_credit)
-            
+             
         st.divider()
         if accumulated_credits > 0:
             sgpa_score = cumulative_grades / accumulated_credits
