@@ -72,7 +72,7 @@ st.markdown(f"""
         background-color: {bg_color} !important;
     }}
 
-    /* --- FIX: SHRINK THE TOP WHITE LINE GAP SIGNIFICANTLY --- */
+    /* SHRINK THE TOP WHITE LINE GAP SIGNIFICANTLY */
     [data-testid="stHeader"] {{
         display: none !important;
         height: 0px !important;
@@ -237,7 +237,11 @@ with control_col:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# --- 4. TOP TABS NAVIGATION ---
+# --- 4. APP STATUS ALERT (TESTING PHASE BANNER) ---
+# This warning banner is rendered directly in the center above core content
+st.warning("⚠️ **System Notice / आवश्यक सूचना:** This portal is currently in the **testing phase**. (यह एप्लिकेशन अभी टेस्टिंग फेज़ में है।)")
+
+# --- 5. TOP TABS NAVIGATION ---
 tabs = st.tabs([
     "📊 Dashboard",
     "🤖 AI Assistant",
