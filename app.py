@@ -71,6 +71,27 @@ st.markdown("""
         border: 1px solid #e2e8f0;
     }
     
+    /* Sidebar Navigation Buttons */
+    .sidebar-nav-button {
+        width: 100%;
+        padding: 12px 16px;
+        margin: 6px 0;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background-color: #ffffff;
+        color: #2563eb;
+        text-align: center;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .sidebar-nav-button:hover {
+        background-color: #f1f5f9;
+        border-color: #2563eb;
+        box-shadow: 0 2px 4px rgba(37, 99, 235, 0.1);
+    }
+    
     /* --- INVISIBLE HEADERS / DE-BRANDING STREAMLIT --- */
     #MainMenu {visibility: hidden;}
     header {visibility: hidden;}
@@ -136,4 +157,24 @@ page = st.sidebar.radio(
 st.session_state.current_page = page
 
 st.sidebar.markdown("<div style='flex:1;'></div>", unsafe_allow_html=True)
-st.sidebar.caption("System Status: Operational • v
+
+# --- SIDEBAR NAVIGATION BUTTONS ---
+st.sidebar.markdown("<hr style='margin: 20px 0;'>", unsafe_allow_html=True)
+st.sidebar.markdown("<p style='font-weight: 700; font-size: 11px; letter-spacing: 0.05em; margin-bottom: 12px; color:#64748b;'>QUICK ACTIONS</p>", unsafe_allow_html=True)
+
+col1, col2 = st.sidebar.columns(2)
+
+with col1:
+    if st.button("🔄 Refresh", use_container_width=True, key="btn_refresh"):
+        st.rerun()
+
+with col2:
+    if st.button("⚙️ Settings", use_container_width=True, key="btn_settings"):
+        st.session_state.current_page = "⚙️ Settings"
+        st.rerun()
+
+st.sidebar.button("📞 Support", use_container_width=True, key="btn_support")
+st.sidebar.button("ℹ️ About", use_container_width=True, key="btn_about")
+
+st.sidebar.markdown("<hr style='margin: 20px 0;'>", unsafe_allow_html=True)
+st.sidebar.caption("System Status: Operational • v1.0")
