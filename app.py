@@ -12,8 +12,12 @@ LOGO_PATH = r"C:\Users\ADMIN\Desktop\app logo.png"
 
 logo_exists = os.path.exists(LOGO_PATH)
 if logo_exists:
-    app_logo = Image.open(LOGO_PATH)
-    page_icon_val = app_logo
+    try:
+        app_logo = Image.open(LOGO_PATH)
+        page_icon_val = app_logo
+    except Exception:
+        app_logo = None
+        page_icon_val = "🎓"
 else:
     app_logo = None
     page_icon_val = "🎓"
@@ -24,9 +28,17 @@ st.set_page_config(
     layout="wide"
 )
 
-# Professional Enterprise Theme Styling
+# Professional Enterprise Theme Styling & Text Contrast Overrides
 st.markdown("""
     <style>
+    /* Import Professional Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    
+    /* Apply clean typography globally */
+    html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"], [data-testid="stSidebar"] {
+        font-family: 'Inter', sans-serif !important;
+    }
+
     /* Global App Background */
     .stApp { background-color: #f8fafc; }
     
@@ -53,17 +65,51 @@ st.markdown("""
         transform: translateY(-2px);
     }
     
-    /* Structural Professional Sidebar Configuration */
+    /* --- STRUCTURAL SIDEBAR CONFIGURATION --- */
     section[data-testid="stSidebar"] {
         background-color: #ffffff !important;
         border-right: 1px solid #e2e8f0 !important;
     }
+    
+    /* FIX: Force high-contrast dark text inside the sidebar to prevent light/dark theme clashes */
+    section[data-testid="stSidebar"] p,
+    section[data-testid="stSidebar"] span,
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] h1,
+    section[data-testid="stSidebar"] h2,
+    section[data-testid="stSidebar"] h3,
+    section[data-testid="stSidebar"] h4,
+    section[data-testid="stSidebar"] h5,
+    section[data-testid="stSidebar"] h6 {
+        color: #1e293b !important; /* Slate 800 */
+    }
+    
+    /* Keep hyperlinked text clearly blue and legible inside the sidebar */
+    section[data-testid="stSidebar"] a, 
+    section[data-testid="stSidebar"] a * {
+        color: #2563eb !important;
+        text-decoration: none;
+    }
+    section[data-testid="stSidebar"] a:hover {
+        text-decoration: underline;
+    }
+
+    /* Clean navigation list styling */
+    div[data-testid="stRadio"] label {
+        padding: 6px 12px;
+        border-radius: 8px;
+        transition: background-color 0.2s ease;
+    }
+    div[data-testid="stRadio"] label:hover {
+        background-color: #f1f5f9;
+    }
+
     div[data-testid="stSidebarNav"] {
         padding-top: 8px;
     }
+    
     .sidebar-meta {
         font-size: 13px;
-        color: #475569;
         background-color: #f1f5f9;
         padding: 14px;
         border-radius: 10px;
@@ -71,7 +117,7 @@ st.markdown("""
         border: 1px solid #e2e8f0;
     }
     
-    /* --- FIX: HIDE BRANDING SAFELY WITHOUT BREAKING SIDEBAR --- */
+    /* --- HIDE BRANDING ELEMENTS SAFELY --- */
     div[data-testid="stAppDeployButton"] { display: none !important; }
     #MainMenu { visibility: hidden !important; }
     div[data-testid="stToolbar"] { display: none !important; }
@@ -107,14 +153,14 @@ with st.sidebar:
         <span style="opacity: 0.85; font-size:12px;">Access Tier: B.Sc Undergraduate</span><br>
         <hr style="margin: 10px 0; border: 0; border-top: 1px solid #cbd5e1;">
         <strong style="color:#0f172a;">📧 Helpdesk Routing</strong><br>
-        <a href="mailto:{ADMIN_EMAIL}" style="color: #2563eb; text-decoration: none; font-size:12px;">{ADMIN_EMAIL}</a>
+        <a href="mailto:{ADMIN_EMAIL}">{ADMIN_EMAIL}</a>
     </div>
     """, unsafe_allow_html=True)
 
     # Core Workspace Label Structure
     st.markdown("<p style='font-weight: 700; font-size: 11px; letter-spacing: 0.05em; margin-bottom: 8px; color:#64748b;'>CORE WORKSPACES</p>", unsafe_allow_html=True)
 
-    # Sidebar Navigation Engine Selector Array
+    # Sidebar Navigation Selector
     page = st.radio(
         label="Navigation Menu",
         options=[
@@ -129,8 +175,8 @@ with st.sidebar:
         label_visibility="collapsed"
     )
     
-    # Push the version footer cleanly to the bottom of the sidebar space
-    st.markdown("<div style='flex:1;'></div>", unsafe_allow_html=True)
+    # Simple vertical spacing before footer
+    st.markdown("<br><br>", unsafe_allow_html=True)
     st.caption("System Status: Operational • v2.1.0")
 
 
@@ -201,7 +247,11 @@ elif page == "📢 News & Notices":
     
     if st.button("Query Live Database Feed", type="primary"):
         try:
-            res = requests.get(lu_url, timeout=10)
+            # Set headers to mimic standard browser request behavior
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+            }
+            res = requests.get(lu_url, headers=headers, timeout=10)
             soup = BeautifulSoup(res.content, 'html.parser')
             links = soup.find_all('a', href=True)
             found = 0
@@ -231,7 +281,7 @@ elif page == "📚 Study Classrooms":
     st.caption("Further syllabi data segments are structured automatically upon academic validation.")
 
 
-# --- PAGE: PERFORMANCE TOOLKIT (GPA/CGPA CALCULATOR) ---
+# --- PAGE: PERFORMANCE TOOLKIT ---
 elif page == "🧮 Performance Toolkit":
     st.header("🧮 Academic Performance Calculator")
     st.write("Calculate estimated Grade Point Average (GPA) and Cumulative values securely.")
@@ -278,7 +328,7 @@ elif page == "🧮 Performance Toolkit":
             st.metric(label="Updated Aggregate Portfolio CGPA", value=f"{calculated_cgpa:.2f} / 10.00")
 
 
-# --- PAGE: DEEP FOCUS ENGINE (POMODORO TIMER) ---
+# --- PAGE: DEEP FOCUS ENGINE ---
 elif page == "⏱️ Deep Focus Engine":
     st.header("⏱️ Academic Focus Engine")
     st.write("Utilize timed intervals to optimize reading or research sessions.")
@@ -354,7 +404,7 @@ elif page == "🚨 Report Routing Terminal":
                         st.toast("Form processed! Email confirmation sent.", icon="📧")
                     else:
                         st.error(f"Endpoint verification issue encountered. Status Code: {response.status_code}")
-                except Exception as e:
+                except Exception:
                     st.error("Automated transmission pipeline timeout. Proceeding to direct alternative routing.")
 
             wa_text = f"*Registration Issue Report*\n\n*Name:* {name}\n*Roll No:* {roll_no}\n*Email:* {student_email}\n*Issue:* {issue_type}\n*Details:* {details}"
