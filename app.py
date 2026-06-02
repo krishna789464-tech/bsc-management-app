@@ -161,7 +161,7 @@ with st.sidebar:
     st.markdown("<p style='font-weight: 700; font-size: 11px; letter-spacing: 0.05em; margin-bottom: 8px; color:#64748b;'>CORE WORKSPACES</p>", unsafe_allow_html=True)
 
     # Sidebar Navigation Selector
-    page = st.radio(
+   page = st.sidebar.radio("Go to:", ["Dashboard", "AI Assistant", "News & Announcements", "Study Material", "Report Registration Issue"])
         label="Navigation Menu",
         options=[
             "📊 Student Dashboard", 
