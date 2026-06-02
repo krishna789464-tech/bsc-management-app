@@ -159,27 +159,6 @@ with st.sidebar:
 
     # Core Workspace Label Structure
     st.markdown("<p style='font-weight: 700; font-size: 11px; letter-spacing: 0.05em; margin-bottom: 8px; color:#64748b;'>CORE WORKSPACES</p>", unsafe_allow_html=True)
-# --- SIDEBAR TOGGLE STATE ---
-
-if "sidebar_state" not in st.session_state:
-st.session_state.sidebar_state = "expanded"
-
-# Toggle Button
-
-if st.button("☰ Toggle Menu"):
-if st.session_state.sidebar_state == "expanded":
-st.session_state.sidebar_state = "collapsed"
-else:
-st.session_state.sidebar_state = "expanded"
-
-# Apply Sidebar State
-
-st.set_page_config(
-page_title="Academic Student Portal",
-page_icon=page_icon_val,
-layout="wide",
-initial_sidebar_state=st.session_state.sidebar_state
-)
 
     # Sidebar Navigation Selector
     page = st.radio(
@@ -319,7 +298,7 @@ elif page == "🧮 Performance Toolkit":
         col_c1, col_c2 = st.columns(2)
         for i in range(int(num_courses)):
             with col_c1:
-                score = st.selectbox(f"Letter Grade - Course {i+1}", ["O (Outstanding - 10)", "A+ (Excellent - 9)", "A (Very Good - 8)", "B+ (Good - 7)", "B (Above Average - 6)", "C (Average - 5)", "F (Fail - 0)"], key=f"grade_{i}")
+                score = st.selectbox(f"Letter Grade - Course {i+1}", ["O (Outstanding - 10)", "A+ (Excellent - 9)", "A (Very Good - 8)", "B+ (Good - 7)", "B (Above Average - 6)", "C (Average - 5)", "F (Fail - 0)"])
                 grade_map = {"O": 10, "A+": 9, "A": 8, "B+": 7, "B": 6, "C": 5, "F": 0}
                 scores.append(grade_map[score.split(" ")[0]])
             with col_c2:
