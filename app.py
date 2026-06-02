@@ -8,12 +8,17 @@ import streamlit.components.v1 as components
 from PIL import Image
 
 # --- 1. CONFIGURATION & STYLING ---
-LOGO_PATH = r"C:\Users\ADMIN\Desktop\app logo.png"
+# Use relative path or environment variable for logo
+LOGO_PATH = os.getenv("LOGO_PATH", None)
 
-logo_exists = os.path.exists(LOGO_PATH)
+logo_exists = LOGO_PATH and os.path.exists(LOGO_PATH)
 if logo_exists:
-    app_logo = Image.open(LOGO_PATH)
-    page_icon_val = app_logo
+    try:
+        app_logo = Image.open(LOGO_PATH)
+        page_icon_val = app_logo
+    except Exception:
+        app_logo = None
+        page_icon_val = "🎓"
 else:
     app_logo = None
     page_icon_val = "🎓"
@@ -109,8 +114,8 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # --- SECURE TARGET CONFIGURATION ---
-ADMIN_EMAIL = "krishna5689@outlook.in"
-ADMIN_PHONE = "919451134541"
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "support@example.com")
+ADMIN_PHONE = os.getenv("ADMIN_PHONE", "+1234567890")
 
 # --- 2. SIDEBAR NAVIGATION ---
 if logo_exists and app_logo:
@@ -178,3 +183,32 @@ st.sidebar.button("ℹ️ About", use_container_width=True, key="btn_about")
 
 st.sidebar.markdown("<hr style='margin: 20px 0;'>", unsafe_allow_html=True)
 st.sidebar.caption("System Status: Operational • v1.0")
+
+# --- 3. PAGE ROUTING ---
+if page == "📊 Student Dashboard":
+    st.markdown("<h1 style='color: #2563eb;'>📊 Student Dashboard</h1>", unsafe_allow_html=True)
+    st.info("Dashboard content coming soon...")
+    
+elif page == "🤖 AI Academic Assistant":
+    st.markdown("<h1 style='color: #2563eb;'>🤖 AI Academic Assistant</h1>", unsafe_allow_html=True)
+    st.info("AI Assistant feature coming soon...")
+    
+elif page == "📢 News & Notices":
+    st.markdown("<h1 style='color: #2563eb;'>📢 News & Notices</h1>", unsafe_allow_html=True)
+    st.info("News and notices coming soon...")
+    
+elif page == "📚 Study Classrooms":
+    st.markdown("<h1 style='color: #2563eb;'>📚 Study Classrooms</h1>", unsafe_allow_html=True)
+    st.info("Study classrooms coming soon...")
+    
+elif page == "🧮 Performance Toolkit":
+    st.markdown("<h1 style='color: #2563eb;'>🧮 Performance Toolkit</h1>", unsafe_allow_html=True)
+    st.info("Performance toolkit coming soon...")
+    
+elif page == "⏱️ Deep Focus Engine":
+    st.markdown("<h1 style='color: #2563eb;'>⏱️ Deep Focus Engine</h1>", unsafe_allow_html=True)
+    st.info("Deep focus engine coming soon...")
+    
+elif page == "🚨 Report Routing Terminal":
+    st.markdown("<h1 style='color: #2563eb;'>🚨 Report Routing Terminal</h1>", unsafe_allow_html=True)
+    st.info("Report routing terminal coming soon...")
