@@ -34,7 +34,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# High-Contrast Saturated Color Setup (PC & Mobile Balanced)
+# High-Contrast Saturated Color Setup
 if st.session_state.bg_theme == "light":
     bg_color = "#f1f5f9"
     card_bg = "#ffffff"
@@ -50,17 +50,23 @@ else:
     border_color = "#2d3748"
     tab_active_text = "#ffffff"
 
-# Dynamic CSS Injector with Phone View Rules
+# Dynamic CSS Injector with Font Sizer Fixes
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
     /* Accessibility Font Scaling */
-    html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"], p, span, label, h1, h2, h3, h4, h5, h6 {{
+    html, body, [data-testid="stAppViewContainer"] {{
         font-family: 'Inter', sans-serif !important;
         font-size: {st.session_state.font_scale}% !important;
-        color: {text_color} !important;
     }}
+
+    /* Keep proportional heading sizes when font is scaled */
+    h1 {{ font-size: 2rem !important; color: {text_color} !important; font-weight: 700 !important; }}
+    h2 {{ font-size: 1.6rem !important; color: {text_color} !important; font-weight: 700 !important; }}
+    h3 {{ font-size: 1.25rem !important; color: {text_color} !important; font-weight: 600 !important; }}
+    h4 {{ font-size: 1.1rem !important; color: {text_color} !important; font-weight: 600 !important; }}
+    p, span, label, li, td {{ color: {text_color} !important; }}
 
     .stApp {{
         background-color: {bg_color} !important;
@@ -104,36 +110,12 @@ st.markdown(f"""
         color: {tab_active_text} !important;
     }}
 
-    /* RESPONSIVE TOP-RIGHT CONTROL SUITE */
-    div.floating-suite {{
-        position: fixed;
-        top: 45px;
-        right: 15px;
-        z-index: 999999;
-        background-color: {card_bg};
-        padding: 6px 10px;
-        border-radius: 10px;
-        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.15);
-        border: 1px solid {border_color};
-        max-width: 260px;
-    }}
-    
-    /* Hide label tags inside suite to keep it small */
-    div.floating-suite label {{
-        display: none !important;
-    }}
-
-    /* Media query targeting smartphones */
-    @media (max-width: 768px) {{
-        div.floating-suite {{
-            position: static !important;
-            max-width: 100% !important;
-            margin-bottom: 15px !important;
-            box-shadow: none !important;
-        }}
-        h2 {{
-            font-size: 20px !important;
-        }}
+    /* Compact Styling for Top Right Selectboxes */
+    div[data-testid="stColumn"] div[data-testid="stSelectbox"] label p {{
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+        margin-bottom: 2px !important;
+        color: {sub_text_color} !important;
     }}
 
     div[data-testid="stAppDeployButton"] {{ display: none !important; }}
@@ -154,43 +136,50 @@ st.markdown(f"""
 ADMIN_EMAIL = "krishna5689@outlook.in"
 ADMIN_PHONE = "919451134541"
 
-# --- 3. FLOATING SUITE PANEL (PC FIXED / SMARTPHONE FLOWING) ---
-st.markdown('<div class="floating-suite">', unsafe_allow_html=True)
-suite_col1, suite_col2 = st.columns(2)
+# --- 3. TOP BRANDING & TOP-RIGHT ACCESSIBILITY HEADER ---
+# Divides the top row into header (left) and accessibility options (right)
+header_col, control_col = st.columns([2.5, 1.1])
 
-with suite_col1:
-    theme_idx = 0 if st.session_state.bg_theme == "light" else 1
-    theme_choice = st.selectbox(
-        "Theme",
-        ["☀️ Light", "🌙 Dark"],
-        index=theme_idx,
-        key="suite_theme_select"
+with header_col:
+    st.markdown("<h2 style='margin: 0; color: #1e40af;'>🎓 Academic Student Portal</h2>", unsafe_allow_html=True)
+    st.markdown(
+        f"<span style='font-size: 0.9rem; opacity: 0.85;'>Verification Tier: B.Sc Undergraduate • Helpdesk: "
+        f"<a href='mailto:{ADMIN_EMAIL}' style='text-decoration:none; color:#2563eb; font-weight:500;'>{ADMIN_EMAIL}</a></span>", 
+        unsafe_allow_html=True
     )
-    selected_theme = "light" if "Light" in theme_choice else "dark"
-    if selected_theme != st.session_state.bg_theme:
-        st.session_state.bg_theme = selected_theme
-        st.rerun()
 
-with suite_col2:
-    font_idx = 0 if st.session_state.font_scale == 100 else (1 if st.session_state.font_scale == 120 else 2)
-    font_choice = st.selectbox(
-        "Font Size",
-        ["🔍 100%", "🔍 120%", "🔍 140%"],
-        index=font_idx,
-        key="suite_font_select"
-    )
-    selected_scale = 100 if "100%" in font_choice else (120 if "120%" in font_choice else 140)
-    if selected_scale != st.session_state.font_scale:
-        st.session_state.font_scale = selected_scale
-        st.rerun()
-st.markdown('</div>', unsafe_allow_html=True)
+with control_col:
+    suite_col1, suite_col2 = st.columns(2)
+    
+    with suite_col1:
+        theme_idx = 0 if st.session_state.bg_theme == "light" else 1
+        theme_choice = st.selectbox(
+            "Theme",
+            ["☀️ Light", "🌙 Dark"],
+            index=theme_idx,
+            key="top_theme_select"
+        )
+        selected_theme = "light" if "Light" in theme_choice else "dark"
+        if selected_theme != st.session_state.bg_theme:
+            st.session_state.bg_theme = selected_theme
+            st.rerun()
 
-# --- 4. HEADER BRANDING ---
-st.markdown("<h2 style='margin: 0; color: #1e40af; font-weight:700;'>🎓 Academic Student Portal</h2>", unsafe_allow_html=True)
-st.markdown(f"Verification Tier: B.Sc Undergraduate • Helpdesk: <a href='mailto:{ADMIN_EMAIL}' style='text-decoration:none; color:#2563eb;'>{ADMIN_EMAIL}</a>", unsafe_allow_html=True)
+    with suite_col2:
+        font_idx = 0 if st.session_state.font_scale == 100 else (1 if st.session_state.font_scale == 120 else 2)
+        font_choice = st.selectbox(
+            "Font Size",
+            ["🔍 100%", "🔍 120%", "🔍 140%"],
+            index=font_idx,
+            key="top_font_select"
+        )
+        selected_scale = 100 if "100%" in font_choice else (120 if "120%" in font_choice else 140)
+        if selected_scale != st.session_state.font_scale:
+            st.session_state.font_scale = selected_scale
+            st.rerun()
+
 st.markdown("<br>", unsafe_allow_html=True)
 
-# --- 5. TOP TABS NAVIGATION ---
+# --- 4. TOP TABS NAVIGATION ---
 tabs = st.tabs([
     "📊 Dashboard",
     "🤖 AI Assistant",
@@ -207,7 +196,7 @@ tab_dashboard, tab_ai, tab_news, tab_study, tab_perf, tab_focus, tab_report = ta
 with tab_dashboard:
     st.markdown("""
         <div style="background: linear-gradient(135deg, #1e40af, #3b82f6); color: white !important; padding: 24px; border-radius: 16px; margin-bottom: 24px; margin-top: 10px;">
-            <h1 style="margin: 0; color: white !important; font-weight:700; font-size:26px;">B.Sc Student Management Portal</h1>
+            <h1 style="margin: 0; color: white !important; font-size:26px;">B.Sc Student Management Portal</h1>
             <p style="opacity: 0.95; margin-top: 8px; font-size: 14px; max-width: 700px; color: white !important;">
                 Central administrative hub optimized for real-time classroom updates, digital asset access, performance management, and direct administrative escalation pathways.
             </p>
@@ -216,17 +205,16 @@ with tab_dashboard:
     
     col1, col2, col3, col4 = st.columns([1,1,1,1])
     with col1:
-        st.markdown('<div class="metric-card"><h4>Total Cohort</h4><h1 style="color: #2563eb !important; margin:4px 0 0 0; font-weight:700; font-size:24px;">1,250</h1></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h4>Total Cohort</h4><h2 style="color: #2563eb !important; margin:4px 0 0 0; font-size:24px;">1,250</h2></div>', unsafe_allow_html=True)
     with col2:
-        st.markdown('<div class="metric-card"><h4>Active Courses</h4><h1 style="color: #16a34a !important; margin:4px 0 0 0; font-weight:700; font-size:24px;">18</h1></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h4>Active Courses</h4><h2 style="color: #16a34a !important; margin:4px 0 0 0; font-size:24px;">18</h2></div>', unsafe_allow_html=True)
     with col3:
-        st.markdown('<div class="metric-card"><h4>Active Notices</h4><h1 style="color: #ea580c !important; margin:4px 0 0 0; font-weight:700; font-size:24px;">6</h1></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h4>Active Notices</h4><h2 style="color: #ea580c !important; margin:4px 0 0 0; font-size:24px;">6</h2></div>', unsafe_allow_html=True)
     with col4:
-        st.markdown('<div class="metric-card"><h4>Pending Inquiries</h4><h1 style="color: #dc2626 !important; margin:4px 0 0 0; font-weight:700; font-size:24px;">12</h1></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h4>Pending Inquiries</h4><h2 style="color: #dc2626 !important; margin:4px 0 0 0; font-size:24px;">12</h2></div>', unsafe_allow_html=True)
         
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # Adjust layout grid dynamically for mobile compatibility
     left_col, right_col = st.columns([2, 1])
     with left_col:
         st.subheader("📚 Course Registration Status")
