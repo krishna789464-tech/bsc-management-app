@@ -159,7 +159,7 @@ with st.sidebar:
 
     # Core Workspace Label Structure
     st.markdown("<p style='font-weight: 700; font-size: 11px; letter-spacing: 0.05em; margin-bottom: 8px; color:#64748b;'>CORE WORKSPACES</p>", unsafe_allow_html=True)
-
+initial_sidebar_state="expanded"
     # Sidebar Navigation Selector
     page = st.radio(
         label="Navigation Menu",
@@ -172,7 +172,7 @@ with st.sidebar:
             "⏱️ Deep Focus Engine", 
             "🚨 Report Routing Terminal"
         ],
-        label_visibility="visible"
+        label_visibility="collapsed"
     )
     
     # Simple vertical spacing before footer
