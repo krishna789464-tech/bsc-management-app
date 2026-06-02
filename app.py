@@ -56,6 +56,12 @@ st.markdown("""
     .sidebar-meta strong {
         color: #1f2937;
     }
+    
+    /* --- REMOVE GITHUB & STREAMLIT HEADER ELEMENTS --- */
+    #MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+    div[data-testid="stToolbar"] {display: none;}
     </style>
     """, unsafe_allow_html=True)
 
@@ -179,6 +185,20 @@ elif page == "News & Announcements":
 # --- PAGE: STUDY MATERIAL ---
 elif page == "Study Material":
     st.header("📚 Study Materials")
+    
+    # --- NEW FEATURE: YOUTUBE VIDEO SEARCH BAR ---
+    st.markdown("### 🔍 Video Lecture Finder")
+    yt_query = st.text_input("Search for video lectures on YouTube:", placeholder="Enter topics like 'Mineralogy basics'...")
+    
+    if yt_query:
+        # Encode the string query into standard URL format parameters
+        encoded_query = urllib.parse.quote(yt_query.strip())
+        yt_search_url = f"https://www.youtube.com/results?search_query={encoded_query}"
+        
+        # Action button to trigger search routing
+        st.link_button(f"Search YouTube for '{yt_query}' 🚀", yt_search_url, type="primary")
+    
+    st.divider()
     st.write("Click the buttons below to access your Google Classrooms.")
     
     with st.container():
