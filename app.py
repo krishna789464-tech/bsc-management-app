@@ -159,7 +159,28 @@ with st.sidebar:
 
     # Core Workspace Label Structure
     st.markdown("<p style='font-weight: 700; font-size: 11px; letter-spacing: 0.05em; margin-bottom: 8px; color:#64748b;'>CORE WORKSPACES</p>", unsafe_allow_html=True)
-initial_sidebar_state="expanded"
+# --- SIDEBAR TOGGLE STATE ---
+
+if "sidebar_state" not in st.session_state:
+st.session_state.sidebar_state = "expanded"
+
+# Toggle Button
+
+if st.button("☰ Toggle Menu"):
+if st.session_state.sidebar_state == "expanded":
+st.session_state.sidebar_state = "collapsed"
+else:
+st.session_state.sidebar_state = "expanded"
+
+# Apply Sidebar State
+
+st.set_page_config(
+page_title="Academic Student Portal",
+page_icon=page_icon_val,
+layout="wide",
+initial_sidebar_state=st.session_state.sidebar_state
+)
+
     # Sidebar Navigation Selector
     page = st.radio(
         label="Navigation Menu",
