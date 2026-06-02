@@ -3,58 +3,86 @@ import requests
 from bs4 import BeautifulSoup
 import urllib.parse
 import os
+import time
 import streamlit.components.v1 as components
 from PIL import Image
 
 # --- 1. CONFIGURATION & STYLING ---
-# Target local logo image location dynamically across absolute paths securely
 LOGO_PATH = r"C:\Users\ADMIN\Desktop\app logo.png"
 
-# Fallback mechanism to keep the application from crashing if the file is moved or renamed
 logo_exists = os.path.exists(LOGO_PATH)
 if logo_exists:
-    # Open the image using PIL for better compatibility with page_icon
     app_logo = Image.open(LOGO_PATH)
     page_icon_val = app_logo
 else:
     app_logo = None
-    page_icon_val = "🎓" # Fallback to a default emoji if path is missing
+    page_icon_val = "🎓"
 
 st.set_page_config(
-    page_title="Company Dashboard",
+    page_title="Academic Student Portal",
     page_icon=page_icon_val,
     layout="wide"
 )
 
-# Custom Styling for App and Components
+# Professional Enterprise Theme Styling
 st.markdown("""
     <style>
-    /* App background */
-    .stApp { background-color: #f4f7f6; }
+    /* Global App Background */
+    .stApp { background-color: #f8fafc; }
     
-    /* Custom cards */
-    .main-card { padding: 20px; border-radius: 15px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-    .metric-card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; }
+    /* Clean Main Interface Cards */
+    .main-card { 
+        padding: 24px; 
+        border-radius: 12px; 
+        background: #ffffff; 
+        box-shadow: 0 1px 3px 0 rgba(0,0,0,0.05), 0 1px 2px 0 rgba(0,0,0,0.03);
+        border: 1px solid #e2e8f0;
+    }
     
-    /* Professional Sidebar adjustments */
+    /* Metrics Interface */
+    .metric-card { 
+        background: #ffffff; 
+        padding: 22px; 
+        border-radius: 12px; 
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+        text-align: center; 
+        border: 1px solid #e2e8f0;
+        transition: transform 0.2s ease;
+    }
+    .metric-card:hover {
+        transform: translateY(-2px);
+    }
+    
+    /* Structural Professional Sidebar */
     section[data-testid="stSidebar"] {
         background-color: #ffffff !important;
-        border-right: 1px solid #e5e7eb;
+        border-right: 1px solid #e2e8f0;
     }
     div[data-testid="stSidebarNav"] {
-        padding-top: 10px;
+        padding-top: 8px;
     }
     .sidebar-meta {
         font-size: 13px;
-        color: #4b5563;
-        background-color: #f3f4f6;
-        padding: 12px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        border: 1px solid #e5e7eb;
+        color: #475569;
+        background-color: #f1f5f9;
+        padding: 14px;
+        border-radius: 10px;
+        margin-bottom: 24px;
+        border: 1px solid #e2e8f0;
     }
-    .sidebar-meta strong {
-        color: #1f2937;
+    
+    /* --- INVISIBLE HEADERS / DE-BRANDING STREAMLIT --- */
+    #MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+    div[data-testid="stToolbar"] {display: none;}
+    
+    /* Clean up form spacing */
+    .stForm {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        padding: 24px !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -63,67 +91,72 @@ st.markdown("""
 ADMIN_EMAIL = "krishna5689@outlook.in"
 ADMIN_PHONE = "919451134541"
 
-# --- 2. PROFESSIONAL SIDEBAR NAVIGATION ---
-# Top Logo Section
+# --- 2. SIDEBAR NAVIGATION ---
 if logo_exists and app_logo:
     st.logo(LOGO_PATH) 
 else:
-    st.sidebar.markdown("<h2 style='margin-top: 0; color: #2563eb;'>🎓 Portal</h2>", unsafe_allow_html=True)
+    st.sidebar.markdown("<h2 style='margin-top: 0; color: #2563eb; font-weight:700;'>🎓 System Portal</h2>", unsafe_allow_html=True)
 
-# System / Meta Info Block
 with st.sidebar:
     st.markdown(f"""
     <div class="sidebar-meta">
-        <strong>🏫 Academic System</strong><br>
-        <span style="opacity: 0.85;">Role: Student Access</span><br>
-        <hr style="margin: 8px 0; border: 0; border-top: 1px solid #d1d5db;">
-        <strong>📧 Support Contact</strong><br>
-        <a href="mailto:{ADMIN_EMAIL}" style="color: #2563eb; text-decoration: none;">{ADMIN_EMAIL}</a>
+        <strong style="color:#0f172a;">🏫 Portal Verification</strong><br>
+        <span style="opacity: 0.85; font-size:12px;">Access Tier: B.Sc Undergraduate</span><br>
+        <hr style="margin: 10px 0; border: 0; border-top: 1px solid #cbd5e1;">
+        <strong style="color:#0f172a;">📧 Helpdesk Routing</strong><br>
+        <a href="mailto:{ADMIN_EMAIL}" style="color: #2563eb; text-decoration: none; font-size:12px;">{ADMIN_EMAIL}</a>
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("<p style='font-weight: 600; font-size: 14px; margin-bottom: 5px; color:#4b5563;'>NAVIGATION</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-weight: 700; font-size: 11px; letter-spacing: 0.05em; margin-bottom: 8px; color:#64748b;'>CORE WORKSPACES</p>", unsafe_allow_html=True)
 
-# Main Navigation using Streamlit Selectbox/Radio
+# Navigation Engine Array
 page = st.sidebar.radio(
     label="Navigation Menu",
-    options=["Dashboard", "AI Assistant", "News & Announcements", "Study Material", "Report Registration Issue"],
+    options=[
+        "📊 Student Dashboard", 
+        "🤖 AI Academic Assistant", 
+        "📢 News & Notices", 
+        "📚 Study Classrooms", 
+        "🧮 Performance Toolkit", 
+        "⏱️ Deep Focus Engine", 
+        "🚨 Report Routing Terminal"
+    ],
     label_visibility="collapsed"
 )
 
-# Optional Footer Info at bottom of Sidebar
-st.sidebar.markdown("<vdiv style='flex:1;'></div>", unsafe_allow_html=True) # Spacer
-st.sidebar.caption("v1.2.0 • Secure Session")
+st.sidebar.markdown("<div style='flex:1;'></div>", unsafe_allow_html=True)
+st.sidebar.caption("System Status: Operational • v2.1.0")
 
 
 # --- PAGE: DASHBOARD ---
-if page == "Dashboard":
+if page == "📊 Student Dashboard":
     st.title("Welcome to the Dashboard")
     st.markdown("""
-        <div style="background: linear-gradient(to right, #2563eb, #4f46e5); color: white; padding: 30px; border-radius: 20px; margin-bottom: 25px;">
-            <h1 style="margin: 0; color: white;">B.Sc Student Management Portal</h1>
-            <p style="opacity: 0.9; margin-top: 5px; font-size: 16px;">
-                Smart academic platform for study materials, notices, classroom access, and student issue management.
+        <div style="background: linear-gradient(135deg, #1e40af, #3b82f6); color: white; padding: 32px; border-radius: 16px; margin-bottom: 28px;">
+            <h1 style="margin: 0; color: white; font-weight:700; font-size:28px;">B.Sc Student Management Portal</h1>
+            <p style="opacity: 0.9; margin-top: 8px; font-size: 15px; max-width: 700px;">
+                Central administrative hub optimized for real-time classroom updates, digital asset access, performance management, and direct administrative escalation pathways.
             </p>
         </div>
     """, unsafe_allow_html=True)
     
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.markdown('<div class="metric-card"><h3>Students</h3><h1 style="color: #2563eb; margin:0;">1,250</h1></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h4 style="color:#64748b; margin:0; font-size:14px;">Total Cohort</h4><h1 style="color: #2563eb; margin:8px 0 0 0; font-weight:700;">1,250</h1></div>', unsafe_allow_html=True)
     with col2:
-        st.markdown('<div class="metric-card"><h3>Courses</h3><h1 style="color: #16a34a; margin:0;">18</h1></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h4 style="color:#64748b; margin:0; font-size:14px;">Active Courses</h4><h1 style="color: #16a34a; margin:8px 0 0 0; font-weight:700;">18</h1></div>', unsafe_allow_html=True)
     with col3:
-        st.markdown('<div class="metric-card"><h3>Notices</h3><h1 style="color: #ea580c; margin:0;">6</h1></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h4 style="color:#64748b; margin:0; font-size:14px;">Active System Notices</h4><h1 style="color: #ea580c; margin:8px 0 0 0; font-weight:700;">6</h1></div>', unsafe_allow_html=True)
     with col4:
-        st.markdown('<div class="metric-card"><h3>Pending Issues</h3><h1 style="color: #dc2626; margin:0;">12</h1></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h4 style="color:#64748b; margin:0; font-size:14px;">Pending Form Inquiries</h4><h1 style="color: #dc2626; margin:8px 0 0 0; font-weight:700;">12</h1></div>', unsafe_allow_html=True)
         
     st.markdown("<br>", unsafe_allow_html=True)
     
     left_col, right_col = st.columns([2, 1])
     
     with left_col:
-        st.subheader("📚 Quick Overview: Connected Materials")
+        st.subheader("📚 Course Registration Status")
         materials = [
             {"subject": "Structural Geology", "teacher": "Dr. Sharma"},
             {"subject": "Mineralogy", "teacher": "Prof. Singh"},
@@ -131,19 +164,20 @@ if page == "Dashboard":
         ]
         for item in materials:
             with st.container():
-                st.markdown(f"**{item['subject']}** — Teacher: {item['teacher']}")
-                st.caption("🟢 Google Classroom Sync Active")
+                st.markdown(f"**{item['subject']}** — Instructor: {item['teacher']}")
+                st.caption("🟢 Automated Sync Environment Active")
                 st.divider()
                 
     with right_col:
-        st.subheader("⚡ Quick Access Controls")
-        st.button("📋 Attendance Tracker", use_container_width=True)
-        st.button("📝 Assignment Portal", use_container_width=True)
-        st.button("📅 Academic Timetable", use_container_width=True)
-        st.button("📊 Examination Results", use_container_width=True)
+        st.subheader("⚡ Core Modules")
+        st.button("📋 Live Attendance Tracker", use_container_width=True)
+        st.button("📝 Assignment Log", use_container_width=True)
+        st.button("📅 Academic Calendar", use_container_width=True)
+        st.button("📊 Examination Reports", use_container_width=True)
 
-# --- PAGE: AI ASSISTANT (JOTFORMS EMBED) ---
-elif page == "AI Assistant":
+
+# --- PAGE: AI ASSISTANT ---
+elif page == "🤖 AI Academic Assistant":
     st.header("🤖 AI Student Counselor & Helper")
     st.write("Our automated academic agent is loading below. If it does not open automatically, please look for a chat icon on the screen.")
     
@@ -154,12 +188,13 @@ elif page == "AI Assistant":
     """
     components.html(jotform_script, height=600, scrolling=True)
 
+
 # --- PAGE: NEWS & ANNOUNCEMENTS ---
-elif page == "News & Announcements":
-    st.header("📢 Official Notices")
+elif page == "📢 News & Notices":
+    st.header("📢 University Bulletins & Notices")
     lu_url = "https://www.lkouniv.ac.in/en/news?Newslistslug=en-notices&cd=MwAzADcA"
     
-    if st.button("Check for Latest Updates"):
+    if st.button("Query Live Database Feed", type="primary"):
         try:
             res = requests.get(lu_url, timeout=10)
             soup = BeautifulSoup(res.content, 'html.parser')
@@ -170,76 +205,76 @@ elif page == "News & Announcements":
                     clean_text = link.text.strip().replace("[", "").replace("]", "")
                     href_val = link['href']
                     url = href_val if href_val.startswith('http') else "https://www.lkouniv.ac.in" + href_val
-                    st.success(f"🔗 [{clean_text}]({url})")
+                    st.info(f"🔗 [{clean_text}]({url})")
                     found += 1
                 if found > 10: break
         except Exception:
-            st.error(f"Live feed temporarily unavailable. [Click here for LU News Site]({lu_url})")
+            st.error(f"Live parsing connection error. Access raw terminal index directly: [Lucknow University Notice Board]({lu_url})")
+
 
 # --- PAGE: STUDY MATERIAL ---
-elif page == "Study Material":
-    st.header("📚 Study Materials")
-    st.write("Click the buttons below to access your Google Classrooms.")
+elif page == "📚 Study Classrooms":
+    st.header("📚 Digital Course Assets")
+    st.write("Access interconnected institutional cloud infrastructure below.")
     
     with st.container():
         st.subheader("BSc Management Core")
-        st.info("Classroom Code: shf3hsat")
-        st.link_button("Open Google Classroom", "https://classroom.google.com/c/ODU0MzQ2NjI2MDQ2?cjc=shf3hsat")
+        st.info("Classroom Code Token: shf3hsat")
+        st.link_button("Open Google Classroom Link Structure", "https://classroom.google.com/c/ODU0MzQ2NjI2MDQ2?cjc=shf3hsat", type="primary")
     
     st.divider()
-    st.write("More subjects will be added here soon.")
+    st.caption("Further syllabi data segments are structured automatically upon academic validation.")
 
-# --- PAGE: REPORT REGISTRATION ISSUE ---
-elif page == "Report Registration Issue":
-    st.header("❗ Report an Issue")
-    st.write("Submitting this form logs your information, routes an email to the admin system, and builds your WhatsApp confirmation route.")
 
-    with st.form("issue_form", clear_on_submit=False):
-        student_email = st.text_input("Your Email Address *", placeholder="student@example.com")
-        name = st.text_input("Full Name *")
-        roll_no = st.text_input("Roll Number / Student ID *")
-        issue_type = st.selectbox("Issue Category", ["Login Problem", "Subject Not Showing", "Document Error", "Other"])
-        details = st.text_area("Detailed Description *")
+# --- NEW FEATURE: PERFORMANCE TOOLKIT (GPA/CGPA CALCULATOR) ---
+elif page == "🧮 Performance Toolkit":
+    st.header("🧮 Academic Performance Calculator")
+    st.write("Calculate estimated Grade Point Average (GPA) and Cumulative values securely.")
+    
+    calc_tab1, calc_tab2 = st.tabs(["Semester GPA Matrix", "Cumulative CGPA Calculator"])
+    
+    with calc_tab1:
+        st.subheader("Current Semester Track")
+        num_courses = st.number_input("Number of Registered Subjects", min_value=1, max_value=10, value=4, step=1)
         
-        submitted = st.form_submit_button("Submit & Notify Admin")
+        scores = []
+        credits = []
         
-    if submitted:
-        if student_email and name and roll_no and details:
+        col_c1, col_c2 = st.columns(2)
+        for i in range(int(num_courses)):
+            with col_c1:
+                score = st.selectbox(f"Letter Grade - Course {i+1}", ["O (Outstanding - 10)", "A+ (Excellent - 9)", "A (Very Good - 8)", "B+ (Good - 7)", "B (Above Average - 6)", "C (Average - 5)", "F (Fail - 0)"], key=f"grade_{i}")
+                # Map select box value to numerical point structure
+                grade_map = {"O": 10, "A+": 9, "A": 8, "B+": 7, "B": 6, "C": 5, "F": 0}
+                scores.append(grade_map[score.split(" ")[0]])
+            with col_c2:
+                credit = st.number_input(f"Course Weight / Credits {i+1}", min_value=1, max_value=6, value=4, key=f"credit_{i}")
+                credits.append(credit)
+                
+        if st.button("Compute Semester Index", type="primary"):
+            total_points = sum(s * c for s, c in zip(scores, credits))
+            total_credits = sum(credits)
+            calculated_gpa = total_points / total_credits if total_credits > 0 else 0
+            st.metric(label="Calculated GPA for Current Term", value=f"{calculated_gpa:.2f} / 10.00")
             
-            email_payload = {
-                "email": student_email.strip(),
-                "Student Name": name.strip(),
-                "Roll Number": roll_no.strip(),
-                "Issue Type": issue_type,
-                "Detailed Description": details.strip(),
-                "_subject": f"🚨 Urgent: Registration Issue from {name.strip()}",
-                "_captcha": "false"
-            }
-            
-            with st.spinner("Processing form with target server..."):
-                try:
-                    response = requests.post(
-                        f"https://formsubmit.co/ajax/{ADMIN_EMAIL}", 
-                        data=email_payload,
-                        timeout=10
-                    )
-                    if response.status_code == 200:
-                        st.toast("Form processed! Email confirmation sent.", icon="📧")
-                    else:
-                        st.error(f"Endpoint verification issue encountered. Status Code: {response.status_code}")
-                except Exception as e:
-                    st.error("Automated transmission pipeline timeout. Proceeding to direct alternative routing.")
+    with calc_tab2:
+        st.subheader("Historical CGPA Consolidation")
+        prior_cgpa = st.number_input("Current Historical Cumulative CGPA", min_value=0.0, max_value=10.0, value=8.0, step=0.1)
+        completed_credits = st.number_input("Total Assessment Credits Earned Historically", min_value=0, max_value=200, value=48, step=1)
+        
+        st.markdown("---")
+        curr_gpa = st.number_input("Latest Term Semester GPA Result", min_value=0.0, max_value=10.0, value=8.5, step=0.1)
+        curr_credits = st.number_input("Latest Term Credits Taken", min_value=0, max_value=30, value=20, step=1)
+        
+        if st.button("Consolidate Global CGPA"):
+            total_historical_points = prior_cgpa * completed_credits
+            total_current_points = curr_gpa * curr_credits
+            global_credits = completed_credits + curr_credits
+            calculated_cgpa = (total_historical_points + total_current_points) / global_credits if global_credits > 0 else 0
+            st.metric(label="Updated Aggregate Portfolio CGPA", value=f"{calculated_cgpa:.2f} / 10.00")
 
-            wa_text = f"*Registration Issue Report*\n\n*Name:* {name}\n*Roll No:* {roll_no}\n*Email:* {student_email}\n*Issue:* {issue_type}\n*Details:* {details}"
-            wa_url = f"https://wa.me/{ADMIN_PHONE}?text={urllib.parse.quote(wa_text)}"
-            
-            st.success("🎉 Local data entry recorded successfully!")
-            st.write("Click below to pass execution control to WhatsApp and notify the Admin directly:")
-            st.link_button("Finalize via WhatsApp Message ✅", wa_url)
-            st.balloons()
-        else:
-            st.error("⚠️ Validation failure: Please fill out all required fields marked with (*).")
 
-# --- FOOTER ---
-st.markdown("---")
-st.markdown("<center style='color: gray; font-size: 12px;'>Powered by Google Workspace and Microhnm Technologies</center>", unsafe_allow_html=True)
+# --- NEW FEATURE: DEEP FOCUS ENGINE (POMODORO TIMER) ---
+elif page == "⏱️ Deep Focus Engine":
+    st.header("⏱️ Academic Focus Engine")
+    st.write("Utilize timed intervals to optimize reading or research sessions.")
