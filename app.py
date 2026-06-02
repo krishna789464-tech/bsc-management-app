@@ -172,7 +172,7 @@ with st.sidebar:
             "⏱️ Deep Focus Engine", 
             "🚨 Report Routing Terminal"
         ],
-        label_visibility="collapsed"
+        label_visibility="visible"
     )
     
     # Simple vertical spacing before footer
