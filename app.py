@@ -34,24 +34,26 @@ st.set_page_config(
     layout="wide"
 )
 
-# Live Theme Colors Selection
+# High-Contrast Saturated Color Setup (PC & Mobile Balanced)
 if st.session_state.bg_theme == "light":
-    bg_color = "#f8fafc"
+    bg_color = "#f1f5f9"
     card_bg = "#ffffff"
-    text_color = "#1e293b"
-    sub_text_color = "#64748b"
-    border_color = "#e2e8f0"
+    text_color = "#0f172a"        # Rich text for high legibility
+    sub_text_color = "#475569"    # Dark gray for crisp view on mobile
+    border_color = "#cbd5e1"
+    tab_active_text = "#ffffff"
 else:
-    bg_color = "#0f172a"
-    card_bg = "#1e293b"
-    text_color = "#f1f5f9"
-    sub_text_color = "#94a3b8"
-    border_color = "#334155"
+    bg_color = "#0b0f19"          # Deep saturated midnight dark
+    card_bg = "#161e2e"          # Clean dark card block
+    text_color = "#f8fafc"        # Sharp readable text
+    sub_text_color = "#94a3b8"    # Clear description saturation
+    border_color = "#2d3748"
+    tab_active_text = "#ffffff"
 
-# Dynamic CSS Injector
+# Dynamic CSS Injector with Phone View Rules
 st.markdown(f"""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
     /* Accessibility Font Scaling */
     html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"], p, span, label, h1, h2, h3, h4, h5, h6 {{
@@ -65,36 +67,33 @@ st.markdown(f"""
     }}
 
     .main-card {{
-        padding: 24px;
+        padding: 20px;
         border-radius: 12px;
         background: {card_bg};
-        box-shadow: 0 1px 3px 0 rgba(0,0,0,0.05);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         border: 1px solid {border_color};
     }}
 
     .metric-card {{
         background: {card_bg} !important;
-        padding: 22px;
+        padding: 18px;
         border-radius: 12px;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         text-align: center;
         border: 1px solid {border_color} !important;
-        transition: transform 0.2s ease;
-    }}
-    .metric-card:hover {{
-        transform: translateY(-2px);
+        margin-bottom: 12px;
     }}
 
     div[data-testid="stTabs"] [data-baseweb="tab-list"] {{
-        gap: 8px;
+        gap: 6px;
         background-color: {card_bg};
-        padding: 8px;
+        padding: 6px;
         border-radius: 12px;
         border: 1px solid {border_color};
     }}
 
     div[data-testid="stTabs"] [data-baseweb="tab"] {{
-        padding: 8px 16px;
+        padding: 6px 12px;
         border-radius: 8px;
         font-weight: 500;
         color: {sub_text_color} !important;
@@ -102,25 +101,39 @@ st.markdown(f"""
 
     div[data-testid="stTabs"] [aria-selected="true"] {{
         background-color: #2563eb !important;
-        color: white !important;
+        color: {tab_active_text} !important;
     }}
 
-    /* Top-Right Small Floating Suite Container */
+    /* RESPONSIVE TOP-RIGHT CONTROL SUITE */
     div.floating-suite {{
         position: fixed;
         top: 45px;
-        right: 20px;
+        right: 15px;
         z-index: 999999;
         background-color: {card_bg};
-        padding: 6px 12px;
+        padding: 6px 10px;
         border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.15);
         border: 1px solid {border_color};
+        max-width: 260px;
     }}
     
-    /* Minimize selectbox labels inside the suite */
+    /* Hide label tags inside suite to keep it small */
     div.floating-suite label {{
         display: none !important;
+    }}
+
+    /* Media query targeting smartphones */
+    @media (max-width: 768px) {{
+        div.floating-suite {{
+            position: static !important;
+            max-width: 100% !important;
+            margin-bottom: 15px !important;
+            box-shadow: none !important;
+        }}
+        h2 {{
+            font-size: 20px !important;
+        }}
     }}
 
     div[data-testid="stAppDeployButton"] {{ display: none !important; }}
@@ -132,7 +145,7 @@ st.markdown(f"""
         background: {card_bg} !important;
         border: 1px solid {border_color} !important;
         border-radius: 12px !important;
-        padding: 24px !important;
+        padding: 20px !important;
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -141,7 +154,7 @@ st.markdown(f"""
 ADMIN_EMAIL = "krishna5689@outlook.in"
 ADMIN_PHONE = "919451134541"
 
-# --- 3. FLOATING TOP-RIGHT ACCESSIBILITY & BRIGHTNESS SUITE ---
+# --- 3. FLOATING SUITE PANEL (PC FIXED / SMARTPHONE FLOWING) ---
 st.markdown('<div class="floating-suite">', unsafe_allow_html=True)
 suite_col1, suite_col2 = st.columns(2)
 
@@ -173,8 +186,8 @@ with suite_col2:
 st.markdown('</div>', unsafe_allow_html=True)
 
 # --- 4. HEADER BRANDING ---
-st.markdown("<h2 style='margin: 0; color: #1e3a8a; font-weight:700;'>🎓 Academic Student Portal</h2>", unsafe_allow_html=True)
-st.markdown(f"Verification Tier: B.Sc Undergraduate • Helpdesk: <a href='mailto:{ADMIN_EMAIL}'>{ADMIN_EMAIL}</a>", unsafe_allow_html=True)
+st.markdown("<h2 style='margin: 0; color: #1e40af; font-weight:700;'>🎓 Academic Student Portal</h2>", unsafe_allow_html=True)
+st.markdown(f"Verification Tier: B.Sc Undergraduate • Helpdesk: <a href='mailto:{ADMIN_EMAIL}' style='text-decoration:none; color:#2563eb;'>{ADMIN_EMAIL}</a>", unsafe_allow_html=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
 # --- 5. TOP TABS NAVIGATION ---
@@ -193,26 +206,27 @@ tab_dashboard, tab_ai, tab_news, tab_study, tab_perf, tab_focus, tab_report = ta
 # --- TAB: DASHBOARD ---
 with tab_dashboard:
     st.markdown("""
-        <div style="background: linear-gradient(135deg, #1e40af, #3b82f6); color: white; padding: 32px; border-radius: 16px; margin-bottom: 28px; margin-top: 10px;">
-            <h1 style="margin: 0; color: white; font-weight:700; font-size:28px;">B.Sc Student Management Portal</h1>
-            <p style="opacity: 0.9; margin-top: 8px; font-size: 15px; max-width: 700px;">
+        <div style="background: linear-gradient(135deg, #1e40af, #3b82f6); color: white !important; padding: 24px; border-radius: 16px; margin-bottom: 24px; margin-top: 10px;">
+            <h1 style="margin: 0; color: white !important; font-weight:700; font-size:26px;">B.Sc Student Management Portal</h1>
+            <p style="opacity: 0.95; margin-top: 8px; font-size: 14px; max-width: 700px; color: white !important;">
                 Central administrative hub optimized for real-time classroom updates, digital asset access, performance management, and direct administrative escalation pathways.
             </p>
         </div>
     """, unsafe_allow_html=True)
     
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4 = st.columns([1,1,1,1])
     with col1:
-        st.markdown('<div class="metric-card"><h4 style="margin:0; font-size:14px;">Total Cohort</h4><h1 style="color: #2563eb; margin:8px 0 0 0; font-weight:700;">1,250</h1></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h4>Total Cohort</h4><h1 style="color: #2563eb !important; margin:4px 0 0 0; font-weight:700; font-size:24px;">1,250</h1></div>', unsafe_allow_html=True)
     with col2:
-        st.markdown('<div class="metric-card"><h4 style="margin:0; font-size:14px;">Active Courses</h4><h1 style="color: #16a34a; margin:8px 0 0 0; font-weight:700;">18</h1></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h4>Active Courses</h4><h1 style="color: #16a34a !important; margin:4px 0 0 0; font-weight:700; font-size:24px;">18</h1></div>', unsafe_allow_html=True)
     with col3:
-        st.markdown('<div class="metric-card"><h4 style="margin:0; font-size:14px;">Active System Notices</h4><h1 style="color: #ea580c; margin:8px 0 0 0; font-weight:700;">6</h1></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h4>Active Notices</h4><h1 style="color: #ea580c !important; margin:4px 0 0 0; font-weight:700; font-size:24px;">6</h1></div>', unsafe_allow_html=True)
     with col4:
-        st.markdown('<div class="metric-card"><h4 style="margin:0; font-size:14px;">Pending Form Inquiries</h4><h1 style="color: #dc2626; margin:8px 0 0 0; font-weight:700;">12</h1></div>', unsafe_allow_html=True)
+        st.markdown('<div class="metric-card"><h4>Pending Inquiries</h4><h1 style="color: #dc2626 !important; margin:4px 0 0 0; font-weight:700; font-size:24px;">12</h1></div>', unsafe_allow_html=True)
         
     st.markdown("<br>", unsafe_allow_html=True)
     
+    # Adjust layout grid dynamically for mobile compatibility
     left_col, right_col = st.columns([2, 1])
     with left_col:
         st.subheader("📚 Course Registration Status")
@@ -250,7 +264,7 @@ with tab_news:
     st.header("📢 University Bulletins & Notices")
     lu_url = "https://www.lkouniv.ac.in/en/news?Newslistslug=en-notices&cd=MwAzADcA"
     
-    if st.button("Query Live Database Feed", type="primary"):
+    if st.button("Query Live Database Feed", type="primary", use_container_width=True):
         try:
             headers = {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
@@ -278,7 +292,7 @@ with tab_study:
     with st.container():
         st.subheader("BSc Management Core")
         st.info("Classroom Code Token: shf3hsat")
-        st.link_button("Open Google Classroom Link Structure", "https://classroom.google.com/c/ODU0MzQ2NjI2MDQ2?cjc=shf3hsat", type="primary")
+        st.link_button("Open Google Classroom Link Structure", "https://classroom.google.com/c/ODU0MzQ2NjI2MDQ2?cjc=shf3hsat", type="primary", use_container_width=True)
     st.divider()
     st.caption("Further syllabi data segments are structured automatically upon academic validation.")
 
@@ -295,17 +309,17 @@ with tab_perf:
         scores = []
         credits = []
         
-        col_c1, col_c2 = st.columns(2)
         for i in range(int(num_courses)):
+            col_c1, col_c2 = st.columns(2)
             with col_c1:
-                score = st.selectbox(f"Letter Grade - Course {i+1}", ["O (Outstanding - 10)", "A+ (Excellent - 9)", "A (Very Good - 8)", "B+ (Good - 7)", "B (Above Average - 6)", "C (Average - 5)", "F (Fail - 0)"], key=f"grade_{i}")
+                score = st.selectbox(f"Grade - Course {i+1}", ["O (Outstanding - 10)", "A+ (Excellent - 9)", "A (Very Good - 8)", "B+ (Good - 7)", "B (Above Average - 6)", "C (Average - 5)", "F (Fail - 0)"], key=f"grade_{i}")
                 grade_map = {"O": 10, "A+": 9, "A": 8, "B+": 7, "B": 6, "C": 5, "F": 0}
                 scores.append(grade_map[score.split(" ")[0]])
             with col_c2:
-                credit = st.number_input(f"Course Weight / Credits {i+1}", min_value=1, max_value=6, value=4, key=f"credit_{i}")
+                credit = st.number_input(f"Credits {i+1}", min_value=1, max_value=6, value=4, key=f"credit_{i}")
                 credits.append(credit)
                 
-        if st.button("Compute Semester Index", type="primary"):
+        if st.button("Compute Semester Index", type="primary", use_container_width=True):
             total_points = sum(s * c for s, c in zip(scores, credits))
             total_credits = sum(credits)
             calculated_gpa = total_points / total_credits if total_credits > 0 else 0
@@ -319,7 +333,7 @@ with tab_perf:
         curr_gpa = st.number_input("Latest Term Semester GPA Result", min_value=0.0, max_value=10.0, value=8.5, step=0.1)
         curr_credits = st.number_input("Latest Term Credits Taken", min_value=0, max_value=30, value=20, step=1)
         
-        if st.button("Consolidate Global CGPA"):
+        if st.button("Consolidate Global CGPA", use_container_width=True):
             total_historical_points = prior_cgpa * completed_credits
             total_current_points = curr_gpa * curr_credits
             global_credits = completed_credits + curr_credits
@@ -341,7 +355,7 @@ with tab_focus:
     progress_bar = st.progress(0.0)
     timer_display = st.empty()
     
-    if st.button("Initialize Focus Session Pipeline", type="primary"):
+    if st.button("Initialize Focus Session Pipeline", type="primary", use_container_width=True):
         st.session_state.timer_running = True
         start_time = time.time()
         
@@ -357,7 +371,7 @@ with tab_focus:
                 break
                 
             mins, secs = divmod(int(remaining), 60)
-            timer_display.markdown(f"<h1 style='font-size:48px;'>{mins:02d}:{secs:02d}</h1>", unsafe_allow_html=True)
+            timer_display.markdown(f"<h1 style='font-size:42px; font-weight:700;'>{mins:02d}:{secs:02d}</h1>", unsafe_allow_html=True)
             percentage_completion = min(elapsed / target_seconds, 1.0)
             progress_bar.progress(percentage_completion)
             time.sleep(1)
@@ -373,7 +387,7 @@ with tab_report:
         roll_no = st.text_input("Roll Number / Student ID *")
         issue_type = st.selectbox("Issue Category", ["Login Problem", "Subject Not Showing", "Document Error", "Other"])
         details = st.text_area("Detailed Description *")
-        submitted = st.form_submit_button("Submit & Notify Admin")
+        submitted = st.form_submit_button("Submit & Notify Admin", use_container_width=True)
         
     if submitted:
         if student_email and name and roll_no and details:
@@ -406,11 +420,11 @@ with tab_report:
             
             st.success("🎉 Local data entry recorded successfully!")
             st.write("Click below to pass execution control to WhatsApp and notify the Admin directly:")
-            st.link_button("Finalize via WhatsApp Message ✅", wa_url)
+            st.link_button("Finalize via WhatsApp Message ✅", wa_url, use_container_width=True)
             st.balloons()
         else:
             st.error("⚠️ Validation failure: Please fill out all required fields marked with (*).")
 
 # --- FOOTER ---
 st.markdown("---")
-st.markdown("<center style='font-size: 12px;'>Powered by Google Workspace Infrastructure and Microhnm Technologies</center>", unsafe_allow_html=True)
+st.markdown("<center style='font-size: 11px;'>Powered by Google Workspace Infrastructure and Microhnm Technologies</center>", unsafe_allow_html=True)
