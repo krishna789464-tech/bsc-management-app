@@ -72,7 +72,6 @@ st.markdown("""
     }
     
     /* --- FIX: HIDE BRANDING SAFELY WITHOUT BREAKING SIDEBAR --- */
-    /* Target only branding elements specifically instead of breaking 'header' components */
     div[data-testid="stAppDeployButton"] { display: none !important; }
     #MainMenu { visibility: hidden !important; }
     div[data-testid="stToolbar"] { display: none !important; }
@@ -92,13 +91,16 @@ st.markdown("""
 ADMIN_EMAIL = "krishna5689@outlook.in"
 ADMIN_PHONE = "919451134541"
 
-# --- 2. SIDEBAR NAVIGATION ---
-if logo_exists and app_logo:
-    st.logo(LOGO_PATH) 
-else:
-    st.sidebar.markdown("<h2 style='margin-top: 0; color: #2563eb; font-weight:700;'>🎓 System Portal</h2>", unsafe_allow_html=True)
 
+# --- 2. SIDEBAR NAVIGATION CONTROLLER ---
 with st.sidebar:
+    # Render Application Branding Header
+    if logo_exists and app_logo:
+        st.logo(LOGO_PATH) 
+    else:
+        st.markdown("<h2 style='margin-top: 0; color: #2563eb; font-weight:700;'>🎓 System Portal</h2>", unsafe_allow_html=True)
+
+    # Portal Student Info Meta Card
     st.markdown(f"""
     <div class="sidebar-meta">
         <strong style="color:#0f172a;">🏫 Portal Verification</strong><br>
@@ -109,25 +111,27 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
+    # Core Workspace Label Structure
     st.markdown("<p style='font-weight: 700; font-size: 11px; letter-spacing: 0.05em; margin-bottom: 8px; color:#64748b;'>CORE WORKSPACES</p>", unsafe_allow_html=True)
 
-# Navigation Engine Array
-page = st.sidebar.radio(
-    label="Navigation Menu",
-    options=[
-        "📊 Student Dashboard", 
-        "🤖 AI Academic Assistant", 
-        "📢 News & Notices", 
-        "📚 Study Classrooms", 
-        "🧮 Performance Toolkit", 
-        "⏱️ Deep Focus Engine", 
-        "🚨 Report Routing Terminal"
-    ],
-    label_visibility="collapsed"
-)
-
-st.sidebar.markdown("<div style='flex:1;'></div>", unsafe_allow_html=True)
-st.sidebar.caption("System Status: Operational • v2.1.0")
+    # Sidebar Navigation Engine Selector Array
+    page = st.radio(
+        label="Navigation Menu",
+        options=[
+            "📊 Student Dashboard", 
+            "🤖 AI Academic Assistant", 
+            "📢 News & Notices", 
+            "📚 Study Classrooms", 
+            "🧮 Performance Toolkit", 
+            "⏱️ Deep Focus Engine", 
+            "🚨 Report Routing Terminal"
+        ],
+        label_visibility="collapsed"
+    )
+    
+    # Push the version footer cleanly to the bottom of the sidebar space
+    st.markdown("<div style='flex:1;'></div>", unsafe_allow_html=True)
+    st.caption("System Status: Operational • v2.1.0")
 
 
 # --- PAGE: DASHBOARD ---
