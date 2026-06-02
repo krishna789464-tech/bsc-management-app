@@ -34,23 +34,23 @@ st.set_page_config(
     layout="wide"
 )
 
-# High-Contrast Saturated Color Setup
+# High-Contrast Color Theme Setup
 if st.session_state.bg_theme == "light":
     bg_color = "#f1f5f9"
     card_bg = "#ffffff"
-    text_color = "#0f172a"        # Rich text for high legibility
-    sub_text_color = "#475569"    # Dark gray for crisp view on mobile
+    text_color = "#0f172a"        # Rich slate text for readability
+    sub_text_color = "#475569"    # Dark gray for descriptions
     border_color = "#cbd5e1"
     tab_active_text = "#ffffff"
 else:
-    bg_color = "#0b0f19"          # Deep saturated midnight dark
-    card_bg = "#161e2e"          # Clean dark card block
-    text_color = "#f8fafc"        # Sharp readable text
-    sub_text_color = "#94a3b8"    # Clear description saturation
+    bg_color = "#0b0f19"          # Midnight dark
+    card_bg = "#161e2e"          # Dark block card
+    text_color = "#f8fafc"        # Sharp text
+    sub_text_color = "#94a3b8"    # Clear description
     border_color = "#2d3748"
     tab_active_text = "#ffffff"
 
-# Dynamic CSS Injector with Font Sizer Fixes
+# Dynamic CSS Injector with Font & Top Gap Sizer Fixes
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -70,6 +70,16 @@ st.markdown(f"""
 
     .stApp {{
         background-color: {bg_color} !important;
+    }}
+
+    /* --- FIX: SHRINK THE TOP WHITE LINE GAP SIGNIFICANTLY --- */
+    [data-testid="stHeader"] {{
+        display: none !important;
+        height: 0px !important;
+    }}
+    .block-container {{
+        padding-top: 1rem !important; /* Reduces default top gap from ~60px to 15px */
+        padding-bottom: 2rem !important;
     }}
 
     .main-card {{
@@ -136,9 +146,53 @@ st.markdown(f"""
 ADMIN_EMAIL = "krishna5689@outlook.in"
 ADMIN_PHONE = "919451134541"
 
+# --- DIGITAL CLOCK JS CODE (CLIENT-SIDE REAL-TIME RUNNING CLOCK) ---
+clock_html = f"""
+<div id="clock-container" style="
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: {text_color};
+    text-align: right;
+    padding-right: 5px;
+    letter-spacing: 0.02em;
+">
+    <span id="date-part"></span> &nbsp;&bull;&nbsp; <span id="time-part" style="color: #2563eb; font-weight: 700;"></span>
+</div>
+
+<script>
+    function updateClock() {{
+        const now = new Date();
+        const options = {{ year: 'numeric', month: 'long', day: 'numeric' }};
+        const dateStr = now.toLocaleDateString('en-US', options);
+        
+        let hours = now.getHours();
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        const hoursStr = String(hours).padStart(2, '0');
+        const timeStr = hoursStr + ':' + minutes + ':' + seconds + ' ' + ampm;
+        
+        document.getElementById('date-part').textContent = "📅 " + dateStr;
+        document.getElementById('time-part').textContent = "🕒 " + timeStr;
+    }}
+    setInterval(updateClock, 1000);
+    updateClock();
+</script>
+<style>
+    body {{
+        margin: 0;
+        overflow: hidden;
+        background-color: transparent !important;
+    }}
+</style>
+"""
+
 # --- 3. TOP BRANDING & TOP-RIGHT ACCESSIBILITY HEADER ---
-# Divides the top row into header (left) and accessibility options (right)
-header_col, control_col = st.columns([2.5, 1.1])
+# Divides the top row into header (left) and accessibility + clock (right)
+header_col, control_col = st.columns([2.3, 1.3])
 
 with header_col:
     st.markdown("<h2 style='margin: 0; color: #1e40af;'>🎓 Academic Student Portal</h2>", unsafe_allow_html=True)
@@ -149,6 +203,10 @@ with header_col:
     )
 
 with control_col:
+    # Render the real-time Digital Clock in the top-right corner
+    components.html(clock_html, height=32)
+    
+    # Sub-columns for Theme and Font Size side-by-side below the Clock
     suite_col1, suite_col2 = st.columns(2)
     
     with suite_col1:
