@@ -384,3 +384,87 @@ with tab_report:
 # --- FOOTER ---
 st.markdown("---")
 st.markdown("<center style='font-size: 11px;'>Powered by Google Workspace and Microhnm Technologies</center>", unsafe_allow_html=True)
+# --- UPDATED STYLING WITH PROFESSIONAL BACKGROUND IMAGE ---
+# You can change this URL to any professional image path you prefer
+BACKGROUND_IMAGE_URL = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop"
+
+if st.session_state.bg_theme == "light":
+    card_bg = "rgba(255, 255, 255, 0.90)"  # Slightly translucent white
+    text_color = "#0f172a"
+    sub_text_color = "#475569"
+    border_color = "#cbd5e1"
+    tab_active_text = "#ffffff"
+    overlay_tint = "rgba(241, 245, 249, 0.35)" # Light tint overlay over image
+else:
+    card_bg = "rgba(22, 30, 46, 0.90)"   # Slightly translucent dark blue/gray
+    text_color = "#f8fafc"
+    sub_text_color = "#94a3b8"
+    border_color = "#2d3748"
+    tab_active_text = "#ffffff"
+    overlay_tint = "rgba(11, 15, 25, 0.65)"  # Darker tint overlay for contrast
+
+st.markdown(f"""
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    
+    html, body, [data-testid="stAppViewContainer"] {{
+        font-family: 'Inter', sans-serif !important;
+        font-size: {st.session_state.font_scale}% !important;
+    }}
+    
+    /* Background Image Implementation with Color Overlay for Readability */
+    [data-testid="stAppViewContainer"] {{
+        background: linear-gradient({overlay_tint}, {overlay_tint}), 
+                    url("{BACKGROUND_IMAGE_URL}") no-repeat center center fixed;
+        background-size: cover !important;
+    }}
+    
+    h1 {{ font-size: 2rem !important; color: {text_color} !important; font-weight: 700 !important; }}
+    h2 {{ font-size: 1.6rem !important; color: {text_color} !important; font-weight: 700 !important; }}
+    h3 {{ font-size: 1.25rem !important; color: {text_color} !important; font-weight: 600 !important; }}
+    h4 {{ font-size: 1.1rem !important; color: {text_color} !important; font-weight: 600 !important; }}
+    p, span, label, li, td {{ color: {text_color} !important; }}
+    
+    /* Making header transparent to reveal background graphic */
+    [data-testid="stHeader"] {{ display: none !important; height: 0px !important; }}
+    .block-container {{ padding-top: 1rem !important; padding-bottom: 2rem !important; }}
+    
+    /* Blended translucent glassmorphism effect for content cards */
+    .main-card {{ 
+        padding: 20px; 
+        border-radius: 12px; 
+        background: {card_bg}; 
+        backdrop-filter: blur(8px);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); 
+        border: 1px solid {border_color}; 
+    }}
+    
+    .metric-card {{ 
+        background: {card_bg} !important; 
+        backdrop-filter: blur(8px);
+        padding: 18px; 
+        border-radius: 12px; 
+        text-align: center; 
+        border: 1px solid {border_color} !important; 
+        margin-bottom: 12px; 
+    }}
+    
+    div[data-testid="stTabs"] [data-baseweb="tab-list"] {{ 
+        gap: 6px; 
+        background-color: {card_bg}; 
+        backdrop-filter: blur(8px);
+        padding: 6px; 
+        border-radius: 12px; 
+        border: 1px solid {border_color}; 
+    }}
+    
+    div[data-testid="stTabs"] [data-baseweb="tab"] {{ padding: 6px 12px; border-radius: 8px; font-weight: 500; color: {sub_text_color} !important; }}
+    div[data-testid="stTabs"] [aria-selected="true"] {{ background-color: #2563eb !important; color: {tab_active_text} !important; }}
+    
+    div[data-testid="stAppDeployButton"] {{ display: none !important; }}
+    #MainMenu {{ visibility: hidden !important; }}
+    div[data-testid="stToolbar"] {{ display: none !important; }}
+    footer {{ visibility: hidden !important; }}
+    .stForm {{ background: {card_bg} !important; backdrop-filter: blur(8px); border: 1px solid {border_color} !important; border-radius: 12px !important; padding: 20px !important; }}
+    </style>
+    """, unsafe_allow_html=True)
