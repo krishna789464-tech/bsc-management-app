@@ -233,24 +233,7 @@ with tab_ai:
     jotform_script = "<script src='https://cdn.jotfor.ms/agent/embedjs/019e014489347343a7b79be9c9855b48569e/embed.js?autoOpenChatIn=1'></script>"
     components.html(jotform_script, height=550, scrolling=True)
 
-# --- TAB: STREAMLINED DEEP SEARCH (NOTEBOOKLM) ---
-with tab_deep_search:
-    st.header("🔍 Deep Search Environment")
-    st.write("Direct external bridge pipeline to your academic analysis workspace.")
-    
-    # Clean layout with clear information and the single-click launch button
-    st.markdown(f"""
-        <div style="border: 1px solid {border_color}; background-color: {card_bg}; padding: 24px; border-radius: 12px; margin-bottom: 20px; max-width: 800px;">
-            <h3 style="margin-top:0; color:#2563eb;">Google NotebookLM Gateway</h3>
-            <p style="font-size:0.95rem; line-height:1.6;">
-                Clicking the link below establishes an external session handshake directly into your configured NotebookLM cluster. 
-                Manage your documentation parsing, contextual index creation, and text automation routines through your active workspace domain.
-            </p>
-            <span style="font-size:0.85rem; background-color:#dcfce7; color:#15803d; padding:6px 12px; border-radius:6px; font-weight:600; display:inline-block; margin-top:5px;">
-                🔗 Connection Pipeline Ready
-            </span>
-        </div>
-    """, unsafe_allow_html=True)
+
     
     # Single execution gateway button
     st.link_button(
