@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import urllib.parse
 import os
 import time
+import base64
 import streamlit.components.v1 as components
 from PIL import Image
 
@@ -81,24 +82,45 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- 4. NEW BACKGROUND IMAGE INTEGRATION ---
-# यहाँ आपकी अपलोड की गई प्रोफेशनल इमेज का बेस लिंक सेट किया गया है
-BACKGROUND_IMAGE_URL = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop"
+# --- 4. LOCAL BACKGROUND IMAGE (BASE64 CONVERSION) ---
+BG_IMAGE_PATH = r"C:\Users\ADMIN\Desktop\modern-light-blue-background-featuring-circuit-line-elements-and-dotted-texture-perfect-for-digital-technology-themes-presentations-web-interfaces-and-tech-branding-vector.jpg"
 
+@st.cache_data
+def get_base64_of_local_image(path):
+    if os.path.exists(path):
+        with open(path, "rb") as image_file:
+            return base64.b64encode(image_file.read()).decode()
+    return ""
+
+# Base64 स्ट्रिंग तैयार करना
+bg_base64 = get_base64_of_local_image(BG_IMAGE_PATH)
+
+# थीम के हिसाब से कलर्स और ट्रांसपेरेंसी सेट करना
 if st.session_state.bg_theme == "light":
-    card_bg = "rgba(255, 255, 255, 0.90)"  # Translucent glassmorphism white
+    card_bg = "rgba(255, 255, 255, 0.85)"  # ग्लास इफेक्ट के लिए ट्रांसपेरेंट वाइट
     text_color = "#0f172a"
     sub_text_color = "#475569"
     border_color = "#cbd5e1"
     tab_active_text = "#ffffff"
-    overlay_tint = "rgba(241, 245, 249, 0.45)"  # Clear crisp light tint over mesh
+    overlay_tint = "rgba(241, 245, 249, 0.25)"  # लाइट थीम में इमेज साफ दिखेगी
 else:
-    card_bg = "rgba(22, 30, 46, 0.88)"   # Translucent dark layout
+    card_bg = "rgba(15, 23, 42, 0.85)"   # डार्क मोड ग्लास इफेक्ट
     text_color = "#f8fafc"
     sub_text_color = "#94a3b8"
     border_color = "#2d3748"
     tab_active_text = "#ffffff"
-    overlay_tint = "rgba(11, 15, 25, 0.75)"  # High contrast dark tint
+    overlay_tint = "rgba(11, 15, 25, 0.65)"  # डार्क मोड में कंट्रास्ट के लिए टिनट
+
+# अगर इमेज मिल जाती है तो बेस64 यूआरएल का इस्तेमाल करें, नहीं तो फॉलबैक कलर
+if bg_base64:
+    background_style = f"""
+    background: linear-gradient({overlay_tint}, {overlay_tint}), 
+                url("data:image/jpeg;base64,{bg_base64}") no-repeat center center fixed;
+    background-size: cover !important;
+    """
+else:
+    # फाइल पाथ गलत होने पर सुरक्षित फॉलबैक सिस्टम
+    background_style = f"background-color: {'#f1f5f9' if st.session_state.bg_theme == 'light' else '#0b0f19'} !important;"
 
 st.markdown(f"""
     <style>
@@ -109,11 +131,9 @@ st.markdown(f"""
         font-size: {st.session_state.font_scale}% !important;
     }}
     
-    /* Dynamic Mesh Network Background Styling */
+    /* एप्लाइड सर्किट बैकग्राउंड */
     [data-testid="stAppViewContainer"] {{
-        background: linear-gradient({overlay_tint}, {overlay_tint}), 
-                    url("{BACKGROUND_IMAGE_URL}") no-repeat center center fixed;
-        background-size: cover !important;
+        {background_style}
     }}
     
     h1 {{ font-size: 2rem !important; color: {text_color} !important; font-weight: 700 !important; }}
@@ -125,19 +145,19 @@ st.markdown(f"""
     [data-testid="stHeader"] {{ display: none !important; height: 0px !important; }}
     .block-container {{ padding-top: 1rem !important; padding-bottom: 2rem !important; }}
     
-    /* Blended translucent glassmorphism effects */
+    /* ग्लासमोर्फिज्म इफेक्ट्स ताकि बैकग्राउंड की टेक्सचर हलकी सी दिखती रहे */
     .main-card {{ 
         padding: 20px; 
         border-radius: 12px; 
         background: {card_bg}; 
-        backdrop-filter: blur(8px);
+        backdrop-filter: blur(10px);
         box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); 
         border: 1px solid {border_color}; 
     }}
     
     .metric-card {{ 
         background: {card_bg} !important; 
-        backdrop-filter: blur(8px);
+        backdrop-filter: blur(10px);
         padding: 18px; 
         border-radius: 12px; 
         text-align: center; 
@@ -148,7 +168,7 @@ st.markdown(f"""
     div[data-testid="stTabs"] [data-baseweb="tab-list"] {{ 
         gap: 6px; 
         background-color: {card_bg}; 
-        backdrop-filter: blur(8px);
+        backdrop-filter: blur(10px);
         padding: 6px; 
         border-radius: 12px; 
         border: 1px solid {border_color}; 
@@ -161,9 +181,9 @@ st.markdown(f"""
     #MainMenu {{ visibility: hidden !important; }}
     div[data-testid="stToolbar"] {{ display: none !important; }}
     footer {{ visibility: hidden !important; }}
-    .stForm {{ background: {card_bg} !important; backdrop-filter: blur(8px); border: 1px solid {border_color} !important; border-radius: 12px !important; padding: 20px !important; }}
+    .stForm {{ background: {card_bg} !important; backdrop-filter: blur(10px); border: 1px solid {border_color} !important; border-radius: 12px !important; padding: 20px !important; }}
     
-    /* Alert Prompt Styles */
+    /* अलर्ट प्रॉम्ट स्टाइल */
     .highlight-box {{
         background: linear-gradient(135deg, #ff000022, #ff000011);
         border: 1px dashed #ff0000;
