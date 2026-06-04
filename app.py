@@ -15,7 +15,7 @@ if "bg_theme" not in st.session_state:
 if "animation_played" not in st.session_state:
     st.session_state.animation_played = False
 
-# --- 2. CINEMATIC STARTING ANIMATION (EXECUTES FIRST) ---
+# --- 2. CINEMATIC STARTING ANIMATION ---
 if not st.session_state.animation_played:
     animation_html = """
     <div id="animation-overlay">
@@ -81,7 +81,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Theme Configuration
+# Theme Configuration Colors
 if st.session_state.bg_theme == "light":
     bg_color = "#f1f5f9"
     card_bg = "#ffffff"
@@ -174,16 +174,18 @@ with control_col:
 st.markdown("<br>", unsafe_allow_html=True)
 st.warning("⚠️ **System Notice / आवश्यक सूचना:** This portal is currently in the **testing phase**. (यह एप्लिकेशन अभी टेस्टिंग फेज़ में है।)")
 
+# --- UPDATED APP NAVIGATION NAVIGATION TABS ---
 tabs = st.tabs([
     "📊 Dashboard",
     "🤖 AI Assistant",
+    "🔍 Deep Search (NotebookLM)",
     "📢 News & Notices",
     "📚 Study Classrooms",
     "🧮 Performance Toolkit",
     "⏱️ Focus Engine",
     "🚨 Report Issue"
 ])
-tab_dashboard, tab_ai, tab_news, tab_study, tab_perf, tab_focus, tab_report = tabs
+tab_dashboard, tab_ai, tab_deep_search, tab_news, tab_study, tab_perf, tab_focus, tab_report = tabs
 
 # --- TAB: DASHBOARD ---
 with tab_dashboard:
@@ -224,37 +226,67 @@ with tab_dashboard:
         st.button("📅 Academic Calendar", use_container_width=True)
         st.button("📊 Examination Reports", use_container_width=True)
 
-# --- TAB: AI ASSISTANT (WITH NEW NOTEBOOKLM INTEGRATION) ---
+# --- TAB: AI ASSISTANT ---
 with tab_ai:
-    ai_layout_left, ai_layout_right = st.columns([1.8, 1.2])
+    st.header("🤖 AI Student Counselor")
+    st.write("Our automated academic agent is loading below. If it does not open automatically, look for the chat container asset.")
+    jotform_script = "<script src='https://cdn.jotfor.ms/agent/embedjs/019e014489347343a7b79be9c9855b48569e/embed.js?autoOpenChatIn=1'></script>"
+    components.html(jotform_script, height=550, scrolling=True)
+
+# --- NEW TAB: DEDICATED DEEP SEARCH (GOOGLE NOTEBOOKLM) ---
+with tab_deep_search:
+    st.header("🔍 Deep Search & NotebookLM Environment")
+    st.write("Stage assets locally and connect directly to your automated Google notebook indexing cluster.")
     
-    with ai_layout_left:
-        st.header("🤖 AI Student Counselor")
-        st.write("Our automated academic agent is loading below. If it does not open automatically, look for the chat container asset.")
-        jotform_script = "<script src='https://cdn.jotfor.ms/agent/embedjs/019e014489347343a7b79be9c9855b48569e/embed.js?autoOpenChatIn=1'></script>"
-        components.html(jotform_script, height=520, scrolling=True)
+    search_left, search_right = st.columns([1.6, 1.4])
+    
+    with search_left:
+        st.subheader("📁 Document & Prompt Staging Area")
         
-    with ai_layout_right:
-        st.header("📓 Research Deep-Dive")
-        st.write("Synthesize your research papers, textbooks, or reference materials using our linked workspace infrastructure.")
+        # Dedicated Upload File Box Container
+        uploaded_files = st.file_uploader(
+            "Upload reference assets (PDF, TXT, DOCX, etc.)", 
+            accept_multiple_files=True,
+            key="notebook_file_uploader"
+        )
         
-        # NotebookLM Integration Dashboard Block
+        if uploaded_files:
+            st.success(f"📎 {len(uploaded_files)} document(s) prepared locally for index injection.")
+            for f in uploaded_files:
+                st.caption(f"• Ready for transfer: `{f.name}` ({f.size / 1024:.1f} KB)")
+        
+        # Application Text Command Box
+        user_command = st.text_area(
+            "Type your execution query or analytical prompt below:",
+            placeholder="e.g., Cross-examine these notes and construct a 5-point study summary highlighting structural vulnerabilities.",
+            key="notebook_text_command"
+        )
+        
+        if user_command:
+            # Clipboard utility copy logic helper
+            st.info("💡 Your text query is saved below. Click 'Launch' to bridge and process your dataset.")
+
+    with search_right:
+        st.subheader("🌐 Sync & Gateway Pipeline")
         st.markdown(f"""
-            <div style="border: 1px solid {border_color}; background-color: {card_bg}; padding: 20px; border-radius: 12px; margin-bottom: 15px;">
-                <h3 style="margin-top: 0; color: #2563eb !important;">Google NotebookLM Sync</h3>
-                <p style="font-size: 0.9rem; line-height: 1.4; margin-bottom: 12px;">
-                    Upload custom assignments, PDFs, notes, or research items directly into the synced textbook reference repository to auto-generate structured notes, study guides, and deep analytical briefs.
+            <div style="border: 1px solid {border_color}; background-color: {card_bg}; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                <h4 style="margin-top:0; color:#2563eb;">Pipeline Initialization Status</h4>
+                <p style="font-size:0.9rem; line-height:1.5; margin-bottom:12px;">
+                    Google NotebookLM enforces rigorous browser isolation protocols. To sync data, use this staging block to structure notes, then forward execution to the primary interface.
                 </p>
-                <span style="font-size: 0.8rem; color: #16a34a; font-weight: 600;">⚡ Dedicated Workspace Active</span>
+                <span style="font-size:0.8rem; background-color:#dcfce7; color:#15803d; padding:4px 8px; border-radius:6px; font-weight:600;">🔗 Environment Bridge Available</span>
             </div>
         """, unsafe_allow_html=True)
         
-        st.link_button(
-            "📤 Upload Files to NotebookLM Workspace", 
+        # Gateway Action Button
+        if st.link_button(
+            "🚀 Launch Connected NotebookLM Chat Session", 
             NOTEBOOK_LM_URL, 
             type="primary", 
             use_container_width=True
-        )
+        ):
+            if uploaded_files or user_command:
+                st.toast("Pipeline launched! Drop your staged files into the source window.", icon="⚙️")
 
 # --- TAB: NEWS & ANNOUNCEMENTS ---
 with tab_news:
