@@ -174,7 +174,7 @@ with control_col:
 st.markdown("<br>", unsafe_allow_html=True)
 st.warning("⚠️ **System Notice / आवश्यक सूचना:** This portal is currently in the **testing phase**. (यह एप्लिकेशन अभी टेस्टिंग फेज़ में है।)")
 
-# --- UPDATED APP NAVIGATION NAVIGATION TABS ---
+# --- NAVIGATION TABS ---
 tabs = st.tabs([
     "📊 Dashboard",
     "🤖 AI Assistant",
@@ -233,106 +233,33 @@ with tab_ai:
     jotform_script = "<script src='https://cdn.jotfor.ms/agent/embedjs/019e014489347343a7b79be9c9855b48569e/embed.js?autoOpenChatIn=1'></script>"
     components.html(jotform_script, height=550, scrolling=True)
 
-# --- NEW TAB: DEDICATED DEEP SEARCH (GOOGLE NOTEBOOKLM) ---
+# --- TAB: STREAMLINED DEEP SEARCH (NOTEBOOKLM) ---
 with tab_deep_search:
-    st.header("🔍 Deep Search & NotebookLM Environment")
-    st.write("Stage assets locally and connect directly to your automated Google notebook indexing cluster.")
+    st.header("🔍 Deep Search Environment")
+    st.write("Direct external bridge pipeline to your academic analysis workspace.")
     
-    search_left, search_right = st.columns([1.6, 1.4])
+    # Clean layout with clear information and the single-click launch button
+    st.markdown(f"""
+        <div style="border: 1px solid {border_color}; background-color: {card_bg}; padding: 24px; border-radius: 12px; margin-bottom: 20px; max-width: 800px;">
+            <h3 style="margin-top:0; color:#2563eb;">Google NotebookLM Gateway</h3>
+            <p style="font-size:0.95rem; line-height:1.6;">
+                Clicking the link below establishes an external session handshake directly into your configured NotebookLM cluster. 
+                Manage your documentation parsing, contextual index creation, and text automation routines through your active workspace domain.
+            </p>
+            <span style="font-size:0.85rem; background-color:#dcfce7; color:#15803d; padding:6px 12px; border-radius:6px; font-weight:600; display:inline-block; margin-top:5px;">
+                🔗 Connection Pipeline Ready
+            </span>
+        </div>
+    """, unsafe_allow_html=True)
     
-    
-        # Application Text Command Box
-        user_command = st.text_area(
-            "Type your execution query or analytical prompt below:",
-            placeholder="e.g., Cross-examine these notes and construct a 5-point study summary highlighting structural vulnerabilities.",
-            key="notebook_text_command"
-        )
-        
-        if user_command:
-            # Clipboard utility copy logic helper
-            st.info("💡 Your text query is saved below. Click 'Launch' to bridge and process your dataset.")
+    # Single execution gateway button
+    st.link_button(
+        "🚀 Launch Connected NotebookLM Chat Session", 
+        NOTEBOOK_LM_URL, 
+        type="primary", 
+        use_container_width=True
+    )
 
-    with search_right:
-        st.subheader("🌐 Sync & Gateway Pipeline")
-        st.markdown(f"""
-            <div style="border: 1px solid {border_color}; background-color: {card_bg}; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-                <h4 style="margin-top:0; color:#2563eb;">Pipeline Initialization Status</h4>
-                <p style="font-size:0.9rem; line-height:1.5; margin-bottom:12px;">
-                    Google NotebookLM enforces rigorous browser isolation protocols. To sync data, use this staging block to structure notes, then forward execution to the primary interface.
-                </p>
-                <span style="font-size:0.8rem; background-color:#dcfce7; color:#15803d; padding:4px 8px; border-radius:6px; font-weight:600;">🔗 Environment Bridge Available</span>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        # Gateway Action Button
-        if st.link_button(
-            "🚀 Launch Connected NotebookLM Chat Session", 
-            NOTEBOOK_LM_URL, 
-            type="primary", 
-            use_container_width=True
-        ):
-            if uploaded_files or user_command:
-                st.toast("Pipeline launched! Drop your staged files into the source window.", icon="⚙️")
-# Replace your tab_deep_search block with this optimized UI layout
-
-with tab_deep_search:
-    st.header("🔍 Deep Search & NotebookLM Gateway")
-    st.write("Prepare your workspace assets below to sync with Google NotebookLM.")
-    
-    col_left, col_right = st.columns([1.5, 1.5])
-    
-    with col_left:
-        st.subheader("1. Stage Your Files & Prompt")
-        
-        # Local file staging
-        uploaded_files = st.file_uploader(
-            "Drag your study files here first:", 
-            accept_multiple_files=True,
-            key="nb_uploader"
-        )
-        
-        if uploaded_files:
-            st.success(f"📋 {len(uploaded_files)} file(s) ready in staging area.")
-            # Displaying files clearly so user can drag them out if browser supports it, 
-            # or remember what to drop into NotebookLM.
-            for f in uploaded_files:
-                st.caption(f"📄 **{f.name}** (Ready to drop)")
-        
-        # Command Text Input
-        user_command = st.text_area(
-            "Type the command you want executed automatically:",
-            placeholder="e.g., Summarize the key concepts of faulting dynamics from these notes.",
-            key="nb_command"
-        )
-
-    with col_right:
-        st.subheader("2. Execute Automated Sync")
-        st.markdown(f"""
-            <div style="border: 1px solid {border_color}; background-color: {card_bg}; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
-                <h5 style="margin:0; color:#2563eb;">How it works:</h5>
-                <ol style="font-size: 0.85rem; padding-left: 20px; margin-top: 5px;">
-                    <li>Click the <b>Launch</b> button below.</li>
-                    <li>NotebookLM will open, and your text command will <b>auto-type and submit itself</b> via your browser script.</li>
-                    <li>Drag your staged files from your desktop directly into the NotebookLM source panel.</li>
-                </ol>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        if user_command:
-            # Safely encode the text query for the address bar
-            encoded_query = urllib.parse.quote(user_command)
-            # Append the portal query parameter to your specific NotebookLM URL
-            AUTOMATED_URL = f"{NOTEBOOK_LM_URL}&portalQuery={encoded_query}"
-            
-            st.link_button(
-                "🚀 Launch & Auto-Type Command", 
-                AUTOMATED_URL, 
-                type="primary", 
-                use_container_width=True
-            )
-        else:
-            st.button("🚀 Launch & Auto-Type Command", disabled=True, use_container_width=True)
-            st.caption("⚠️ Please write a command prompt on the left to activate the launch pipeline.")
 # --- TAB: NEWS & ANNOUNCEMENTS ---
 with tab_news:
     st.header("📢 University Bulletins & Notices")
@@ -456,4 +383,4 @@ with tab_report:
 
 # --- FOOTER ---
 st.markdown("---")
-st.markdown("<center style='font-size: 11px;'>Powered by Google Workspace Infrastructure and Microhnm Technologies</center>", unsafe_allow_html=True)
+st.markdown("<center style='font-size: 11px;'>Powered by Google Workspace and Microhnm Technologies</center>", unsafe_allow_html=True)
