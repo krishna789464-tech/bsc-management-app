@@ -529,5 +529,3 @@ with tab_deep_search:
             )
         else:
             st.button("📺 Enter Search Query Above", disabled=True, use_container_width=True)
-with search_col2:
-       
