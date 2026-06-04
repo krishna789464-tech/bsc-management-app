@@ -479,3 +479,115 @@ with tab_report:
 # --- FOOTER ---
 st.markdown("---")
 st.markdown("<center style='font-size: 11px;'>Powered by Google Workspace Infrastructure and Microhnm Technologies</center>", unsafe_allow_html=True)
+# --- ANIMATION SPLASH SCREEN SESSION STATE ---
+if "animation_played" not in st.session_state:
+    st.session_state.animation_played = False
+
+# --- CINEMATIC STARTING ANIMATION ---
+if not st.session_state.animation_played:
+    # Cinematic Fullscreen Overlay with CSS Keyframes
+    animation_html = """
+    <div id="animation-overlay">
+        <div class="content-wrapper">
+            <h1 class="welcome-text">HELLO STUDENTS</h1>
+            <div class="sub-bar"></div>
+            <p class="portal-text">Academic Student Portal</p>
+        </div>
+    </div>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;800&display=swap');
+        
+        #animation-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #0b0f19 0%, #1e40af 50%, #020617 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999999;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            animation: fadeOutWindow 1s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+            animation-delay: 3.5s;
+        }
+
+        .content-wrapper {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .welcome-text {
+            font-size: 4rem;
+            font-weight: 800;
+            letter-spacing: 6px;
+            color: #ffffff;
+            margin: 0;
+            text-transform: uppercase;
+            background: linear-gradient(to right, #ffffff, #93c5fd, #ffffff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shineText 3s linear infinite, scaleUpText 2.5s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+            opacity: 0;
+        }
+
+        .sub-bar {
+            width: 0px;
+            height: 4px;
+            background: #3b82f6;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0px 0px 15px #3b82f6;
+            animation: growBar 1.5s ease-out forwards;
+            animation-delay: 0.8s;
+        }
+
+        .portal-text {
+            font-size: 1.2rem;
+            font-weight: 400;
+            letter-spacing: 4px;
+            color: #94a3b8;
+            margin: 0;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: fadeInPortal 1.5s ease-out forwards;
+            animation-delay: 1.5s;
+        }
+
+        /* --- ANIMATION KEYFRAMES --- */
+        @keyframes scaleUpText {
+            0% { transform: scale(0.85); opacity: 0; filter: blur(10px); }
+            30% { opacity: 1; filter: blur(0px); }
+            100% { transform: scale(1.05); opacity: 1; }
+        }
+
+        @keyframes shineText {
+            to { background-position: 200% center; }
+        }
+
+        @keyframes growBar {
+            to { width: 250px; }
+        }
+
+        @keyframes fadeInPortal {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOutWindow {
+            to { opacity: 0; visibility: hidden; pointer-events: none; }
+        }
+    </style>
+    """
+    # Inject fullscreen component
+    components.html(animation_html, height=0)
+    
+    # Wait for the cinematic sequence to complete natively before drawing UI layout
+    time.sleep(4.2) 
+    st.session_state.animation_played = True
+    st.rerun()
