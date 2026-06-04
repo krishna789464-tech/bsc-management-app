@@ -81,47 +81,105 @@ st.set_page_config(
     layout="wide"
 )
 
-# Theme Configuration Colors
+# --- 4. NEW BACKGROUND IMAGE INTEGRATION ---
+# यहाँ आपकी अपलोड की गई प्रोफेशनल इमेज का बेस लिंक सेट किया गया है
+BACKGROUND_IMAGE_URL = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop"
+
 if st.session_state.bg_theme == "light":
-    bg_color = "#f1f5f9"
-    card_bg = "#ffffff"
+    card_bg = "rgba(255, 255, 255, 0.90)"  # Translucent glassmorphism white
     text_color = "#0f172a"
     sub_text_color = "#475569"
     border_color = "#cbd5e1"
     tab_active_text = "#ffffff"
+    overlay_tint = "rgba(241, 245, 249, 0.45)"  # Clear crisp light tint over mesh
 else:
-    bg_color = "#0b0f19"
-    card_bg = "#161e2e"
+    card_bg = "rgba(22, 30, 46, 0.88)"   # Translucent dark layout
     text_color = "#f8fafc"
     sub_text_color = "#94a3b8"
     border_color = "#2d3748"
     tab_active_text = "#ffffff"
+    overlay_tint = "rgba(11, 15, 25, 0.75)"  # High contrast dark tint
 
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    
     html, body, [data-testid="stAppViewContainer"] {{
         font-family: 'Inter', sans-serif !important;
         font-size: {st.session_state.font_scale}% !important;
     }}
+    
+    /* Dynamic Mesh Network Background Styling */
+    [data-testid="stAppViewContainer"] {{
+        background: linear-gradient({overlay_tint}, {overlay_tint}), 
+                    url("{BACKGROUND_IMAGE_URL}") no-repeat center center fixed;
+        background-size: cover !important;
+    }}
+    
     h1 {{ font-size: 2rem !important; color: {text_color} !important; font-weight: 700 !important; }}
     h2 {{ font-size: 1.6rem !important; color: {text_color} !important; font-weight: 700 !important; }}
     h3 {{ font-size: 1.25rem !important; color: {text_color} !important; font-weight: 600 !important; }}
     h4 {{ font-size: 1.1rem !important; color: {text_color} !important; font-weight: 600 !important; }}
     p, span, label, li, td {{ color: {text_color} !important; }}
-    .stApp {{ background-color: {bg_color} !important; }}
+    
     [data-testid="stHeader"] {{ display: none !important; height: 0px !important; }}
     .block-container {{ padding-top: 1rem !important; padding-bottom: 2rem !important; }}
-    .main-card {{ padding: 20px; border-radius: 12px; background: {card_bg}; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid {border_color}; }}
-    .metric-card {{ background: {card_bg} !important; padding: 18px; border-radius: 12px; text-align: center; border: 1px solid {border_color} !important; margin-bottom: 12px; }}
-    div[data-testid="stTabs"] [data-baseweb="tab-list"] {{ gap: 6px; background-color: {card_bg}; padding: 6px; border-radius: 12px; border: 1px solid {border_color}; }}
+    
+    /* Blended translucent glassmorphism effects */
+    .main-card {{ 
+        padding: 20px; 
+        border-radius: 12px; 
+        background: {card_bg}; 
+        backdrop-filter: blur(8px);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); 
+        border: 1px solid {border_color}; 
+    }}
+    
+    .metric-card {{ 
+        background: {card_bg} !important; 
+        backdrop-filter: blur(8px);
+        padding: 18px; 
+        border-radius: 12px; 
+        text-align: center; 
+        border: 1px solid {border_color} !important; 
+        margin-bottom: 12px; 
+    }}
+    
+    div[data-testid="stTabs"] [data-baseweb="tab-list"] {{ 
+        gap: 6px; 
+        background-color: {card_bg}; 
+        backdrop-filter: blur(8px);
+        padding: 6px; 
+        border-radius: 12px; 
+        border: 1px solid {border_color}; 
+    }}
+    
     div[data-testid="stTabs"] [data-baseweb="tab"] {{ padding: 6px 12px; border-radius: 8px; font-weight: 500; color: {sub_text_color} !important; }}
     div[data-testid="stTabs"] [aria-selected="true"] {{ background-color: #2563eb !important; color: {tab_active_text} !important; }}
+    
     div[data-testid="stAppDeployButton"] {{ display: none !important; }}
     #MainMenu {{ visibility: hidden !important; }}
     div[data-testid="stToolbar"] {{ display: none !important; }}
     footer {{ visibility: hidden !important; }}
-    .stForm {{ background: {card_bg} !important; border: 1px solid {border_color} !important; border-radius: 12px !important; padding: 20px !important; }}
+    .stForm {{ background: {card_bg} !important; backdrop-filter: blur(8px); border: 1px solid {border_color} !important; border-radius: 12px !important; padding: 20px !important; }}
+    
+    /* Alert Prompt Styles */
+    .highlight-box {{
+        background: linear-gradient(135deg, #ff000022, #ff000011);
+        border: 1px dashed #ff0000;
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+        margin-bottom: 10px;
+        font-weight: 600;
+        color: #ff0000 !important;
+        animation: pulse 2s infinite;
+    }}
+    @keyframes pulse {{
+        0% {{ opacity: 0.7; }}
+        50% {{ opacity: 1; }}
+        100% {{ opacity: 0.7; }}
+    }}
     </style>
     """, unsafe_allow_html=True)
 
@@ -233,15 +291,70 @@ with tab_ai:
     jotform_script = "<script src='https://cdn.jotfor.ms/agent/embedjs/019e014489347343a7b79be9c9855b48569e/embed.js?autoOpenChatIn=1'></script>"
     components.html(jotform_script, height=550, scrolling=True)
 
-
+# --- TAB: STREAMLINED DEEP SEARCH & VIDEO TERMINAL ---
+with tab_deep_search:
+    st.header("🔍 Deep Search & Multimedia Research")
+    st.write("Direct external bridge pipelines to your academic analysis and video lecture workspaces.")
     
-    # Single execution gateway button
-    st.link_button(
-        "🚀 Launch Connected NotebookLM Chat Session", 
-        NOTEBOOK_LM_URL, 
-        type="primary", 
-        use_container_width=True
-    )
+    # Grid split for NotebookLM Workspace and YouTube Terminal
+    search_col1, search_col2 = st.columns(2)
+    
+    with search_col1:
+        st.markdown(f"""
+            <div style="border: 1px solid {border_color}; background-color: {card_bg}; padding: 24px; border-radius: 12px; height: 260px; backdrop-filter: blur(8px);">
+                <h3 style="margin-top:0; color:#2563eb;">Google NotebookLM Gateway</h3>
+                <p style="font-size:0.95rem; line-height:1.6; margin-bottom: 20px;">
+                    Clicking the link below establishes an external session handshake directly into your configured NotebookLM cluster. 
+                    Manage documentation parsing, contextual index creation, and text automation routines.
+                </p>
+                <span style="font-size:0.85rem; background-color:#dcfce7; color:#15803d; padding:6px 12px; border-radius:6px; font-weight:600;">
+                    🔗 Connection Pipeline Ready
+                </span>
+            </div>
+        """, unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Single execution gateway button for NotebookLM
+        st.link_button(
+            "🚀 Launch Connected NotebookLM Chat Session", 
+            NOTEBOOK_LM_URL, 
+            type="primary", 
+            use_container_width=True
+        )
+
+    with search_col2:
+        st.markdown(f"""
+            <div style="border: 1px solid {border_color}; background-color: {card_bg}; padding: 24px; border-radius: 12px; height: 260px; backdrop-filter: blur(8px); margin-bottom: 0px;">
+                <h3 style="margin-top:0; color:#ff0000;">YouTube Video Lecture Terminal</h3>
+                <p style="font-size:0.95rem; line-height:1.6;">
+                    Type your research topic, complex formula, or specific syllabus chapter below. 
+                    The portal will sync the data string and launch YouTube directly with your filtered educational feed.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        # Real-time portal search box entry
+        yt_query = st.text_input(
+            "Search YouTube Lectures / वीडियो लेक्चर खोजें:", 
+            placeholder="e.g., Structural geology faulting dynamics BSc lectures",
+            key="portal_youtube_search"
+        )
+        
+        if yt_query:
+            # Clean and URL-encode the text data for standard query mapping
+            encoded_yt_query = urllib.parse.quote(yt_query.strip())
+            YOUTUBE_SYNC_URL = f"https://www.youtube.com/results?search_query={encoded_yt_query}"
+            
+            st.link_button(
+                "📺 Launch Synchronized YouTube Search", 
+                YOUTUBE_SYNC_URL, 
+                type="secondary", 
+                use_container_width=True
+            )
+        else:
+            # Highlight Alert Integrated right above the standby button
+            st.markdown('<div class="highlight-box">⚠️ Enter search query above & Press here to apply!</div>', unsafe_allow_html=True)
+            st.button("📺 Terminal Standby (Awaiting Input)", disabled=True, use_container_width=True)
 
 # --- TAB: NEWS & ANNOUNCEMENTS ---
 with tab_news:
@@ -367,148 +480,3 @@ with tab_report:
 # --- FOOTER ---
 st.markdown("---")
 st.markdown("<center style='font-size: 11px;'>Powered by Google Workspace and Microhnm Technologies</center>", unsafe_allow_html=True)
-# --- UPDATED STYLING WITH PROFESSIONAL BACKGROUND IMAGE ---
-# You can change this URL to any professional image path you prefer
-BACKGROUND_IMAGE_URL = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop"
-
-if st.session_state.bg_theme == "light":
-    card_bg = "rgba(255, 255, 255, 0.90)"  # Slightly translucent white
-    text_color = "#0f172a"
-    sub_text_color = "#475569"
-    border_color = "#cbd5e1"
-    tab_active_text = "#ffffff"
-    overlay_tint = "rgba(241, 245, 249, 0.35)" # Light tint overlay over image
-else:
-    card_bg = "rgba(22, 30, 46, 0.90)"   # Slightly translucent dark blue/gray
-    text_color = "#f8fafc"
-    sub_text_color = "#94a3b8"
-    border_color = "#2d3748"
-    tab_active_text = "#ffffff"
-    overlay_tint = "rgba(11, 15, 25, 0.65)"  # Darker tint overlay for contrast
-
-st.markdown(f"""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-    
-    html, body, [data-testid="stAppViewContainer"] {{
-        font-family: 'Inter', sans-serif !important;
-        font-size: {st.session_state.font_scale}% !important;
-    }}
-    
-    /* Background Image Implementation with Color Overlay for Readability */
-    [data-testid="stAppViewContainer"] {{
-        background: linear-gradient({overlay_tint}, {overlay_tint}), 
-                    url("{BACKGROUND_IMAGE_URL}") no-repeat center center fixed;
-        background-size: cover !important;
-    }}
-    
-    h1 {{ font-size: 2rem !important; color: {text_color} !important; font-weight: 700 !important; }}
-    h2 {{ font-size: 1.6rem !important; color: {text_color} !important; font-weight: 700 !important; }}
-    h3 {{ font-size: 1.25rem !important; color: {text_color} !important; font-weight: 600 !important; }}
-    h4 {{ font-size: 1.1rem !important; color: {text_color} !important; font-weight: 600 !important; }}
-    p, span, label, li, td {{ color: {text_color} !important; }}
-    
-    /* Making header transparent to reveal background graphic */
-    [data-testid="stHeader"] {{ display: none !important; height: 0px !important; }}
-    .block-container {{ padding-top: 1rem !important; padding-bottom: 2rem !important; }}
-    
-    /* Blended translucent glassmorphism effect for content cards */
-    .main-card {{ 
-        padding: 20px; 
-        border-radius: 12px; 
-        background: {card_bg}; 
-        backdrop-filter: blur(8px);
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); 
-        border: 1px solid {border_color}; 
-    }}
-    
-    .metric-card {{ 
-        background: {card_bg} !important; 
-        backdrop-filter: blur(8px);
-        padding: 18px; 
-        border-radius: 12px; 
-        text-align: center; 
-        border: 1px solid {border_color} !important; 
-        margin-bottom: 12px; 
-    }}
-    
-    div[data-testid="stTabs"] [data-baseweb="tab-list"] {{ 
-        gap: 6px; 
-        background-color: {card_bg}; 
-        backdrop-filter: blur(8px);
-        padding: 6px; 
-        border-radius: 12px; 
-        border: 1px solid {border_color}; 
-    }}
-    
-    div[data-testid="stTabs"] [data-baseweb="tab"] {{ padding: 6px 12px; border-radius: 8px; font-weight: 500; color: {sub_text_color} !important; }}
-    div[data-testid="stTabs"] [aria-selected="true"] {{ background-color: #2563eb !important; color: {tab_active_text} !important; }}
-    
-    div[data-testid="stAppDeployButton"] {{ display: none !important; }}
-    #MainMenu {{ visibility: hidden !important; }}
-    div[data-testid="stToolbar"] {{ display: none !important; }}
-    footer {{ visibility: hidden !important; }}
-    .stForm {{ background: {card_bg} !important; backdrop-filter: blur(8px); border: 1px solid {border_color} !important; border-radius: 12px !important; padding: 20px !important; }}
-    </style>
-    """, unsafe_allow_html=True)
-# --- TAB: STREAMLINED DEEP SEARCH & VIDEO TERMINAL ---
-with tab_deep_search:
-    st.header("🔍 Deep Search & Multimedia Research")
-    st.write("Direct external bridge pipelines to your academic analysis and video lecture workspaces.")
-    
-    # Grid split for NotebookLM Workspace and YouTube Terminal
-    search_col1, search_col2 = st.columns(2)
-    
-    with search_col1:
-        st.markdown(f"""
-            <div style="border: 1px solid {border_color}; background-color: {card_bg}; padding: 24px; border-radius: 12px; height: 260px; backdrop-filter: blur(8px);">
-                <h3 style="margin-top:0; color:#2563eb;">Google NotebookLM Gateway</h3>
-                <p style="font-size:0.95rem; line-height:1.6; margin-bottom: 20px;">
-                    Clicking the link below establishes an external session handshake directly into your configured NotebookLM cluster. 
-                    Manage documentation parsing, contextual index creation, and text automation routines.
-                </p>
-                <span style="font-size:0.85rem; background-color:#dcfce7; color:#15803d; padding:6px 12px; border-radius:6px; font-weight:600;">
-                    🔗 Connection Pipeline Ready
-                </span>
-            </div>
-        """, unsafe_allow_html=True)
-        st.markdown("<br>", unsafe_allow_html=True)
-        # Single execution gateway button for NotebookLM
-        st.link_button(
-            "🚀 Launch Connected NotebookLM Chat Session", 
-            NOTEBOOK_LM_URL, 
-            type="primary", 
-            use_container_width=True
-        )
-
-    with search_col2:
-        st.markdown(f"""
-            <div style="border: 1px solid {border_color}; background-color: {card_bg}; padding: 24px; border-radius: 12px; height: 260px; backdrop-filter: blur(8px); margin-bottom: 0px;">
-                <h3 style="margin-top:0; color:#ff0000;">YouTube Video Lecture Terminal</h3>
-                <p style="font-size:0.95rem; line-height:1.6;">
-                    Type your research topic, complex formula, or specific syllabus chapter below. 
-                    The portal will sync the data string and launch YouTube directly with your filtered educational feed.
-                </p>
-            </div>
-        """, unsafe_allow_html=True)
-        
-        # Real-time portal search box entry
-        yt_query = st.text_input(
-            "Search YouTube Lectures / वीडियो लेक्चर खोजें:", 
-            placeholder="e.g., Structural geology faulting dynamics BSc lectures",
-            key="portal_youtube_search"
-        )
-        
-        if yt_query:
-            # Clean and URL-encode the text data for standard query mapping
-            encoded_yt_query = urllib.parse.quote(yt_query.strip())
-            YOUTUBE_SYNC_URL = f"https://www.youtube.com/results?search_query={encoded_yt_query}"
-            
-            st.link_button(
-                "📺 Launch Synchronized YouTube Search", 
-                YOUTUBE_SYNC_URL, 
-                type="secondary", 
-                use_container_width=True
-            )
-        else:
-            st.button("📺 Enter Search Query Above", disabled=True, use_container_width=True)
