@@ -240,21 +240,7 @@ with tab_deep_search:
     
     search_left, search_right = st.columns([1.6, 1.4])
     
-    with search_left:
-        st.subheader("📁 Document & Prompt Staging Area")
-        
-        # Dedicated Upload File Box Container
-        uploaded_files = st.file_uploader(
-            "Upload reference assets (PDF, TXT, DOCX, etc.)", 
-            accept_multiple_files=True,
-            key="notebook_file_uploader"
-        )
-        
-        if uploaded_files:
-            st.success(f"📎 {len(uploaded_files)} document(s) prepared locally for index injection.")
-            for f in uploaded_files:
-                st.caption(f"• Ready for transfer: `{f.name}` ({f.size / 1024:.1f} KB)")
-        
+    
         # Application Text Command Box
         user_command = st.text_area(
             "Type your execution query or analytical prompt below:",
