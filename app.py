@@ -478,3 +478,7 @@ with tab_report:
 # --- FOOTER ---
 st.markdown("---")
 st.markdown("<center style='font-size: 11px;'>Powered by Google Workspace Infrastructure and Microhnm Technologies</center>", unsafe_allow_html=True)
+import streamlit as st
+
+# Use a local path or a URL
+st.image(""C:\Users\ADMIN\Desktop\app logo.png"", caption="Your Main Image", width=500)
