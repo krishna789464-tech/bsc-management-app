@@ -529,3 +529,91 @@ with tab_deep_search:
             )
         else:
             st.button("📺 Enter Search Query Above", disabled=True, use_container_width=True)
+# --- TAB: STREAMLINED DEEP SEARCH & VIDEO TERMINAL ---
+with tab_deep_search:
+    st.header("🔍 Deep Search & Multimedia Research")
+    st.write("Direct external bridge pipelines to your academic analysis and video lecture workspaces.")
+    
+    # Grid split for NotebookLM Workspace and YouTube Terminal
+    search_col1, search_col2 = st.columns(2)
+    
+    with search_col1:
+        st.markdown(f"""
+            <div style="border: 1px solid {border_color}; background-color: {card_bg}; padding: 24px; border-radius: 12px; height: 260px; backdrop-filter: blur(8px);">
+                <h3 style="margin-top:0; color:#2563eb;">Google NotebookLM Gateway</h3>
+                <p style="font-size:0.95rem; line-height:1.6; margin-bottom: 20px;">
+                    Clicking the link below establishes an external session handshake directly into your configured NotebookLM cluster. 
+                    Manage documentation parsing, contextual index creation, and text automation routines.
+                </p>
+                <span style="font-size:0.85rem; background-color:#dcfce7; color:#15803d; padding:6px 12px; border-radius:6px; font-weight:600;">
+                    🔗 Connection Pipeline Ready
+                </span>
+            </div>
+        """, unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Single execution gateway button for NotebookLM
+        st.link_button(
+            "🚀 Launch Connected NotebookLM Chat Session", 
+            NOTEBOOK_LM_URL, 
+            type="primary", 
+            use_container_width=True
+        )
+
+    with search_col2:
+        st.markdown(f"""
+            <div style="border: 1px solid {border_color}; background-color: {card_bg}; padding: 24px; border-radius: 12px; height: 260px; backdrop-filter: blur(8px); margin-bottom: 0px;">
+                <h3 style="margin-top:0; color:#ff0000;">YouTube Video Lecture Terminal</h3>
+                <p style="font-size:0.95rem; line-height:1.6;">
+                    Type your research topic, complex formula, or specific syllabus chapter below. 
+                    The portal will sync the data string and launch YouTube directly with your filtered educational feed.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        # Real-time portal search box entry
+        yt_query = st.text_input(
+            "Search YouTube Lectures / वीडियो लेक्चर खोजें:", 
+            placeholder="e.g., Structural geology faulting dynamics BSc lectures",
+            key="portal_youtube_search"
+        )
+        
+        # Integration Logic: If text is entered, sync and activate link button
+        if yt_query:
+            # Clean and URL-encode the text data for standard query mapping
+            encoded_yt_query = urllib.parse.quote(yt_query.strip())
+            YOUTUBE_SYNC_URL = f"https://www.youtube.com/results?search_query={encoded_yt_query}"
+            
+            st.link_button(
+                "📺 Launch Synchronized YouTube Search", 
+                YOUTUBE_SYNC_URL, 
+                type="secondary", 
+                use_container_width=True
+            )
+        else:
+            # Highlighted Status message integrated directly inside the fallback button
+            st.markdown("""
+                <style>
+                .highlight-box {
+                    background: linear-gradient(135deg, #ff000022, #ff000011);
+                    border: 1px dashed #ff0000;
+                    padding: 10px;
+                    border-radius: 8px;
+                    text-align: center;
+                    margin-bottom: 10px;
+                    font-weight: 600;
+                    color: #ff0000 !important;
+                    animation: pulse 2s infinite;
+                }
+                @keyframes pulse {
+                    0% { opacity: 0.7; }
+                    50% { opacity: 1; }
+                    100% { opacity: 0.7; }
+                }
+                </style>
+                <div class="highlight-box">
+                    ⚠️ Enter search query above & Press here to apply!
+                </div>
+            """, unsafe_allow_html=True)
+            
+            st.button("📺 Terminal Standby (Awaiting Input)", disabled=True, use_container_width=True)
