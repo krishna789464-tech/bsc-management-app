@@ -478,11 +478,3 @@ with tab_report:
 # --- FOOTER ---
 st.markdown("---")
 st.markdown("<center style='font-size: 11px;'>Powered by Google Workspace Infrastructure and Microhnm Technologies</center>", unsafe_allow_html=True)
-import streamlit as st
-
-# IMPORTANT: This must be the very first Streamlit command in your script!
-st.set_page_config(
-    page_title="BSC management",
-    page_icon="assets/favicon.ico, "📜
-    layout="wide"
-)
