@@ -483,6 +483,6 @@ import streamlit as st
 # IMPORTANT: This must be the very first Streamlit command in your script!
 st.set_page_config(
     page_title="BSC management",
-    page_icon="assets/favicon.ico STUDY books"
+    page_icon="assets/favicon.ico, "📜
     layout="wide"
 )
