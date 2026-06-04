@@ -287,7 +287,66 @@ with tab_deep_search:
         ):
             if uploaded_files or user_command:
                 st.toast("Pipeline launched! Drop your staged files into the source window.", icon="⚙️")
+# Replace your tab_deep_search block with this optimized UI layout
 
+with tab_deep_search:
+    st.header("🔍 Deep Search & NotebookLM Gateway")
+    st.write("Prepare your workspace assets below to sync with Google NotebookLM.")
+    
+    col_left, col_right = st.columns([1.5, 1.5])
+    
+    with col_left:
+        st.subheader("1. Stage Your Files & Prompt")
+        
+        # Local file staging
+        uploaded_files = st.file_uploader(
+            "Drag your study files here first:", 
+            accept_multiple_files=True,
+            key="nb_uploader"
+        )
+        
+        if uploaded_files:
+            st.success(f"📋 {len(uploaded_files)} file(s) ready in staging area.")
+            # Displaying files clearly so user can drag them out if browser supports it, 
+            # or remember what to drop into NotebookLM.
+            for f in uploaded_files:
+                st.caption(f"📄 **{f.name}** (Ready to drop)")
+        
+        # Command Text Input
+        user_command = st.text_area(
+            "Type the command you want executed automatically:",
+            placeholder="e.g., Summarize the key concepts of faulting dynamics from these notes.",
+            key="nb_command"
+        )
+
+    with col_right:
+        st.subheader("2. Execute Automated Sync")
+        st.markdown(f"""
+            <div style="border: 1px solid {border_color}; background-color: {card_bg}; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                <h5 style="margin:0; color:#2563eb;">How it works:</h5>
+                <ol style="font-size: 0.85rem; padding-left: 20px; margin-top: 5px;">
+                    <li>Click the <b>Launch</b> button below.</li>
+                    <li>NotebookLM will open, and your text command will <b>auto-type and submit itself</b> via your browser script.</li>
+                    <li>Drag your staged files from your desktop directly into the NotebookLM source panel.</li>
+                </ol>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        if user_command:
+            # Safely encode the text query for the address bar
+            encoded_query = urllib.parse.quote(user_command)
+            # Append the portal query parameter to your specific NotebookLM URL
+            AUTOMATED_URL = f"{NOTEBOOK_LM_URL}&portalQuery={encoded_query}"
+            
+            st.link_button(
+                "🚀 Launch & Auto-Type Command", 
+                AUTOMATED_URL, 
+                type="primary", 
+                use_container_width=True
+            )
+        else:
+            st.button("🚀 Launch & Auto-Type Command", disabled=True, use_container_width=True)
+            st.caption("⚠️ Please write a command prompt on the left to activate the launch pipeline.")
 # --- TAB: NEWS & ANNOUNCEMENTS ---
 with tab_news:
     st.header("📢 University Bulletins & Notices")
