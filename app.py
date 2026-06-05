@@ -318,9 +318,7 @@ with tab_college:
         
         # ERP Transaction Search Synchronization Hook
         erp_query = st.text_input(
-            "Enter Transaction ID / Reference ID (ट्रांजैक्शन सर्च):",
-            placeholder="e.g., TXN10029348",
-            key="erp_transaction_search"
+           
         )
         
         if erp_query:
