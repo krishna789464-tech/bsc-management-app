@@ -531,19 +531,6 @@ with tab_planner:
                     st.markdown(flash_output)
             else:
                 st.error("Please specify a topic to generate flashcards.")
-# --- TAB: AI ASSISTANT ---
-
-with tab_ai:
-
-    st.header("🤖 AI Student Counselor")
-
-    st.write("Our automated academic agent is loading below. If it does not open automatically, look for the chat container asset.")
-
-    jotform_script = "<script src='https://cdn.jotfor.ms/agent/embedjs/019e014489347343a7b79be9c9855b48569e/embed.js?autoOpenChatIn=1'></script>"
-
-    components.html(jotform_script, height=550, scrolling=True)
-
-
 
 # --- TAB: STREAMLINED DEEP SEARCH & VIDEO TERMINAL ---
 with tab_deep_search:
