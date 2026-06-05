@@ -92,26 +92,23 @@ def get_base64_of_local_image(path):
             return base64.b64encode(image_file.read()).decode()
     return ""
 
-# Base64 स्ट्रिंग तैयार करना
 bg_base64 = get_base64_of_local_image(BG_IMAGE_PATH)
 
-# थीम के हिसाब से कलर्स और ट्रांसपेरेंसी सेट करना
 if st.session_state.bg_theme == "light":
-    card_bg = "rgba(255, 255, 255, 0.85)"  # ग्लास इफेक्ट के लिए ट्रांसपेरेंट वाइट
+    card_bg = "rgba(255, 255, 255, 0.85)"  
     text_color = "#0f172a"
     sub_text_color = "#475569"
     border_color = "#cbd5e1"
     tab_active_text = "#ffffff"
-    overlay_tint = "rgba(241, 245, 249, 0.25)"  # लाइट थीम में इमेज साफ दिखेगी
+    overlay_tint = "rgba(241, 245, 249, 0.25)"  
 else:
-    card_bg = "rgba(15, 23, 42, 0.85)"   # डार्क मोड ग्लास इफेक्ट
+    card_bg = "rgba(15, 23, 42, 0.85)"   
     text_color = "#f8fafc"
     sub_text_color = "#94a3b8"
     border_color = "#2d3748"
     tab_active_text = "#ffffff"
-    overlay_tint = "rgba(11, 15, 25, 0.65)"  # डार्क मोड में कंट्रास्ट के लिए टिनट
+    overlay_tint = "rgba(11, 15, 25, 0.65)"  
 
-# अगर इमेज मिल जाती है तो बेस64 यूआरएल का इस्तेमाल करें, नहीं तो फॉलबैक कलर
 if bg_base64:
     background_style = f"""
     background: linear-gradient({overlay_tint}, {overlay_tint}), 
@@ -119,7 +116,6 @@ if bg_base64:
     background-size: cover !important;
     """
 else:
-    # फाइल पाथ गलत होने पर सुरक्षित फॉलबैक सिस्टम
     background_style = f"background-color: {'#f1f5f9' if st.session_state.bg_theme == 'light' else '#0b0f19'} !important;"
 
 st.markdown(f"""
@@ -131,7 +127,6 @@ st.markdown(f"""
         font-size: {st.session_state.font_scale}% !important;
     }}
     
-    /* एप्लाइड सर्किट बैकग्राउंड */
     [data-testid="stAppViewContainer"] {{
         {background_style}
     }}
@@ -145,7 +140,6 @@ st.markdown(f"""
     [data-testid="stHeader"] {{ display: none !important; height: 0px !important; }}
     .block-container {{ padding-top: 1rem !important; padding-bottom: 2rem !important; }}
     
-    /* ग्लासमोर्फिज्म इफेक्ट्स ताकि बैकग्राउंड की टेक्सचर हलकी सी दिखती रहे */
     .main-card {{ 
         padding: 20px; 
         border-radius: 12px; 
@@ -183,7 +177,6 @@ st.markdown(f"""
     footer {{ visibility: hidden !important; }}
     .stForm {{ background: {card_bg} !important; backdrop-filter: blur(10px); border: 1px solid {border_color} !important; border-radius: 12px !important; padding: 20px !important; }}
     
-    /* अलर्ट प्रॉम्ट स्टाइल */
     .highlight-box {{
         background: linear-gradient(135deg, #ff000022, #ff000011);
         border: 1px dashed #ff0000;
@@ -255,6 +248,7 @@ st.warning("⚠️ **System Notice / आवश्यक सूचना:** This 
 # --- NAVIGATION TABS ---
 tabs = st.tabs([
     "📊 Dashboard",
+    "🏫 College Info Hub",  # <-- New Tab Added Here
     "🤖 AI Assistant",
     "🔍 Deep Search (NotebookLM)",
     "📢 News & Notices",
@@ -263,7 +257,7 @@ tabs = st.tabs([
     "⏱️ Focus Engine",
     "🚨 Report Issue"
 ])
-tab_dashboard, tab_ai, tab_deep_search, tab_news, tab_study, tab_perf, tab_focus, tab_report = tabs
+tab_dashboard, tab_college, tab_ai, tab_deep_search, tab_news, tab_study, tab_perf, tab_focus, tab_report = tabs
 
 # --- TAB: DASHBOARD ---
 with tab_dashboard:
@@ -304,6 +298,58 @@ with tab_dashboard:
         st.button("📅 Academic Calendar", use_container_width=True)
         st.button("📊 Examination Reports", use_container_width=True)
 
+# --- NEW TAB: COLLEGE INFO HUB ---
+with tab_college:
+    st.header("🏫 College Information & ERP Gateway")
+    st.write("Direct pipelines to campus notice desks, unified ledger lookups, and academic fee clearance terminals.")
+    
+    col_left, col_right = st.columns(2)
+    
+    with col_left:
+        st.markdown(f"""
+            <div style="border: 1px solid {border_color}; background-color: {card_bg}; padding: 24px; border-radius: 12px; min-height: 270px; backdrop-filter: blur(8px);">
+                <h3 style="margin-top:0; color:#2563eb;">💳 Transactions & Fee Clearance</h3>
+                <p style="font-size:0.95rem; line-height:1.6;">
+                    Track ledger adjustments or execute runtime registration charges. 
+                    Input your uniquely assigned identifier parameters below to query historical status parameters.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        # ERP Transaction Search Synchronization Hook
+        erp_query = st.text_input(
+            "Enter Transaction ID / Reference ID (ट्रांजैक्शन सर्च):",
+            placeholder="e.g., TXN10029348",
+            key="erp_transaction_search"
+        )
+        
+        if erp_query:
+            encoded_erp = urllib.parse.quote(erp_query.strip())
+            # Note: Destination endpoint handling mapping logic
+            ERP_TARGET_URL = f"https://erpweb.bsnvpgcollege.co.in/transaction-search?query={encoded_erp}"
+            st.link_button("🔍 Sync & Search Payment History", ERP_TARGET_URL, type="primary", use_container_width=True)
+        else:
+            st.markdown('<div class="highlight-box" style="margin-top:10px;">⚠️ Enter Transaction Reference parameter string above to begin search layout sync.</div>', unsafe_allow_html=True)
+            st.link_button("💳 Go to Transaction Search Terminal", "https://erpweb.bsnvpgcollege.co.in/transaction-search", type="secondary", use_container_width=True)
+            
+        st.divider()
+        st.link_button("💵 Process & Pay Course Fees Online", "https://erpweb.bsnvpgcollege.co.in/paycoursefees", type="primary", use_container_width=True)
+
+    with col_right:
+        st.markdown(f"""
+            <div style="border: 1px solid {border_color}; background-color: {card_bg}; padding: 24px; border-radius: 12px; min-height: 270px; backdrop-filter: blur(8px); margin-bottom:15px;">
+                <h3 style="margin-top:0; color:#ea580c;">📋 Institutional Notice Dashboard</h3>
+                <p style="font-size:0.95rem; line-height:1.6;">
+                    Access formal administrative directives, mid-term evaluation plans, and departmental announcements directly via the college's public communication network stack.
+                </p>
+                <span style="font-size:0.85rem; background-color:#ffedd5; color:#c2410c; padding:6px 12px; border-radius:6px; font-weight:600; display:inline-block; margin-top:10px;">
+                    📢 Verified Structural Pipeline
+                </span>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        st.link_button("📢 Launch Official Notice Board Terminal", "https://bsnvpgcollege.ac.in/NoticeHome.aspx?Type=Notice", type="primary", use_container_width=True)
+
 # --- TAB: AI ASSISTANT ---
 with tab_ai:
     st.header("🤖 AI Student Counselor")
@@ -316,7 +362,6 @@ with tab_deep_search:
     st.header("🔍 Deep Search & Multimedia Research")
     st.write("Direct external bridge pipelines to your academic analysis and video lecture workspaces.")
     
-    # Grid split for NotebookLM Workspace and YouTube Terminal
     search_col1, search_col2 = st.columns(2)
     
     with search_col1:
@@ -334,7 +379,6 @@ with tab_deep_search:
         """, unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # Single execution gateway button for NotebookLM
         st.link_button(
             "🚀 Launch Connected NotebookLM Chat Session", 
             NOTEBOOK_LM_URL, 
@@ -353,7 +397,6 @@ with tab_deep_search:
             </div>
         """, unsafe_allow_html=True)
         
-        # Real-time portal search box entry
         yt_query = st.text_input(
             "Search YouTube Lectures / वीडियो लेक्चर खोजें:", 
             placeholder="e.g., Structural geology faulting dynamics BSc lectures",
@@ -361,7 +404,6 @@ with tab_deep_search:
         )
         
         if yt_query:
-            # Clean and URL-encode the text data for standard query mapping
             encoded_yt_query = urllib.parse.quote(yt_query.strip())
             YOUTUBE_SYNC_URL = f"https://www.youtube.com/results?search_query={encoded_yt_query}"
             
@@ -372,7 +414,6 @@ with tab_deep_search:
                 use_container_width=True
             )
         else:
-            # Highlight Alert Integrated right above the standby button
             st.markdown('<div class="highlight-box">⚠️ Enter search query above & Press here to apply!</div>', unsafe_allow_html=True)
             st.button("📺 Terminal Standby (Awaiting Input)", disabled=True, use_container_width=True)
 
