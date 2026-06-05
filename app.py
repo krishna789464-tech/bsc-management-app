@@ -248,7 +248,7 @@ st.warning("⚠️ **System Notice / आवश्यक सूचना:** This 
 # --- NAVIGATION TABS ---
 tabs = st.tabs([
     "📊 Dashboard",
-    "🏫 College Info Hub",  # <-- New Tab Added Here
+    "🏫 College Info Hub",  
     "🤖 AI Assistant",
     "🔍 Deep Search (NotebookLM)",
     "📢 News & Notices",
@@ -298,7 +298,7 @@ with tab_dashboard:
         st.button("📅 Academic Calendar", use_container_width=True)
         st.button("📊 Examination Reports", use_container_width=True)
 
-# --- NEW TAB: COLLEGE INFO HUB ---
+# --- TAB: COLLEGE INFO HUB ---
 with tab_college:
     st.header("🏫 College Information & ERP Gateway")
     st.write("Direct pipelines to campus notice desks, unified ledger lookups, and academic fee clearance terminals.")
@@ -311,26 +311,13 @@ with tab_college:
                 <h3 style="margin-top:0; color:#2563eb;">💳 Transactions & Fee Clearance</h3>
                 <p style="font-size:0.95rem; line-height:1.6;">
                     Track ledger adjustments or execute runtime registration charges. 
-                    Input your uniquely assigned identifier parameters below to query historical status parameters.
+                    Access the external cloud terminals below to verify current financial clearings or clear backlogs.
                 </p>
             </div>
         """, unsafe_allow_html=True)
         
-        # ERP Transaction Search Synchronization Hook
-        erp_query = st.text_input(
-           
-        )
-        
-        if erp_query:
-            encoded_erp = urllib.parse.quote(erp_query.strip())
-            # Note: Destination endpoint handling mapping logic
-            ERP_TARGET_URL = f"https://erpweb.bsnvpgcollege.co.in/transaction-search?query={encoded_erp}"
-            st.link_button("🔍 Sync & Search Payment History", ERP_TARGET_URL, type="primary", use_container_width=True)
-        else:
-            st.markdown('<div class="highlight-box" style="margin-top:10px;">⚠️ Enter Transaction Reference parameter string above to begin search layout sync.</div>', unsafe_allow_html=True)
-            st.link_button("💳 Go to Transaction Search Terminal", "https://erpweb.bsnvpgcollege.co.in/transaction-search", type="secondary", use_container_width=True)
-            
-        st.divider()
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.link_button("💳 Go to Transaction Search Terminal", "https://erpweb.bsnvpgcollege.co.in/transaction-search", type="secondary", use_container_width=True)
         st.link_button("💵 Process & Pay Course Fees Online", "https://erpweb.bsnvpgcollege.co.in/paycoursefees", type="primary", use_container_width=True)
 
     with col_right:
@@ -445,7 +432,6 @@ with tab_study:
         st.subheader("BSc Management Core")
         st.info("Classroom Code Token: shf3hsat")
         st.link_button("Open Google Classroom Link Structure", "https://classroom.google.com/c/ODU0MzQ2NjI2MDQ2?cjc=shf3hsat", type="primary", use_container_width=True)
-    st.divider()
     st.caption("Further syllabi data segments are structured automatically upon academic validation.")
 
 # --- TAB: PERFORMANCE TOOLKIT ---
