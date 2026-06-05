@@ -8,13 +8,24 @@ import base64
 import streamlit.components.v1 as components
 from PIL import Image
 
+# Try importing google-generativeai for full cloud LLM capabilities
+try:
+    import google.generativeai as genai
+    gemini_installed = True
+except ImportError:
+    gemini_installed = False
+
 # --- 1. ACCESSIBILITY & BRIGHTNESS SESSION STATE ---
 if "font_scale" not in st.session_state:
-    st.session_state.font_scale = 100  # Default font percentage
+    st.session_state.font_scale = 100  
 if "bg_theme" not in st.session_state:
-    st.session_state.bg_theme = "light"  # Default theme
+    st.session_state.bg_theme = "light"  
 if "animation_played" not in st.session_state:
     st.session_state.animation_played = False
+if "chat_messages" not in st.session_state:
+    st.session_state.chat_messages = [
+        {"role": "assistant", "content": "Hello! I am your AI Academic Advisor. How can I assist you with your B.Sc courses or preparation today?"}
+    ]
 
 # --- 2. CINEMATIC STARTING ANIMATION ---
 if not st.session_state.animation_played:
@@ -95,14 +106,14 @@ def get_base64_of_local_image(path):
 bg_base64 = get_base64_of_local_image(BG_IMAGE_PATH)
 
 if st.session_state.bg_theme == "light":
-    card_bg = "rgba(255, 255, 255, 0.85)"  
+    card_bg = "rgba(255, 255, 255, 0.88)"  
     text_color = "#0f172a"
     sub_text_color = "#475569"
     border_color = "#cbd5e1"
     tab_active_text = "#ffffff"
     overlay_tint = "rgba(241, 245, 249, 0.25)"  
 else:
-    card_bg = "rgba(15, 23, 42, 0.85)"   
+    card_bg = "rgba(15, 23, 42, 0.88)"   
     text_color = "#f8fafc"
     sub_text_color = "#94a3b8"
     border_color = "#2d3748"
@@ -178,20 +189,14 @@ st.markdown(f"""
     .stForm {{ background: {card_bg} !important; backdrop-filter: blur(10px); border: 1px solid {border_color} !important; border-radius: 12px !important; padding: 20px !important; }}
     
     .highlight-box {{
-        background: linear-gradient(135deg, #ff000022, #ff000011);
-        border: 1px dashed #ff0000;
-        padding: 10px;
+        background: linear-gradient(135deg, rgba(37,99,235,0.1), rgba(37,99,235,0.05));
+        border: 1px dashed #2563eb;
+        padding: 12px;
         border-radius: 8px;
         text-align: center;
         margin-bottom: 10px;
         font-weight: 600;
-        color: #ff0000 !important;
-        animation: pulse 2s infinite;
-    }}
-    @keyframes pulse {{
-        0% {{ opacity: 0.7; }}
-        50% {{ opacity: 1; }}
-        100% {{ opacity: 0.7; }}
+        color: #2563eb !important;
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -199,6 +204,83 @@ st.markdown(f"""
 ADMIN_EMAIL = "krishna5689@outlook.in"
 ADMIN_PHONE = "919451134541"
 NOTEBOOK_LM_URL = "https://notebooklm.google.com/notebook/4865426e-ee8e-4256-956c-9f09f7c6c332?addSource=true"
+
+# --- 5. SIDEBAR: INTELLIGENT CONFIGURATION CONSOLE ---
+with st.sidebar:
+    st.markdown("### 🛠️ AI Configuration Console")
+    ai_mode = st.radio(
+        "AI Engine Mode",
+        ["⚡ Standard (Built-in Rule Engine)", "🧠 Cloud LLM (Gemini Pro)"],
+        help="Standard mode operates locally with built-in heuristics. Cloud mode uses Google's Gemini models."
+    )
+    
+    gemini_key = ""
+    if "Cloud" in ai_mode:
+        gemini_key = st.text_input("Gemini API Key", type="password", placeholder="Paste AI Key (AIzaSy...)")
+        if gemini_key:
+            if gemini_installed:
+                try:
+                    genai.configure(api_key=gemini_key)
+                    st.success("Cloud Engine Initialized!")
+                except Exception as e:
+                    st.error(f"Initialization failed: {e}")
+            else:
+                st.warning("Install `google-generativeai` to run Cloud Engine.")
+        else:
+            st.info("Retrieve a free key from Google AI Studio to unlock advanced features.")
+            
+    st.markdown("---")
+    st.markdown("### 👤 Student Profile")
+    major_focus = st.selectbox("Academic Track", ["B.Sc Geology Group", "B.Sc Physics Group", "B.Sc Mathematics Group"])
+    current_year = st.selectbox("Current Semester", ["Semester I", "Semester II", "Semester III", "Semester IV", "Semester V", "Semester VI"])
+
+# --- AI QUERY CONTROLLER (CENTRAL PIPELINE) ---
+def execute_academic_ai(prompt, context_system=""):
+    """
+    Evaluates prompts using either standard local templates or cloud LLM calls depending on the session configuration.
+    """
+    if "Cloud" in ai_mode and gemini_key and gemini_installed:
+        try:
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            full_prompt = f"{context_system}\n\nStudent Query: {prompt}" if context_system else prompt
+            response = model.generate_content(full_prompt)
+            return response.text
+        except Exception as e:
+            return f"Error executing Cloud Query: {e}. Falling back to standard engine."
+    
+    # Standard Rule Engine Heuristic Generation (Custom fallbacks for common student academic contexts)
+    prompt_lower = prompt.lower()
+    if "plan" in prompt_lower or "schedule" in prompt_lower or "calendar" in prompt_lower:
+        return f"""
+### 📅 Recommended Weekly Study Structure ({major_focus})
+Here is an automated study template based on your major:
+* **Day 1-2**: Focus on primary core subjects (e.g., Crystallography or Mechanics). Read 1 key paper/chapter.
+* **Day 3-4**: Practical review. Work on mathematics assignments or diagram plotting.
+* **Day 5**: Active recall session. Generate 5 self-assessment questions.
+* **Weekend**: Cumulative review and problem solving. Solve past year Lucknow University papers.
+        """
+    elif "geology" in prompt_lower:
+        return """
+### 💎 Structural Geology & Mineralogy Insights
+* **Structural Geology**: Focus on distinguishing between *Faults* (brittle deformation with displacement) and *Folds* (ductile deformation displaying structural wave curvature).
+* **Mineralogy**: Master key optical mineral properties including *Pleochroism* under Plane Polarized Light and *Interference Colors* under Crossed Polars.
+* **Recommended Resource**: Review physical hand specimens in the college laboratory.
+        """
+    elif "math" in prompt_lower or "calculus" in prompt_lower or "equation" in prompt_lower:
+        return """
+### 📐 Advanced Engineering Mathematics Blueprint
+* **Ordinary Differential Equations**: Master Euler-Cauchy equations and the method of variation of parameters.
+* **Linear Algebra**: Focus heavily on Eigenvalues, Eigenvectors, and satisfying the Cayley-Hamilton theorem.
+* **Practice Strategy**: Dedicate 45 minutes daily to derivation structures rather than rote-learning proofs.
+        """
+    else:
+        return f"""
+### 🎓 Academic Support Response
+Based on your academic profile ({major_focus} | {current_year}):
+* We advise cross-referencing your syllabus with the recommended readings in **Tab 6 (Study Classrooms)**.
+* For complex study assistance or document translation, connect your free Gemini API Key in the sidebar.
+* **Study Hint**: Prioritize clarifying practical diagrams first; conceptual understanding often follows structural visual mapping.
+        """
 
 # Running Clock Markup
 clock_html = f"""
@@ -243,13 +325,14 @@ with control_col:
             st.rerun()
 
 st.markdown("<br>", unsafe_allow_html=True)
-st.warning("⚠️ **System Notice / आवश्यक सूचना:** This portal is currently in the **testing phase**. (यह एप्लिकेशन अभी टेस्टिंग फेज़ में है।)")
+st.warning("⚠️ **System Notice / आवश्यक सूचना:** This portal is currently in the **testing phase**. (यह एप्लिकेशऩ अभी टेस्टिंग फेज़ में है।)")
 
 # --- NAVIGATION TABS ---
 tabs = st.tabs([
     "📊 Dashboard",
     "🏫 College Info Hub",  
-    "🤖 AI Assistant",
+    "🤖 Interactive AI Chatbot",
+    "📚 AI Study Planner & Flashcards",
     "🔍 Deep Search (NotebookLM)",
     "📢 News & Notices",
     "📚 Study Classrooms",
@@ -257,7 +340,18 @@ tabs = st.tabs([
     "⏱️ Focus Engine",
     "🚨 Report Issue"
 ])
-tab_dashboard, tab_college, tab_ai, tab_deep_search, tab_news, tab_study, tab_perf, tab_focus, tab_report = tabs
+(
+    tab_dashboard, 
+    tab_college, 
+    tab_ai, 
+    tab_planner, 
+    tab_deep_search, 
+    tab_news, 
+    tab_study, 
+    tab_perf, 
+    tab_focus, 
+    tab_report
+) = tabs
 
 # --- TAB: DASHBOARD ---
 with tab_dashboard:
@@ -279,6 +373,11 @@ with tab_dashboard:
     st.markdown("<br>", unsafe_allow_html=True)
     left_col, right_col = st.columns([2, 1])
     with left_col:
+        st.subheader("💡 Dynamic AI Study Briefing")
+        brief_prompt = f"Write a 3-bullet customized academic recommendation for a student currently enrolled in {major_focus} during their {current_year} semester. Keep it practical and concise."
+        briefing = execute_academic_ai(brief_prompt)
+        st.markdown(briefing)
+        
         st.subheader("📚 Course Registration Status")
         materials = [
             {"subject": "Structural Geology", "teacher": "Dr. Sharma"},
@@ -335,12 +434,94 @@ with tab_college:
         
         st.link_button("📢 Launch Official Notice Board Terminal", "https://bsnvpgcollege.ac.in/NoticeHome.aspx?Type=Notice", type="primary", use_container_width=True)
 
-# --- TAB: AI ASSISTANT ---
+# --- TAB: NATIVE CHATBOT ---
 with tab_ai:
-    st.header("🤖 AI Student Counselor")
-    st.write("Our automated academic agent is loading below. If it does not open automatically, look for the chat container asset.")
-    jotform_script = "<script src='https://cdn.jotfor.ms/agent/embedjs/019e014489347343a7b79be9c9855b48569e/embed.js?autoOpenChatIn=1'></script>"
-    components.html(jotform_script, height=550, scrolling=True)
+    st.header("🤖 Native AI Academic Counselor")
+    st.write("Interact with our customized assistant configured to help you resolve your specific course roadblocks.")
+    
+    col_chat1, col_chat2 = st.columns([3, 1])
+    with col_chat2:
+        st.markdown("### ⚙️ Persona Configuration")
+        persona = st.selectbox(
+            "Assistant Tone Strategy",
+            ["The Encouraging Mentor", "The Rigorous Professor", "The Practical Study Partner"]
+        )
+        st.caption("Change this selection to shift the structural perspective of the chat agent.")
+        if st.button("Reset Session History", type="secondary", use_container_width=True):
+            st.session_state.chat_messages = [
+                {"role": "assistant", "content": f"Hello! I am now acting as your academic guide: '{persona}'. What concepts can I clarify for you today?"}
+            ]
+            st.rerun()
+
+    with col_chat1:
+        # Display chat messages
+        for msg in st.session_state.chat_messages:
+            with st.chat_message(msg["role"]):
+                st.markdown(msg["content"])
+        
+        # User input
+        if prompt := st.chat_input("Ask a question (e.g., Explain brittle versus ductile faulting deformation in structural geology)"):
+            with st.chat_message("user"):
+                st.markdown(prompt)
+            st.session_state.chat_messages.append({"role": "user", "content": prompt})
+            
+            # System construction
+            system_instruction = f"""
+            You are an expert university professor and counselor answering questions for a student in {major_focus} ({current_year}).
+            Adopt the tone persona of '{persona}'. Limit explanations to clear, academic terms.
+            Include formatting, headers, or bullet structures where helpful.
+            """
+            
+            with st.chat_message("assistant"):
+                with st.spinner("Analyzing queries..."):
+                    ai_response = execute_academic_ai(prompt, system_instruction)
+                    st.markdown(ai_response)
+            st.session_state.chat_messages.append({"role": "assistant", "content": ai_response})
+
+# --- TAB: AI PLANNER & FLASHCARDS ---
+with tab_planner:
+    st.header("📚 Study Material & Flashcard Synthesizer")
+    st.write("Generate interactive structural summaries, mock assessment questionnaires, or flashcard lists directly from a core topic.")
+    
+    col_p1, col_p2 = st.columns([1, 1])
+    
+    with col_p1:
+        st.subheader("🛠️ Study Material Engine")
+        syllabus_topic = st.text_input(
+            "Syllabus Topic Name",
+            placeholder="e.g., Optical Properties of Uniaxial Minerals under Polarizing Microscope",
+            key="p_topic_input"
+        )
+        generation_type = st.radio(
+            "Synthesis Goal",
+            ["Summarized Study Guide", "5 Question Assessment Practice Quiz", "Interactive Conceptual Analogies"]
+        )
+        
+        if st.button("Generate Learning Asset", type="primary", use_container_width=True):
+            if syllabus_topic:
+                system_prompt = f"Act as an educational material developer. The user is on the {major_focus} track. Provide highly structured output."
+                user_prompt = f"Create a '{generation_type}' for the academic topic: '{syllabus_topic}'."
+                with st.spinner("Synthesizing concept trees..."):
+                    learning_output = execute_academic_ai(user_prompt, system_prompt)
+                    st.markdown("---")
+                    st.markdown(learning_output)
+            else:
+                st.error("Please enter a syllabus topic to trigger synthesis.")
+                
+    with col_p2:
+        st.subheader("🃏 Interactive Flashcard Generator")
+        flash_topic = st.text_input("Enter Topic for Flashcards", placeholder="e.g., Plate Tectonics Boundaries")
+        
+        if st.button("Generate Digital Flashcards", type="secondary", use_container_width=True):
+            if flash_topic:
+                system_prompt = "Act as an academic flashcard developer. Output exactly 3 clear Flashcards. Format each card clearly as: **CARD [Number]: Front (Term/Concept)** followed by a collapsible `with st.expander('Reveal Answer')` style text block or plain text answer block."
+                user_prompt = f"Generate 3 flashcards for: '{flash_topic}'."
+                with st.spinner("Processing cards..."):
+                    flash_output = execute_academic_ai(user_prompt, system_prompt)
+                    st.markdown("---")
+                    st.markdown(flash_output)
+            else:
+                st.error("Please specify a topic to generate flashcards.")
 
 # --- TAB: STREAMLINED DEEP SEARCH & VIDEO TERMINAL ---
 with tab_deep_search:
@@ -402,27 +583,53 @@ with tab_deep_search:
             st.markdown('<div class="highlight-box">⚠️ Enter search query above & Press here to apply!</div>', unsafe_allow_html=True)
             st.button("📺 Terminal Standby (Awaiting Input)", disabled=True, use_container_width=True)
 
-# --- TAB: NEWS & ANNOUNCEMENTS ---
+# --- TAB: NEWS & ANNOUNCEMENTS WITH AI COGNITIVE PARSING ---
 with tab_news:
     st.header("📢 University Bulletins & Notices")
+    st.write("Query official notice channels and run cognitive analysis on active institutional releases.")
+    
     lu_url = "https://www.lkouniv.ac.in/en/news?Newslistslug=en-notices&cd=MwAzADcA"
-    if st.button("Query Live Database Feed", type="primary", use_container_width=True):
-        try:
-            headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
-            res = requests.get(lu_url, headers=headers, timeout=10)
-            soup = BeautifulSoup(res.content, 'html.parser')
-            links = soup.find_all('a', href=True)
-            found = 0
-            for link in links:
-                if "news" in link['href'] and len(link.text.strip()) > 15:
-                    clean_text = link.text.strip().replace("[", "").replace("]", "")
-                    href_val = link['href']
-                    url = href_val if href_val.startswith('http') else "https://www.lkouniv.ac.in" + href_val
-                    st.info(f"🔗 [{clean_text}]({url})")
-                    found += 1
-                if found > 10: break
-        except Exception:
-            st.error(f"Live parsing connection error. Access raw terminal index directly: [Lucknow University Notice Board]({lu_url})")
+    
+    col_n1, col_n2 = st.columns([1, 1])
+    
+    with col_n1:
+        st.subheader("📰 Dynamic Lucknow University Feed")
+        if st.button("Query Live Database Feed", type="primary", use_container_width=True):
+            scraped_titles = []
+            try:
+                headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+                res = requests.get(lu_url, headers=headers, timeout=10)
+                soup = BeautifulSoup(res.content, 'html.parser')
+                links = soup.find_all('a', href=True)
+                found = 0
+                for link in links:
+                    if "news" in link['href'] and len(link.text.strip()) > 15:
+                        clean_text = link.text.strip().replace("[", "").replace("]", "")
+                        href_val = link['href']
+                        url = href_val if href_val.startswith('http') else "https://www.lkouniv.ac.in" + href_val
+                        st.info(f"🔗 [{clean_text}]({url})")
+                        scraped_titles.append(clean_text)
+                        found += 1
+                    if found > 6: 
+                        break
+                st.session_state.active_scraped_notices = scraped_titles
+            except Exception:
+                st.error(f"Live parsing connection error. Access raw terminal index directly: [Lucknow University Notice Board]({lu_url})")
+                st.session_state.active_scraped_notices = []
+                
+    with col_n2:
+        st.subheader("🧠 Cognitive AI Notice Interpreter")
+        if "active_scraped_notices" in st.session_state and st.session_state.active_scraped_notices:
+            st.write("Our cognitive engine can process and classify scraped announcements by critical index levels.")
+            if st.button("Run Priority Classifier", type="secondary", use_container_width=True):
+                notice_blob = "\n- ".join(st.session_state.active_scraped_notices)
+                system_prompt = "You are an administrative coordinator assistant. Categorize these announcements into three tiers: 🔴 Urgent (Exams/Fee deadlines), 🟡 Moderate (Events/Schedules), 🟢 Info (General updates). Keep descriptions extremely brief."
+                user_prompt = f"Please categorize these active notices:\n- {notice_blob}"
+                with st.spinner("Analyzing semantic structures..."):
+                    classification = execute_academic_ai(user_prompt, system_prompt)
+                    st.markdown(classification)
+        else:
+            st.info("Query the Live Database Feed on the left first to enable cognitive notice processing.")
 
 # --- TAB: STUDY MATERIAL ---
 with tab_study:
@@ -434,10 +641,11 @@ with tab_study:
         st.link_button("Open Google Classroom Link Structure", "https://classroom.google.com/c/ODU0MzQ2NjI2MDQ2?cjc=shf3hsat", type="primary", use_container_width=True)
     st.caption("Further syllabi data segments are structured automatically upon academic validation.")
 
-# --- TAB: PERFORMANCE TOOLKIT ---
+# --- TAB: PERFORMANCE TOOLKIT (WITH PREDICTIVE AI ADVISOR) ---
 with tab_perf:
-    st.header("🧮 Academic Performance Calculator")
-    calc_tab1, calc_tab2 = st.tabs(["Semester GPA Matrix", "Cumulative CGPA Calculator"])
+    st.header("🧮 Academic Performance Calculator & AI Advisor")
+    calc_tab1, calc_tab2, calc_tab3 = st.tabs(["Semester GPA Matrix", "Cumulative CGPA Calculator", "🔮 AI Predictive Insights"])
+    
     with calc_tab1:
         st.subheader("Current Semester Track")
         num_courses = st.number_input("Number of Registered Subjects", min_value=1, max_value=10, value=4, step=1)
@@ -451,11 +659,13 @@ with tab_perf:
             with col_c2:
                 credit = st.number_input(f"Credits {i+1}", min_value=1, max_value=6, value=4, key=f"credit_{i}")
                 credits.append(credit)
-        if st.button("Compute Semester Index", type="primary", use_container_width=True):
+        if st.button("Compute Semester Index", type="primary", key="comp_sem_idx", use_container_width=True):
             total_points = sum(s * c for s, c in zip(scores, credits))
             total_credits = sum(credits)
             calculated_gpa = total_points / total_credits if total_credits > 0 else 0
+            st.session_state.calculated_term_gpa = calculated_gpa
             st.metric(label="Calculated GPA for Current Term", value=f"{calculated_gpa:.2f} / 10.00")
+            
     with calc_tab2:
         st.subheader("Historical CGPA Consolidation")
         prior_cgpa = st.number_input("Current Historical Cumulative CGPA", min_value=0.0, max_value=10.0, value=8.0, step=0.1)
@@ -468,33 +678,66 @@ with tab_perf:
             total_current_points = curr_gpa * curr_credits
             global_credits = completed_credits + curr_credits
             calculated_cgpa = (total_historical_points + total_current_points) / global_credits if global_credits > 0 else 0
+            st.session_state.consolidated_cgpa = calculated_cgpa
             st.metric(label="Updated Aggregate Portfolio CGPA", value=f"{calculated_cgpa:.2f} / 10.00")
+
+    with calc_tab3:
+        st.subheader("🔮 Dynamic AI Career & Academic Roadmap")
+        st.write("Generate customized study strategy blueprints based on your actual performance scores.")
+        
+        target_field = st.selectbox("Your Targeted Postgraduate Field / Goal", ["Geological Survey Research", "Data Analytics & Mathematics", "IIT JAM Preparation", "Public Civil Services Exam"])
+        current_gpa_val = st.slider("Select Current Representative GPA", min_value=0.0, max_value=10.0, value=7.5, step=0.1)
+        
+        if st.button("Generate Personal Predictive Roadmap", type="primary", use_container_width=True):
+            analysis_prompt = f"""
+            Act as an academic advisor. The student is tracking with a GPA of {current_gpa_val}/10.00 in {major_focus} ({current_year}).
+            Their targeted career milestone is '{target_field}'.
+            Provide a 3-step actionable strategy to improve their grading profile or secure their research transition. Keep the plan action-oriented.
+            """
+            with st.spinner("Analyzing learning metrics..."):
+                roadmap = execute_academic_ai(analysis_prompt)
+                st.markdown(roadmap)
 
 # --- TAB: DEEP FOCUS ENGINE ---
 with tab_focus:
     st.header("⏱️ Academic Focus Engine")
-    if "timer_running" not in st.session_state: st.session_state.timer_running = False
-    duration_selection = st.selectbox("Configure Study Matrix Track:", ["25 Minutes (Standard Study)", "5 Minutes (Short Break)", "15 Minutes (Extended Intermission)"])
-    duration_map = {"25": 25 * 60, "5": 5 * 60, "15": 15 * 60}
-    target_seconds = duration_map[duration_selection.split(" ")[0]]
-    progress_bar = st.progress(0.0)
-    timer_display = st.empty()
-    if st.button("Initialize Focus Session Pipeline", type="primary", use_container_width=True):
-        st.session_state.timer_running = True
-        start_time = time.time()
-        while st.session_state.timer_running:
-            elapsed = time.time() - start_time
-            remaining = target_seconds - elapsed
-            if remaining <= 0:
-                st.session_state.timer_running = False
-                progress_bar.progress(1.0)
-                timer_display.subheader("⏱️ Session Finalized! Re-allocate tasks.")
-                st.balloons()
-                break
-            mins, secs = divmod(int(remaining), 60)
-            timer_display.markdown(f"<h1 style='font-size:42px; font-weight:700;'>{mins:02d}:{secs:02d}</h1>", unsafe_allow_html=True)
-            progress_bar.progress(min(elapsed / target_seconds, 1.0))
-            time.sleep(1)
+    
+    col_f1, col_f2 = st.columns([2, 1])
+    
+    with col_f2:
+        st.markdown("### 🧠 AI Focus Catalyst")
+        current_state = st.selectbox("My Current Cognitive State", ["Exhausted", "Procrastinating", "Anxious", "Highly Focused"])
+        if st.button("Generate Focus Catalyst Motivation", type="secondary", use_container_width=True):
+            motivation_prompt = f"Synthesize one short, powerful, science-backed productivity tip for a {major_focus} student feeling '{current_state}'. Keep it under 2 sentences."
+            with st.spinner("Aligning cognitive states..."):
+                catalyst_text = execute_academic_ai(motivation_prompt)
+                st.info(catalyst_text)
+                
+    with col_f1:
+        if "timer_running" not in st.session_state: 
+            st.session_state.timer_running = False
+        duration_selection = st.selectbox("Configure Study Matrix Track:", ["25 Minutes (Standard Study)", "5 Minutes (Short Break)", "15 Minutes (Extended Intermission)"])
+        duration_map = {"25": 25 * 60, "5": 5 * 60, "15": 15 * 60}
+        target_seconds = duration_map[duration_selection.split(" ")[0]]
+        progress_bar = st.progress(0.0)
+        timer_display = st.empty()
+        
+        if st.button("Initialize Focus Session Pipeline", type="primary", use_container_width=True):
+            st.session_state.timer_running = True
+            start_time = time.time()
+            while st.session_state.timer_running:
+                elapsed = time.time() - start_time
+                remaining = target_seconds - elapsed
+                if remaining <= 0:
+                    st.session_state.timer_running = False
+                    progress_bar.progress(1.0)
+                    timer_display.subheader("⏱️ Session Finalized! Re-allocate tasks.")
+                    st.balloons()
+                    break
+                mins, secs = divmod(int(remaining), 60)
+                timer_display.markdown(f"<h1 style='font-size:42px; font-weight:700;'>{mins:02d}:{secs:02d}</h1>", unsafe_allow_html=True)
+                progress_bar.progress(min(elapsed / target_seconds, 1.0))
+                time.sleep(1)
 
 # --- TAB: REPORT REGISTRATION ISSUE ---
 with tab_report:
