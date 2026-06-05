@@ -649,3 +649,11 @@ with tab_news:
             except Exception:
                 st.error(f"Live parsing connection error. Access raw terminal index directly: [Lucknow University Notice Board]({lu_url})")
                 st.session_stat
+import sys
+import subprocess
+
+# pypdf को ऑटो-इंस्टॉल करने के लिए
+try:
+    import pypdf
+except ImportError:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "pypdf"])
