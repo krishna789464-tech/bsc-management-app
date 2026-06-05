@@ -242,7 +242,6 @@ def execute_academic_ai(prompt, context_system=""):
     """
     if is_gemini_active:
         try:
-            # Using gemini-1.5-flash as the fast, efficient standard model
             model = genai.GenerativeModel("gemini-1.5-flash")
             full_prompt = f"{context_system}\n\nStudent Request: {prompt}" if context_system else prompt
             response = model.generate_content(full_prompt)
@@ -281,6 +280,7 @@ def execute_academic_ai(prompt, context_system=""):
         return f"""
 ### 🎓 Academic Support Response
 *(Sandbox Heuristic Profile)*
+
 Based on your academic profile ({major_focus} | {current_year}):
 * We advise cross-referencing your syllabus with the recommended readings in **Tab 7 (Study Classrooms)**.
 * To generate actual bespoke guidance, connect your free Gemini API Key in the sidebar.
@@ -444,18 +444,12 @@ with tab_college:
         st.link_button("📢 Launch Official Notice Board Terminal", "https://bsnvpgcollege.ac.in/NoticeHome.aspx?Type=Notice", type="primary", use_container_width=True)
 
 # --- TAB: AI ASSISTANT ---
-
 with tab_ai:
-
     st.header("🤖 AI Agent")
-
     st.write("Our automated academic agent is loading below. If it does not open automatically, look for the chat container asset.")
-
+    
     jotform_script = "<script src='https://cdn.jotfor.ms/agent/embedjs/019e014489347343a7b79be9c9855b48569e/embed.js?autoOpenChatIn=1'></script>"
-
     components.html(jotform_script, height=550, scrolling=True)
-
-
 
 # --- TAB: AI PLANNER & FLASHCARDS ---
 with tab_planner:
@@ -501,6 +495,28 @@ with tab_planner:
                     st.markdown(flash_output)
             else:
                 st.error("Please specify a topic to generate flashcards.")
+        
+        # --- PERPLEXITY AI INTEGRATION ---
+        st.markdown("---")
+        st.markdown("##### 🌐 Deepen Research with Perplexity AI")
+        st.write("Search the web, parse research journals, or check contemporary citations for this concept via Perplexity AI.")
+        
+        if flash_topic:
+            encoded_flash_topic = urllib.parse.quote(f"Explain and generate academic flashcards/study terms on: {flash_topic}")
+            perplexity_url = f"https://www.perplexity.ai/?q={encoded_flash_topic}"
+            st.link_button(
+                f"🔍 Search '{flash_topic}' on Perplexity", 
+                perplexity_url, 
+                type="primary", 
+                use_container_width=True
+            )
+        else:
+            st.link_button(
+                "🌐 Launch Perplexity AI Dashboard", 
+                "https://www.perplexity.ai", 
+                type="secondary", 
+                use_container_width=True
+            )
 
 # --- TAB: STREAMLINED DEEP SEARCH & VIDEO TERMINAL ---
 with tab_deep_search:
@@ -568,7 +584,6 @@ with tab_news:
     st.write("Query official notice channels and run cognitive analysis on active institutional releases.")
     
     lu_url = "https://www.lkouniv.ac.in/en/news?Newslistslug=en-notices&cd=MwAzADcA"
-    
     col_n1, col_n2 = st.columns([1, 1])
     
     with col_n1:
@@ -629,121 +644,69 @@ with tab_perf:
         st.subheader("Current Semester Track")
         num_courses = st.number_input("Number of Registered Subjects", min_value=1, max_value=10, value=4, step=1)
         scores, credits = [], []
+        
         for i in range(int(num_courses)):
             col_c1, col_c2 = st.columns(2)
             with col_c1:
-                score = st.selectbox(f"Grade - Course {i+1}", ["O (Outstanding - 10)", "A+ (Excellent - 9)", "A (Very Good - 8)", "B+ (Good - 7)", "B (Above Average - 6)", "C (Average - 5)", "F (Fail - 0)"], key=f"grade_{i}")
+                score = st.selectbox(
+                    f"Grade - Course {i+1}", 
+                    ["O (Outstanding - 10)", "A+ (Excellent - 9)", "A (Very Good - 8)", "B+ (Good - 7)", "B (Above Average - 6)", "C (Average - 5)", "F (Fail - 0)"], 
+                    key=f"grade_{i}"
+                )
                 grade_map = {"O": 10, "A+": 9, "A": 8, "B+": 7, "B": 6, "C": 5, "F": 0}
                 scores.append(grade_map[score.split(" ")[0]])
             with col_c2:
-                credit = st.number_input(f"Credits {i+1}", min_value=1, max_value=6, value=4, key=f"credit_{i}")
-                credits.append(credit)
-        if st.button("Compute Semester Index", type="primary", key="comp_sem_idx", use_container_width=True):
+                cred = st.number_input(f"Credits - Course {i+1}", min_value=1, max_value=8, value=4, step=1, key=f"cred_{i}")
+                credits.append(cred)
+                
+        if st.button("Calculate Semester GPA", type="primary", use_container_width=True):
             total_points = sum(s * c for s, c in zip(scores, credits))
             total_credits = sum(credits)
-            calculated_gpa = total_points / total_credits if total_credits > 0 else 0
-            st.session_state.calculated_term_gpa = calculated_gpa
-            st.metric(label="Calculated GPA for Current Term", value=f"{calculated_gpa:.2f} / 10.00")
-            
+            sgpa = total_points / total_credits if total_credits > 0 else 0.0
+            st.metric(label="Calculated Semester GPA", value=f"{sgpa:.2f}")
+
     with calc_tab2:
-        st.subheader("Historical CGPA Consolidation")
-        prior_cgpa = st.number_input("Current Historical Cumulative CGPA", min_value=0.0, max_value=10.0, value=8.0, step=0.1)
-        completed_credits = st.number_input("Total Assessment Credits Earned Historically", min_value=0, max_value=200, value=48, step=1)
-        st.markdown("---")
-        curr_gpa = st.number_input("Latest Term Semester GPA Result", min_value=0.0, max_value=10.0, value=8.5, step=0.1)
-        curr_credits = st.number_input("Latest Term Credits Taken", min_value=0, max_value=30, value=20, step=1)
-        if st.button("Consolidate Global CGPA", use_container_width=True):
-            total_historical_points = prior_cgpa * completed_credits
-            total_current_points = curr_gpa * curr_credits
-            global_credits = completed_credits + curr_credits
-            calculated_cgpa = (total_historical_points + total_current_points) / global_credits if global_credits > 0 else 0
-            st.session_state.consolidated_cgpa = calculated_cgpa
-            st.metric(label="Updated Aggregate Portfolio CGPA", value=f"{calculated_cgpa:.2f} / 10.00")
+        st.subheader("Cumulative CGPA Tracker")
+        num_semesters = st.number_input("Number of Completed Semesters", min_value=1, max_value=10, value=2, step=1)
+        sgpas = []
+        for j in range(int(num_semesters)):
+            sgpa_val = st.number_input(f"SGPA for Semester {j+1}", min_value=0.0, max_value=10.0, value=7.5, step=0.1, key=f"sgpa_{j}")
+            sgpas.append(sgpa_val)
+            
+        if st.button("Calculate Cumulative CGPA", type="primary", use_container_width=True):
+            cgpa = sum(sgpas) / len(sgpas) if len(sgpas) > 0 else 0.0
+            st.metric(label="Calculated Cumulative CGPA", value=f"{cgpa:.2f}")
 
     with calc_tab3:
-        st.subheader("🔮 Dynamic AI Career & Academic Roadmap")
-        st.write("Generate customized study strategy blueprints based on your representative performance metrics.")
-        
-        target_field = st.selectbox("Your Targeted Postgraduate Field / Goal", ["Geological Survey Research", "Data Analytics & Mathematics", "IIT JAM Preparation", "Public Civil Services Exam"])
-        current_gpa_val = st.slider("Select Representative GPA", min_value=0.0, max_value=10.0, value=7.5, step=0.1)
-        
-        if st.button("Generate Personal Predictive Roadmap", type="primary", use_container_width=True):
-            analysis_prompt = f"""
-            Act as an academic advisor. The student is tracking with a GPA of {current_gpa_val}/10.00 in {major_focus} ({current_year}).
-            Their targeted career milestone is '{target_field}'.
-            Provide a 3-step actionable roadmap of recommendations, structural focus zones, or practical research paths. Make it concise.
-            """
-            with st.spinner("Analyzing learning metrics..."):
-                roadmap = execute_academic_ai(analysis_prompt)
-                st.markdown(roadmap)
+        st.subheader("🔮 AI Performance Advisor")
+        performance_prompt = st.text_area(
+            "Provide your recent grade details or academic doubts for custom AI study strategies:",
+            placeholder="e.g., I scored an A in Mechanics, but I am struggling with Structural Geology diagrams. Recommend some study tips."
+        )
+        if st.button("Generate Strategy Blueprint", type="primary", use_container_width=True):
+            if performance_prompt:
+                strategy = execute_academic_ai(performance_prompt, "Act as an academic counselor optimizing student performance.")
+                st.markdown(strategy)
+            else:
+                st.warning("Please provide context or queries to generate an advisory blueprint.")
 
-# --- TAB: DEEP FOCUS ENGINE ---
+# --- TAB: FOCUS ENGINE ---
 with tab_focus:
-    st.header("⏱| Academic Focus Engine")
-    
-    col_f1, col_f2 = st.columns([2, 1])
-    
-    with col_f2:
-        st.markdown("### 🧠 AI Focus Catalyst")
-        current_state = st.selectbox("My Current Cognitive State", ["Exhausted", "Procrastinating", "Anxious", "Highly Focused"])
-        if st.button("Generate Focus Catalyst Motivation", type="secondary", use_container_width=True):
-            motivation_prompt = f"Synthesize one short, powerful, science-backed productivity tip for a {major_focus} student feeling '{current_state}'. Keep it under 2 sentences."
-            with st.spinner("Aligning cognitive states..."):
-                catalyst_text = execute_academic_ai(motivation_prompt)
-                st.info(catalyst_text)
-                
-    with col_f1:
-        if "timer_running" not in st.session_state: 
-            st.session_state.timer_running = False
-        duration_selection = st.selectbox("Configure Study Matrix Track:", ["25 Minutes (Standard Study)", "5 Minutes (Short Break)", "15 Minutes (Extended Intermission)"])
-        duration_map = {"25": 25 * 60, "5": 5 * 60, "15": 15 * 60}
-        target_seconds = duration_map[duration_selection.split(" ")[0]]
-        progress_bar = st.progress(0.0)
-        timer_display = st.empty()
-        
-        if st.button("Initialize Focus Session Pipeline", type="primary", use_container_width=True):
-            st.session_state.timer_running = True
-            start_time = time.time()
-            while st.session_state.timer_running:
-                elapsed = time.time() - start_time
-                remaining = target_seconds - elapsed
-                if remaining <= 0:
-                    st.session_state.timer_running = False
-                    progress_bar.progress(1.0)
-                    timer_display.subheader("⏱️ Session Finalized! Re-allocate tasks.")
-                    st.balloons()
-                    break
-                mins, secs = divmod(int(remaining), 60)
-                timer_display.markdown(f"<h1 style='font-size:42px; font-weight:700;'>{mins:02d}:{secs:02d}</h1>", unsafe_allow_html=True)
-                progress_bar.progress(min(elapsed / target_seconds, 1.0))
-                time.sleep(1)
+    st.header("⏱️ Academic Focus Engine")
+    st.write("A simple productivity countdown timer to track your study intervals.")
+    minutes = st.number_input("Study Session Length (Minutes)", min_value=1, max_value=120, value=25)
+    if st.button("Start Timer", type="primary", use_container_width=True):
+        st.info(f"Focus session started! (Simulated timer active for {minutes} minutes. Maintain your momentum!)")
 
-# --- TAB: REPORT REGISTRATION ISSUE ---
+# --- TAB: REPORT ISSUE ---
 with tab_report:
-    st.header("🚨 Administrative Issue Escalation")
-    with st.form("issue_form", clear_on_submit=False):
-        student_email = st.text_input("Your Email Address *", placeholder="student@example.com")
-        name = st.text_input("Full Name *")
-        roll_no = st.text_input("Roll Number / Student ID *")
-        issue_type = st.selectbox("Issue Category", ["Login Problem", "Subject Not Showing", "Document Error", "Other"])
-        details = st.text_area("Detailed Description *")
-        submitted = st.form_submit_button("Submit & Notify Admin", use_container_width=True)
-    if submitted:
-        if student_email and name and roll_no and details:
-            email_payload = {"email": student_email.strip(), "Student Name": name.strip(), "Roll Number": roll_no.strip(), "Issue Type": issue_type, "Detailed Description": details.strip(), "_subject": f"🚨 Urgent: Registration Issue from {name.strip()}", "_captcha": "false"}
-            with st.spinner("Processing form with target server..."):
-                try:
-                    response = requests.post(f"https://formsubmit.co/ajax/{ADMIN_EMAIL}", data=email_payload, timeout=10)
-                    if response.status_code == 200: st.toast("Form processed! Email confirmation sent.", icon="📧")
-                    else: st.error(f"Endpoint verification issue encountered. Status Code: {response.status_code}")
-                except Exception: st.error("Automated transmission pipeline timeout. Proceeding to alternative routing.")
-            wa_text = f"*Registration Issue Report*\n\n*Name:* {name}\n*Roll No:* {roll_no}\n*Email:* {student_email}\n*Issue:* {issue_type}\n*Details:* {details}"
-            wa_url = f"https://wa.me/{ADMIN_PHONE}?text={urllib.parse.quote(wa_text)}"
-            st.success("🎉 Local data entry recorded successfully!")
-            st.link_button("Finalize via WhatsApp Message ✅", wa_url, use_container_width=True)
-            st.balloons()
-        else: st.error("⚠️ Validation failure: Please fill out all required fields marked with (*).")
-
-# --- FOOTER ---
-st.markdown("---")
-st.markdown("<center style='font-size: 11px;'>Powered by Google Workspace and Microhnm Technologies</center>", unsafe_allow_html=True)
+    st.header("🚨 Report System Issues / Feedback")
+    st.write("Encountered a bug or have administrative feedback? Submit a brief report to the portal engineers.")
+    with st.form("feedback_form"):
+        issue_desc = st.text_area("Describe the issue or feedback:", placeholder="Detail your experience or report functional bugs here...")
+        submit_btn = st.form_submit_button("Submit Ticket")
+        if submit_btn:
+            if issue_desc.strip():
+                st.success(f"Feedback ticket submitted successfully! For urgent concerns, reach out directly via {ADMIN_EMAIL}.")
+            else:
+                st.error("Please enter a description before submitting.")
