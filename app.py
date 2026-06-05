@@ -443,49 +443,19 @@ with tab_college:
         
         st.link_button("📢 Launch Official Notice Board Terminal", "https://bsnvpgcollege.ac.in/NoticeHome.aspx?Type=Notice", type="primary", use_container_width=True)
 
-# --- TAB: INTERACTIVE CHATBOT ---
-with tab_ai:
-    st.header("🤖 Native Google Gemini Academic Counselor")
-    st.write("Leverage the Gemini model suite to evaluate questions regarding syllabus items, complex formulas, and assignments.")
-    
-    col_chat1, col_chat2 = st.columns([3, 1])
-    with col_chat2:
-        st.markdown("### ⚙️ Persona Configuration")
-        persona = st.selectbox(
-            "Assistant Tone Strategy",
-            ["The Encouraging Mentor", "The Rigorous Professor", "The Practical Study Partner"]
-        )
-        st.caption("Change this selection to shift the structural perspective of the chat agent.")
-        if st.button("Reset Session History", type="secondary", use_container_width=True):
-            st.session_state.chat_messages = [
-                {"role": "assistant", "content": f"Hello! I am now acting as your academic guide: '{persona}'. What concepts can I clarify for you today?"}
-            ]
-            st.rerun()
+# --- TAB: AI ASSISTANT ---
 
-    with col_chat1:
-        # Display chat messages
-        for msg in st.session_state.chat_messages:
-            with st.chat_message(msg["role"]):
-                st.markdown(msg["content"])
-        
-        # User input
-        if prompt := st.chat_input("Ask a question (e.g., Explain brittle versus ductile faulting deformation in structural geology)"):
-            with st.chat_message("user"):
-                st.markdown(prompt)
-            st.session_state.chat_messages.append({"role": "user", "content": prompt})
-            
-            # System construction
-            system_instruction = f"""
-            You are an expert university professor and counselor answering questions for a student in {major_focus} ({current_year}).
-            Adopt the tone persona of '{persona}'. Limit explanations to clear, academic terms.
-            Include formatting, headers, or bullet structures where helpful.
-            """
-            
-            with st.chat_message("assistant"):
-                with st.spinner("Analyzing queries..."):
-                    ai_response = execute_academic_ai(prompt, system_instruction)
-                    st.markdown(ai_response)
-            st.session_state.chat_messages.append({"role": "assistant", "content": ai_response})
+with tab_ai:
+
+    st.header("🤖 AI Agent")
+
+    st.write("Our automated academic agent is loading below. If it does not open automatically, look for the chat container asset.")
+
+    jotform_script = "<script src='https://cdn.jotfor.ms/agent/embedjs/019e014489347343a7b79be9c9855b48569e/embed.js?autoOpenChatIn=1'></script>"
+
+    components.html(jotform_script, height=550, scrolling=True)
+
+
 
 # --- TAB: AI PLANNER & FLASHCARDS ---
 with tab_planner:
