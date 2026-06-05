@@ -8,7 +8,7 @@ import base64
 import streamlit.components.v1 as components
 from PIL import Image
 
-# Try importing google-generativeai for full cloud LLM capabilities
+# Safely attempt to import Google's official Generative AI library
 try:
     import google.generativeai as genai
     gemini_installed = True
@@ -17,14 +17,14 @@ except ImportError:
 
 # --- 1. ACCESSIBILITY & BRIGHTNESS SESSION STATE ---
 if "font_scale" not in st.session_state:
-    st.session_state.font_scale = 100  
+    st.session_state.font_scale = 100  # Default font percentage
 if "bg_theme" not in st.session_state:
-    st.session_state.bg_theme = "light"  
+    st.session_state.bg_theme = "light"  # Default theme
 if "animation_played" not in st.session_state:
     st.session_state.animation_played = False
 if "chat_messages" not in st.session_state:
     st.session_state.chat_messages = [
-        {"role": "assistant", "content": "Hello! I am your AI Academic Advisor. How can I assist you with your B.Sc courses or preparation today?"}
+        {"role": "assistant", "content": "Hello! I am your Google Gemini-powered Academic Advisor. Paste your API key in the sidebar to run live queries, or test me using standard heuristics!"}
     ]
 
 # --- 2. CINEMATIC STARTING ANIMATION ---
@@ -201,59 +201,61 @@ st.markdown(f"""
     </style>
     """, unsafe_allow_html=True)
 
-ADMIN_EMAIL = "krishna5689@outlook.in"
-ADMIN_PHONE = "919451134541"
-NOTEBOOK_LM_URL = "https://notebooklm.google.com/notebook/4865426e-ee8e-4256-956c-9f09f7c6c332?addSource=true"
-
-# --- 5. SIDEBAR: INTELLIGENT CONFIGURATION CONSOLE ---
+# --- 5. SIDEBAR: GOOGLE GEMINI KEY & PROFILE MANAGER ---
 with st.sidebar:
-    st.markdown("### 🛠️ AI Configuration Console")
-    ai_mode = st.radio(
-        "AI Engine Mode",
-        ["⚡ Standard (Built-in Rule Engine)", "🧠 Cloud LLM (Gemini Pro)"],
-        help="Standard mode operates locally with built-in heuristics. Cloud mode uses Google's Gemini models."
+    st.markdown("### 🔑 Google Gemini Setup")
+    gemini_key = st.text_input(
+        "Gemini API Key", 
+        type="password", 
+        placeholder="Paste API Key (AIzaSy...)",
+        help="Paste your Gemini key here to activate live AI generation."
     )
     
-    gemini_key = ""
-    if "Cloud" in ai_mode:
-        gemini_key = st.text_input("Gemini API Key", type="password", placeholder="Paste AI Key (AIzaSy...)")
-        if gemini_key:
-            if gemini_installed:
-                try:
-                    genai.configure(api_key=gemini_key)
-                    st.success("Cloud Engine Initialized!")
-                except Exception as e:
-                    st.error(f"Initialization failed: {e}")
-            else:
-                st.warning("Install `google-generativeai` to run Cloud Engine.")
+    st.markdown("[Get a free Gemini API Key 🔑](https://aistudio.google.com/)")
+    
+    # Verify and configure library live
+    is_gemini_active = False
+    if gemini_key:
+        if gemini_installed:
+            try:
+                genai.configure(api_key=gemini_key.strip())
+                is_gemini_active = True
+                st.success("🟢 Connected to Google Gemini")
+            except Exception as e:
+                st.error(f"Configuration failed: {e}")
         else:
-            st.info("Retrieve a free key from Google AI Studio to unlock advanced features.")
-            
+            st.warning("Please run: `pip install google-generativeai` to support live connection.")
+    else:
+        st.info("Currently in Standard (Heuristic) Sandbox mode.")
+        
     st.markdown("---")
     st.markdown("### 👤 Student Profile")
     major_focus = st.selectbox("Academic Track", ["B.Sc Geology Group", "B.Sc Physics Group", "B.Sc Mathematics Group"])
     current_year = st.selectbox("Current Semester", ["Semester I", "Semester II", "Semester III", "Semester IV", "Semester V", "Semester VI"])
 
-# --- AI QUERY CONTROLLER (CENTRAL PIPELINE) ---
+# --- AI CORE QUERY TRANSCEIVER ---
 def execute_academic_ai(prompt, context_system=""):
     """
-    Evaluates prompts using either standard local templates or cloud LLM calls depending on the session configuration.
+    Executes an AI query. If Google Gemini is successfully set up and active, 
+    it retrieves a live response using the 'gemini-1.5-flash' model. 
+    Otherwise, it utilizes a local rule-based system.
     """
-    if "Cloud" in ai_mode and gemini_key and gemini_installed:
+    if is_gemini_active:
         try:
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            full_prompt = f"{context_system}\n\nStudent Query: {prompt}" if context_system else prompt
+            # Using gemini-1.5-flash as the fast, efficient standard model
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            full_prompt = f"{context_system}\n\nStudent Request: {prompt}" if context_system else prompt
             response = model.generate_content(full_prompt)
             return response.text
         except Exception as e:
-            return f"Error executing Cloud Query: {e}. Falling back to standard engine."
-    
-    # Standard Rule Engine Heuristic Generation (Custom fallbacks for common student academic contexts)
+            return f"*(Gemini live generation errored: {e}. Defaulting to local sandbox answers)*"
+
+    # Rule-Based Sandbox Fallbacks
     prompt_lower = prompt.lower()
     if "plan" in prompt_lower or "schedule" in prompt_lower or "calendar" in prompt_lower:
         return f"""
 ### 📅 Recommended Weekly Study Structure ({major_focus})
-Here is an automated study template based on your major:
+*(Sandbox Heuristic Profile)*
 * **Day 1-2**: Focus on primary core subjects (e.g., Crystallography or Mechanics). Read 1 key paper/chapter.
 * **Day 3-4**: Practical review. Work on mathematics assignments or diagram plotting.
 * **Day 5**: Active recall session. Generate 5 self-assessment questions.
@@ -262,6 +264,7 @@ Here is an automated study template based on your major:
     elif "geology" in prompt_lower:
         return """
 ### 💎 Structural Geology & Mineralogy Insights
+*(Sandbox Heuristic Profile)*
 * **Structural Geology**: Focus on distinguishing between *Faults* (brittle deformation with displacement) and *Folds* (ductile deformation displaying structural wave curvature).
 * **Mineralogy**: Master key optical mineral properties including *Pleochroism* under Plane Polarized Light and *Interference Colors* under Crossed Polars.
 * **Recommended Resource**: Review physical hand specimens in the college laboratory.
@@ -269,6 +272,7 @@ Here is an automated study template based on your major:
     elif "math" in prompt_lower or "calculus" in prompt_lower or "equation" in prompt_lower:
         return """
 ### 📐 Advanced Engineering Mathematics Blueprint
+*(Sandbox Heuristic Profile)*
 * **Ordinary Differential Equations**: Master Euler-Cauchy equations and the method of variation of parameters.
 * **Linear Algebra**: Focus heavily on Eigenvalues, Eigenvectors, and satisfying the Cayley-Hamilton theorem.
 * **Practice Strategy**: Dedicate 45 minutes daily to derivation structures rather than rote-learning proofs.
@@ -276,13 +280,18 @@ Here is an automated study template based on your major:
     else:
         return f"""
 ### 🎓 Academic Support Response
+*(Sandbox Heuristic Profile)*
 Based on your academic profile ({major_focus} | {current_year}):
-* We advise cross-referencing your syllabus with the recommended readings in **Tab 6 (Study Classrooms)**.
-* For complex study assistance or document translation, connect your free Gemini API Key in the sidebar.
+* We advise cross-referencing your syllabus with the recommended readings in **Tab 7 (Study Classrooms)**.
+* To generate actual bespoke guidance, connect your free Gemini API Key in the sidebar.
 * **Study Hint**: Prioritize clarifying practical diagrams first; conceptual understanding often follows structural visual mapping.
         """
 
 # Running Clock Markup
+ADMIN_EMAIL = "krishna5689@outlook.in"
+ADMIN_PHONE = "919451134541"
+NOTEBOOK_LM_URL = "https://notebooklm.google.com/notebook/4865426e-ee8e-4256-956c-9f09f7c6c332?addSource=true"
+
 clock_html = f"""
 <div id="clock-container" style="font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; color: {text_color}; text-align: right; padding-right: 5px;">
     <span id="date-part"></span> &nbsp;&bull;&nbsp; <span id="time-part" style="color: #2563eb; font-weight: 700;"></span>
@@ -374,7 +383,7 @@ with tab_dashboard:
     left_col, right_col = st.columns([2, 1])
     with left_col:
         st.subheader("💡 Dynamic AI Study Briefing")
-        brief_prompt = f"Write a 3-bullet customized academic recommendation for a student currently enrolled in {major_focus} during their {current_year} semester. Keep it practical and concise."
+        brief_prompt = f"Provide a brief, high-level structural study recommendation for a {major_focus} student starting {current_year} semester. Keep it under 3 bullets."
         briefing = execute_academic_ai(brief_prompt)
         st.markdown(briefing)
         
@@ -434,10 +443,10 @@ with tab_college:
         
         st.link_button("📢 Launch Official Notice Board Terminal", "https://bsnvpgcollege.ac.in/NoticeHome.aspx?Type=Notice", type="primary", use_container_width=True)
 
-# --- TAB: NATIVE CHATBOT ---
+# --- TAB: INTERACTIVE CHATBOT ---
 with tab_ai:
-    st.header("🤖 Native AI Academic Counselor")
-    st.write("Interact with our customized assistant configured to help you resolve your specific course roadblocks.")
+    st.header("🤖 Native Google Gemini Academic Counselor")
+    st.write("Leverage the Gemini model suite to evaluate questions regarding syllabus items, complex formulas, and assignments.")
     
     col_chat1, col_chat2 = st.columns([3, 1])
     with col_chat2:
@@ -583,7 +592,7 @@ with tab_deep_search:
             st.markdown('<div class="highlight-box">⚠️ Enter search query above & Press here to apply!</div>', unsafe_allow_html=True)
             st.button("📺 Terminal Standby (Awaiting Input)", disabled=True, use_container_width=True)
 
-# --- TAB: NEWS & ANNOUNCEMENTS WITH AI COGNITIVE PARSING ---
+# --- TAB: NEWS & ANNOUNCEMENTS WITH GEMINI ANALYSIS ---
 with tab_news:
     st.header("📢 University Bulletins & Notices")
     st.write("Query official notice channels and run cognitive analysis on active institutional releases.")
@@ -641,9 +650,9 @@ with tab_study:
         st.link_button("Open Google Classroom Link Structure", "https://classroom.google.com/c/ODU0MzQ2NjI2MDQ2?cjc=shf3hsat", type="primary", use_container_width=True)
     st.caption("Further syllabi data segments are structured automatically upon academic validation.")
 
-# --- TAB: PERFORMANCE TOOLKIT (WITH PREDICTIVE AI ADVISOR) ---
+# --- TAB: PERFORMANCE TOOLKIT (WITH GEMINI ADVISOR) ---
 with tab_perf:
-    st.header("🧮 Academic Performance Calculator & AI Advisor")
+    st.header("🧮 Academic Performance Calculator & Gemini Advisor")
     calc_tab1, calc_tab2, calc_tab3 = st.tabs(["Semester GPA Matrix", "Cumulative CGPA Calculator", "🔮 AI Predictive Insights"])
     
     with calc_tab1:
@@ -683,16 +692,16 @@ with tab_perf:
 
     with calc_tab3:
         st.subheader("🔮 Dynamic AI Career & Academic Roadmap")
-        st.write("Generate customized study strategy blueprints based on your actual performance scores.")
+        st.write("Generate customized study strategy blueprints based on your representative performance metrics.")
         
         target_field = st.selectbox("Your Targeted Postgraduate Field / Goal", ["Geological Survey Research", "Data Analytics & Mathematics", "IIT JAM Preparation", "Public Civil Services Exam"])
-        current_gpa_val = st.slider("Select Current Representative GPA", min_value=0.0, max_value=10.0, value=7.5, step=0.1)
+        current_gpa_val = st.slider("Select Representative GPA", min_value=0.0, max_value=10.0, value=7.5, step=0.1)
         
         if st.button("Generate Personal Predictive Roadmap", type="primary", use_container_width=True):
             analysis_prompt = f"""
             Act as an academic advisor. The student is tracking with a GPA of {current_gpa_val}/10.00 in {major_focus} ({current_year}).
             Their targeted career milestone is '{target_field}'.
-            Provide a 3-step actionable strategy to improve their grading profile or secure their research transition. Keep the plan action-oriented.
+            Provide a 3-step actionable roadmap of recommendations, structural focus zones, or practical research paths. Make it concise.
             """
             with st.spinner("Analyzing learning metrics..."):
                 roadmap = execute_academic_ai(analysis_prompt)
@@ -700,7 +709,7 @@ with tab_perf:
 
 # --- TAB: DEEP FOCUS ENGINE ---
 with tab_focus:
-    st.header("⏱️ Academic Focus Engine")
+    st.header("⏱| Academic Focus Engine")
     
     col_f1, col_f2 = st.columns([2, 1])
     
