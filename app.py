@@ -7,102 +7,120 @@ import time
 import base64
 import streamlit.components.v1 as components
 from PIL import Image
-from concurrent.futures import ThreadPoolExecutor
 
-# ==========================================
-# 1. ARCHITECTURAL CONFIGURATION & STATE
-# ==========================================
+# --- 1. ACCESSIBILITY & BRIGHTNESS SESSION STATE ---
 if "font_scale" not in st.session_state:
-    st.session_state.font_scale = 100
+    st.session_state.font_scale = 100  # Default font percentage
 if "bg_theme" not in st.session_state:
-    st.session_state.bg_theme = "dark"  # Default to premium dark theme
+    st.session_state.bg_theme = "light"  # Default theme
 if "animation_played" not in st.session_state:
     st.session_state.animation_played = False
 
-st.set_page_config(
-    page_title="Nexus Academic Portal",
-    page_icon="🎓",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
-
-# ==========================================
-# 2. CINEMATIC INTRO ANIMATION ENGINE
-# ==========================================
+# --- 2. CINEMATIC STARTING ANIMATION ---
 if not st.session_state.animation_played:
     animation_html = """
     <div id="animation-overlay">
         <div class="content-wrapper">
-            <h1 class="welcome-text">NEXUS ACADEMIA</h1>
+            <h1 class="welcome-text">HELLO STUDENTS</h1>
             <div class="sub-bar"></div>
-            <p class="portal-text">Next-Generation Student Infrastructure</p>
+            <p class="portal-text">Academic Student Portal</p>
         </div>
     </div>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;900&family=Inter:wght@300;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;800&display=swap');
         #animation-overlay {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+            background: linear-gradient(135deg, #0b0f19 0%, #1e40af 50%, #020617 100%);
             display: flex; justify-content: center; align-items: center;
             z-index: 999999; font-family: 'Inter', sans-serif; overflow: hidden;
-            animation: fadeOutWindow 0.8s cubic-bezier(0.7, 0, 0.3, 1) forwards;
-            animation-delay: 2.8s;
+            animation: fadeOutWindow 1s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+            animation-delay: 3.5s;
         }
         .content-wrapper { text-align: center; display: flex; flex-direction: column; align-items: center; }
         .welcome-text {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 3.5rem; font-weight: 900; letter-spacing: 8px; margin: 0;
-            background: linear-gradient(90deg, #38bdf8, #818cf8, #38bdf8); background-size: 200% auto;
+            font-size: 4rem; font-weight: 800; letter-spacing: 6px; color: #ffffff; margin: 0; text-transform: uppercase;
+            background: linear-gradient(to right, #ffffff, #93c5fd, #ffffff); background-size: 200% auto;
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            animation: shineText 2s linear infinite, scaleUpText 1.8s cubic-bezier(0.1, 0.8, 0.2, 1) forwards; opacity: 0;
+            animation: shineText 3s linear infinite, scaleUpText 2.5s cubic-bezier(0.1, 0.8, 0.2, 1) forwards; opacity: 0;
         }
         .sub-bar {
-            width: 0px; height: 2px; background: linear-gradient(90deg, #38bdf8, #818cf8); margin-top: 20px; margin-bottom: 20px;
-            box-shadow: 0px 0px 20px #38bdf8; animation: growBar 1.2s cubic-bezier(0.7, 0, 0.3, 1) forwards; animation-delay: 0.5s;
+            width: 0px; height: 4px; background: #3b82f6; margin-top: 15px; margin-bottom: 15px;
+            box-shadow: 0px 0px 15px #3b82f6; animation: growBar 1.5s ease-out forwards; animation-delay: 0.8s;
         }
-        .portal-text { font-size: 1rem; font-weight: 300; letter-spacing: 6px; color: #94a3b8; margin: 0; text-transform: uppercase; opacity: 0; animation: fadeInPortal 1s ease-out forwards; animation-delay: 1.2s; }
-        @keyframes scaleUpText { 0% { transform: scale(0.9); opacity: 0; filter: blur(10px); } 100% { transform: scale(1); opacity: 1; filter: blur(0px); } }
+        .portal-text { font-size: 1.2rem; font-weight: 400; letter-spacing: 4px; color: #94a3b8; margin: 0; text-transform: uppercase; opacity: 0; animation: fadeInPortal 1.5s ease-out forwards; animation-delay: 1.5s; }
+        @keyframes scaleUpText { 0% { transform: scale(0.85); opacity: 0; filter: blur(10px); } 30% { opacity: 1; filter: blur(0px); } 100% { transform: scale(1.05); opacity: 1; } }
         @keyframes shineText { to { background-position: 200% center; } }
-        @keyframes growBar { to { width: 300px; } }
-        @keyframes fadeInPortal { to { opacity: 0.8; } }
+        @keyframes growBar { to { width: 250px; } }
+        @keyframes fadeInPortal { to { opacity: 1; } }
         @keyframes fadeOutWindow { to { opacity: 0; visibility: hidden; pointer-events: none; } }
     </style>
     """
     components.html(animation_html, height=0)
-    time.sleep(3.4) 
+    time.sleep(4.2) 
     st.session_state.animation_played = True
     st.rerun()
 
-# ==========================================
-# 3. DYNAMIC DESIGN SYSTEM (CSS INJECTION)
-# ==========================================
-# Fallback vector design background pattern if local images do not exist
-UI_THEME_DARK = {
-    "bg_css": "background: radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%) !important;",
-    "card_bg": "rgba(15, 23, 42, 0.65)",
-    "text_color": "#f8fafc",
-    "sub_text": "#94a3b8",
-    "border": "rgba(51, 65, 85, 0.5)",
-    "accent": "#38bdf8",
-    "accent_gradient": "linear-gradient(135deg, #3b82f6, #818cf8)"
-}
+# --- 3. CONFIGURATION & STYLING ---
+LOGO_PATH = r"C:\Users\ADMIN\Desktop\app logo.png"
+logo_exists = os.path.exists(LOGO_PATH)
 
-UI_THEME_LIGHT = {
-    "bg_css": "background: radial-gradient(circle at 50% 50%, #f8fafc 0%, #e2e8f0 100%) !important;",
-    "card_bg": "rgba(255, 255, 255, 0.75)",
-    "text_color": "#0f172a",
-    "sub_text": "#475569",
-    "border": "rgba(203, 213, 225, 0.7)",
-    "accent": "#2563eb",
-    "accent_gradient": "linear-gradient(135deg, #1d4ed8, #3b82f6)"
-}
+if logo_exists:
+    try:
+        app_logo = Image.open(LOGO_PATH)
+        page_icon_val = app_logo
+    except Exception:
+        app_logo = None
+        page_icon_val = "🎓"
+else:
+    app_logo = None
+    page_icon_val = "🎓"
 
-cfg = UI_THEME_DARK if st.session_state.bg_theme == "dark" else UI_THEME_LIGHT
+st.set_page_config(
+    page_title="Academic Student Portal",
+    page_icon=page_icon_val,
+    layout="wide"
+)
+
+# --- 4. LOCAL BACKGROUND IMAGE (BASE64 CONVERSION) ---
+BG_IMAGE_PATH = r"C:\Users\ADMIN\Desktop\modern-light-blue-background-featuring-circuit-line-elements-and-dotted-texture-perfect-for-digital-technology-themes-presentations-web-interfaces-and-tech-branding-vector.jpg"
+
+@st.cache_data
+def get_base64_of_local_image(path):
+    if os.path.exists(path):
+        with open(path, "rb") as image_file:
+            return base64.b64encode(image_file.read()).decode()
+    return ""
+
+bg_base64 = get_base64_of_local_image(BG_IMAGE_PATH)
+
+if st.session_state.bg_theme == "light":
+    card_bg = "rgba(255, 255, 255, 0.85)"  
+    text_color = "#0f172a"
+    sub_text_color = "#475569"
+    border_color = "#cbd5e1"
+    tab_active_text = "#ffffff"
+    overlay_tint = "rgba(241, 245, 249, 0.25)"  
+else:
+    card_bg = "rgba(15, 23, 42, 0.85)"   
+    text_color = "#f8fafc"
+    sub_text_color = "#94a3b8"
+    border_color = "#2d3748"
+    tab_active_text = "#ffffff"
+    overlay_tint = "rgba(11, 15, 25, 0.65)"  
+
+if bg_base64:
+    background_style = f"""
+    background: linear-gradient({overlay_tint}, {overlay_tint}), 
+                url("data:image/jpeg;base64,{bg_base64}") no-repeat center center fixed;
+    background-size: cover !important;
+    """
+else:
+    background_style = f"background-color: {'#f1f5f9' if st.session_state.bg_theme == 'light' else '#0b0f19'} !important;"
 
 st.markdown(f"""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     
     html, body, [data-testid="stAppViewContainer"] {{
         font-family: 'Inter', sans-serif !important;
@@ -110,94 +128,87 @@ st.markdown(f"""
     }}
     
     [data-testid="stAppViewContainer"] {{
-        {cfg['bg_css']}
+        {background_style}
     }}
     
-    [data-testid="stHeader"] {{ display: none !important; }}
-    .block-container {{ padding: 1.5rem 3rem !important; }}
+    h1 {{ font-size: 2rem !important; color: {text_color} !important; font-weight: 700 !important; }}
+    h2 {{ font-size: 1.6rem !important; color: {text_color} !important; font-weight: 700 !important; }}
+    h3 {{ font-size: 1.25rem !important; color: {text_color} !important; font-weight: 600 !important; }}
+    h4 {{ font-size: 1.1rem !important; color: {text_color} !important; font-weight: 600 !important; }}
+    p, span, label, li, td {{ color: {text_color} !important; }}
     
-    /* Advanced Glassmorphism Cards */
-    .glass-card {{
-        background: {cfg['card_bg']};
-        backdrop-filter: blur(16px) saturate(180%);
-        -webkit-backdrop-filter: blur(16px) saturate(180%);
-        border: 1px solid {cfg['border']};
-        border-radius: 16px;
-        padding: 24px;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
-        margin-bottom: 20px;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    [data-testid="stHeader"] {{ display: none !important; height: 0px !important; }}
+    .block-container {{ padding-top: 1rem !important; padding-bottom: 2rem !important; }}
+    
+    .main-card {{ 
+        padding: 20px; 
+        border-radius: 12px; 
+        background: {card_bg}; 
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); 
+        border: 1px solid {border_color}; 
     }}
     
-    .glass-card:hover {{
-        transform: translateY(-2px);
-        box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.3);
+    .metric-card {{ 
+        background: {card_bg} !important; 
+        backdrop-filter: blur(10px);
+        padding: 18px; 
+        border-radius: 12px; 
+        text-align: center; 
+        border: 1px solid {border_color} !important; 
+        margin-bottom: 12px; 
     }}
     
-    /* Metrics Upgrades */
-    .metric-container {{
+    div[data-testid="stTabs"] [data-baseweb="tab-list"] {{ 
+        gap: 6px; 
+        background-color: {card_bg}; 
+        backdrop-filter: blur(10px);
+        padding: 6px; 
+        border-radius: 12px; 
+        border: 1px solid {border_color}; 
+    }}
+    
+    div[data-testid="stTabs"] [data-baseweb="tab"] {{ padding: 6px 12px; border-radius: 8px; font-weight: 500; color: {sub_text_color} !important; }}
+    div[data-testid="stTabs"] [aria-selected="true"] {{ background-color: #2563eb !important; color: {tab_active_text} !important; }}
+    
+    div[data-testid="stAppDeployButton"] {{ display: none !important; }}
+    #MainMenu {{ visibility: hidden !important; }}
+    div[data-testid="stToolbar"] {{ display: none !important; }}
+    footer {{ visibility: hidden !important; }}
+    .stForm {{ background: {card_bg} !important; backdrop-filter: blur(10px); border: 1px solid {border_color} !important; border-radius: 12px !important; padding: 20px !important; }}
+    
+    .highlight-box {{
+        background: linear-gradient(135deg, #ff000022, #ff000011);
+        border: 1px dashed #ff0000;
+        padding: 10px;
+        border-radius: 8px;
         text-align: center;
-        padding: 15px;
+        margin-bottom: 10px;
+        font-weight: 600;
+        color: #ff0000 !important;
+        animation: pulse 2s infinite;
     }}
-    .metric-value {{
-        font-family: 'Orbitron', sans-serif;
-        font-size: 2rem;
-        font-weight: 700;
-        background: linear-gradient(90deg, #38bdf8, #818cf8);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-top: 5px;
-    }}
-    
-    /* Tab Styling Overhaul */
-    div[data-testid="stTabs"] [data-baseweb="tab-list"] {{
-        gap: 8px;
-        background-color: {cfg['card_bg']};
-        backdrop-filter: blur(8px);
-        padding: 8px;
-        border-radius: 14px;
-        border: 1px solid {cfg['border']};
-    }}
-    div[data-testid="stTabs"] [data-baseweb="tab"] {{
-        padding: 8px 16px;
-        border-radius: 10px;
-        font-weight: 500;
-        color: {cfg['sub_text']} !important;
-        transition: all 0.2s ease;
-    }}
-    div[data-testid="stTabs"] [aria-selected="true"] {{
-        background: {cfg['accent_gradient']} !important;
-        color: #ffffff !important;
-        box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
-    }}
-    
-    /* System Notices */
-    .notice-banner {{
-        background: linear-gradient(90deg, rgba(234,88,12,0.15) 0%, rgba(249,115,22,0.05) 100%);
-        border-left: 4px solid #ea580c;
-        padding: 12px 20px;
-        border-radius: 0 12px 12px 0;
-        margin-bottom: 20px;
-        color: {cfg['text_color']};
+    @keyframes pulse {{
+        0% {{ opacity: 0.7; }}
+        50% {{ opacity: 1; }}
+        100% {{ opacity: 0.7; }}
     }}
     </style>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-# ==========================================
-# 4. DATA PIPELINE VARIABLES & UTILITIES
-# ==========================================
 ADMIN_EMAIL = "krishna5689@outlook.in"
 ADMIN_PHONE = "919451134541"
 NOTEBOOK_LM_URL = "https://notebooklm.google.com/notebook/4865426e-ee8e-4256-956c-9f09f7c6c332?addSource=true"
 
+# Running Clock Markup
 clock_html = f"""
-<div id="nexus-clock" style="font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; color: {cfg['text_color']}; text-align: right;">
-    <span id="date-part"></span> &nbsp;&bull;&nbsp; <span id="time-part" style="color: #38bdf8; font-weight: 600;"></span>
+<div id="clock-container" style="font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; color: {text_color}; text-align: right; padding-right: 5px;">
+    <span id="date-part"></span> &nbsp;&bull;&nbsp; <span id="time-part" style="color: #2563eb; font-weight: 700;"></span>
 </div>
 <script>
     function updateClock() {{
         const now = new Date();
-        const options = {{ year: 'numeric', month: 'short', day: 'numeric' }};
+        const options = {{ year: 'numeric', month: 'long', day: 'numeric' }};
         document.getElementById('date-part').textContent = "📅 " + now.toLocaleDateString('en-US', options);
         let hours = now.getHours(); const minutes = String(now.getMinutes()).padStart(2, '0'); const seconds = String(now.getSeconds()).padStart(2, '0');
         const ampm = hours >= 12 ? 'PM' : 'AM'; hours = hours % 12; hours = hours ? hours : 12;
@@ -207,359 +218,310 @@ clock_html = f"""
 </script>
 """
 
-# ==========================================
-# 5. CONTROL HEADER LAYER
-# ==========================================
-header_col, control_col = st.columns([2.5, 1.5])
+# App Layout Header
+header_col, control_col = st.columns([2.3, 1.3])
 with header_col:
-    st.markdown("<h1 style='margin: 0; font-weight:700;'>🎓 Nexus Academic Portal</h1>", unsafe_allow_html=True)
-    st.markdown(f"<span style='color: {cfg['sub_text']}; font-size: 0.9rem;'>B.Sc Unified Tier System Architecture &bull; Operational Endpoint: <code>{ADMIN_EMAIL}</code></span>", unsafe_allow_html=True)
+    st.markdown("<h2 style='margin: 0; color: #1e40af;'>🎓 Academic Student Portal</h2>", unsafe_allow_html=True)
+    st.markdown(f"<span style='font-size: 0.9rem; opacity: 0.85;'>Verification Tier: B.Sc Undergraduate • Helpdesk: <a href='mailto:{ADMIN_EMAIL}' style='text-decoration:none; color:#2563eb; font-weight:500;'>{ADMIN_EMAIL}</a></span>", unsafe_allow_html=True)
 
 with control_col:
-    components.html(clock_html, height=24)
-    sc1, sc2 = st.columns(2)
-    with sc1:
-        theme_choice = st.selectbox("UI Matrix", ["🌙 Cyber Dark", "☀️ Prismatic Light"], index=0 if st.session_state.bg_theme == "dark" else 1)
-        target_theme = "dark" if "Dark" in theme_choice else "light"
-        if target_theme != st.session_state.bg_theme:
-            st.session_state.bg_theme = target_theme
+    components.html(clock_html, height=32)
+    suite_col1, suite_col2 = st.columns(2)
+    with suite_col1:
+        theme_idx = 0 if st.session_state.bg_theme == "light" else 1
+        theme_choice = st.selectbox("Theme", ["☀️ Light", "🌙 Dark"], index=theme_idx, key="top_theme_select")
+        selected_theme = "light" if "Light" in theme_choice else "dark"
+        if selected_theme != st.session_state.bg_theme:
+            st.session_state.bg_theme = selected_theme
             st.rerun()
-    with sc2:
-        font_choice = st.selectbox("Resolution Scale", ["🔍 100%", "🔍 120%", "🔍 140%"], index=0)
-        scale_map = {"100%": 100, "120%": 120, "140%": 140}
-        target_scale = scale_map[font_choice.split(" ")[1]]
-        if target_scale != st.session_state.font_scale:
-            st.session_state.font_scale = target_scale
+    with suite_col2:
+        font_idx = 0 if st.session_state.font_scale == 100 else (1 if st.session_state.font_scale == 120 else 2)
+        font_choice = st.selectbox("Font Size", ["🔍 100%", "🔍 120%", "🔍 140%"], index=font_idx, key="top_font_select")
+        selected_scale = 100 if "100%" in font_choice else (120 if "120%" in font_choice else 140)
+        if selected_scale != st.session_state.font_scale:
+            st.session_state.font_scale = selected_scale
             st.rerun()
 
-st.markdown("""
-<div class="notice-banner">
-    ⚙️ <strong>System Environment Diagnostics:</strong> Core testing arrays loaded successfully. All automated scrapers and Web3 endpoint routes are active.
-</div>
-""", unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
+st.warning("⚠️ **System Notice / आवश्यक सूचना:** This portal is currently in the **testing phase**. (यह एप्लिकेशन अभी टेस्टिंग फेज़ में है।)")
 
-# ==========================================
-# 6. APPLICATION NAVIGATION STACK
-# ==========================================
+# --- NAVIGATION TABS ---
 tabs = st.tabs([
-    "📊 Command Dashboard",
-    "🏫 Academic Hub & ERP",  
-    "🤖 Cognitive AI Agent",
-    "🔍 Deep Research Engine",
-    "📢 Live Bulletin Arrays",
-    "📚 Digital Course Vault",
-    "🧮 Matrix Toolkit (GPA)",
-    "⏱️ JavaScript Core Focus",
-    "🚨 Core Node Escalation"
+    "📊 Dashboard",
+    "🏫 College Info Hub",  
+    "🤖 AI Assistant",
+    "🔍 Deep Search (NotebookLM)",
+    "📢 News & Notices",
+    "📚 Study Classrooms",
+    "🧮 Performance Toolkit",
+    "⏱️ Focus Engine",
+    "🚨 Report Issue"
 ])
+tab_dashboard, tab_college, tab_ai, tab_deep_search, tab_news, tab_study, tab_perf, tab_focus, tab_report = tabs
 
-tab_dash, tab_erp, tab_counsel, tab_deep, tab_news, tab_vault, tab_matrix, tab_focus, tab_escalate = tabs
-
-# --- TAB 1: COMMAND DASHBOARD ---
-with tab_dash:
-    st.markdown(f"""
-    <div class="glass-card" style="background: linear-gradient(135deg, rgba(30,64,175,0.4), rgba(129,140,248,0.1)); border-left: 4px solid #38bdf8;">
-        <h3 style='margin:0 0 8px 0;'>System Framework Initialized</h3>
-        <p style='margin:0; font-size:0.95rem; color:{cfg['sub_text']};'>Central analytics orchestrator providing dynamic structural geology matrices, verified dataset clusters, and structural operational oversight pipelines.</p>
-    </div>
+# --- TAB: DASHBOARD ---
+with tab_dashboard:
+    st.markdown("""
+        <div style="background: linear-gradient(135deg, #1e40af, #3b82f6); color: white !important; padding: 24px; border-radius: 16px; margin-bottom: 24px; margin-top: 10px;">
+            <h1 style="margin: 0; color: white !important; font-size:26px;">B.Sc Student Management Portal</h1>
+            <p style="opacity: 0.95; margin-top: 8px; font-size: 14px; max-width: 700px; color: white !important;">
+                Central administrative hub optimized for real-time classroom updates, digital asset access, performance management, and direct administrative escalation pathways.
+            </p>
+        </div>
     """, unsafe_allow_html=True)
     
-    m1, m2, m3, m4 = st.columns(4)
-    with m1: st.markdown(f'<div class="glass-card metric-container"><span>Cohort Index</span><div class="metric-value">1,250</div></div>', unsafe_allow_html=True)
-    with m2: st.markdown(f'<div class="glass-card metric-container"><span>Active Node Registers</span><div class="metric-value">18</div></div>', unsafe_allow_html=True)
-    with m3: st.markdown(f'<div class="glass-card metric-container"><span>System Broadcasts</span><div class="metric-value" style="background:linear-gradient(90deg, #f97316, #facc15); -webkit-background-clip:text;">6</div></div>', unsafe_allow_html=True)
-    with m4: st.markdown(f'<div class="glass-card metric-container"><span>Active Latency Paths</span><div class="metric-value" style="background:linear-gradient(90deg, #ef4444, #f43f5e); -webkit-background-clip:text;">0</div></div>', unsafe_allow_html=True)
-    
-    l_box, r_box = st.columns([2.5, 1.5])
-    with l_box:
-        st.markdown("<h3 style='margin-bottom:15px;'>🧬 Registered Core Matrix Status</h3>", unsafe_allow_html=True)
-        courses = [
-            {"name": "Structural Geology & Fault Dynamics", "id": "GEO-201", "status": "Synced"},
-            {"name": "Crystallography & Mineral Optical Properties", "id": "GEO-204", "status": "Synced"},
-            {"name": "Geomorphology Elements", "id": "GEO-209", "status": "Synced"}
+    col1, col2, col3, col4 = st.columns([1,1,1,1])
+    with col1: st.markdown('<div class="metric-card"><h4>Total Cohort</h4><h2 style="color: #2563eb !important; margin:4px 0 0 0; font-size:24px;">1,250</h2></div>', unsafe_allow_html=True)
+    with col2: st.markdown('<div class="metric-card"><h4>Active Courses</h4><h2 style="color: #16a34a !important; margin:4px 0 0 0; font-size:24px;">18</h2></div>', unsafe_allow_html=True)
+    with col3: st.markdown('<div class="metric-card"><h4>Active Notices</h4><h2 style="color: #ea580c !important; margin:4px 0 0 0; font-size:24px;">6</h2></div>', unsafe_allow_html=True)
+    with col4: st.markdown('<div class="metric-card"><h4>Pending Inquiries</h4><h2 style="color: #dc2626 !important; margin:4px 0 0 0; font-size:24px;">12</h2></div>', unsafe_allow_html=True)
+        
+    st.markdown("<br>", unsafe_allow_html=True)
+    left_col, right_col = st.columns([2, 1])
+    with left_col:
+        st.subheader("📚 Course Registration Status")
+        materials = [
+            {"subject": "Structural Geology", "teacher": "Dr. Sharma"},
+            {"subject": "Mineralogy", "teacher": "Prof. Singh"},
+            {"subject": "Engineering Mathematics", "teacher": "Dr. Verma"}
         ]
-        for c in courses:
-            st.markdown(f"""
-            <div style="padding:14px; border-radius:10px; background:rgba(0,0,0,0.1); border: 1px solid {cfg['border']}; margin-bottom:10px; display:flex; justify-content:between; align-items:center;">
-                <div><strong>{c['name']}</strong> <code style='font-size:0.8rem;'>{c['id']}</code></div>
-                <span style="color:#10b981; font-weight:600; font-size:0.85rem; background:rgba(16,185,129,0.1); padding:2px 8px; border-radius:4px;">{c['status']}</span>
+        for item in materials:
+            with st.container():
+                st.markdown(f"**{item['subject']}** — Instructor: {item['teacher']}")
+                st.caption("🟢 Automated Sync Environment Active")
+                st.divider()
+                
+    with right_col:
+        st.subheader("⚡ Core Modules")
+        st.button("📋 Live Attendance Tracker", use_container_width=True)
+        st.button("📝 Assignment Log", use_container_width=True)
+        st.button("📅 Academic Calendar", use_container_width=True)
+        st.button("📊 Examination Reports", use_container_width=True)
+
+# --- TAB: COLLEGE INFO HUB ---
+with tab_college:
+    st.header("🏫 College Information & ERP Gateway")
+    st.write("Direct pipelines to campus notice desks, unified ledger lookups, and academic fee clearance terminals.")
+    
+    col_left, col_right = st.columns(2)
+    
+    with col_left:
+        st.markdown(f"""
+            <div style="border: 1px solid {border_color}; background-color: {card_bg}; padding: 24px; border-radius: 12px; min-height: 270px; backdrop-filter: blur(8px);">
+                <h3 style="margin-top:0; color:#2563eb;">💳 Transactions & Fee Clearance</h3>
+                <p style="font-size:0.95rem; line-height:1.6;">
+                    Track ledger adjustments or execute runtime registration charges. 
+                    Access the external cloud terminals below to verify current financial clearings or clear backlogs.
+                </p>
             </div>
-            """, unsafe_allow_html=True)
-    with r_box:
-        st.markdown("<h3 style='margin-bottom:15px;'>🎯 Automation Pipelines</h3>", unsafe_allow_html=True)
-        st.button("📋 Telemetry Tracker", use_container_width=True)
-        st.button("📝 Live Assessment Handlers", use_container_width=True)
-        st.button("📅 System Calendar Grid", use_container_width=True)
-
-# --- TAB 2: ACADEMIC HUB & ERP ---
-with tab_erp:
-    st.markdown("<h2 style='margin-top:0;'>Campus Ledger & ERP Framework Gateways</h2>", unsafe_allow_html=True)
-    col_e1, col_e2 = st.columns(2)
-    with col_e1:
-        st.markdown(f"""
-        <div class="glass-card" style="min-height:230px;">
-            <h3 style="color:#38bdf8; margin-top:0;">💳 Financial Clearances & Balances</h3>
-            <p style="color:{cfg['sub_text']}; font-size:0.95rem; line-height:1.6;">
-                Automated auditing framework connected directly to cross-network institutional ledger clusters. Verify term registrations, backlog penalty offsets, or outstanding academic clearances.
-            </p>
-        </div>
         """, unsafe_allow_html=True)
-        st.link_button("🌐 Open External Ledger Terminal", "https://erpweb.bsnvpgcollege.co.in/transaction-search", type="secondary", use_container_width=True)
-        st.link_button("⚡ Execute Tuition Clearance Charges", "https://erpweb.bsnvpgcollege.co.in/paycoursefees", type="primary", use_container_width=True)
         
-    with col_e2:
-        st.markdown(f"""
-        <div class="glass-card" style="min-height:230px;">
-            <h3 style="color:#f97316; margin-top:0;">📋 Administrative Communication Network</h3>
-            <p style="color:{cfg['sub_text']}; font-size:0.95rem; line-height:1.6;">
-                Access formal structural decrees, evaluation changes, timeline updates, and regulatory adjustments via encrypted public routing backbones.
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
-        st.link_button("📢 Pull Verified Directive Array", "https://bsnvpgcollege.ac.in/NoticeHome.aspx?Type=Notice", type="primary", use_container_width=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.link_button("💳 Go to Transaction Search Terminal", "https://erpweb.bsnvpgcollege.co.in/transaction-search", type="secondary", use_container_width=True)
+        st.link_button("💵 Process & Pay Course Fees Online", "https://erpweb.bsnvpgcollege.co.in/paycoursefees", type="primary", use_container_width=True)
 
-# --- TAB 3: COGNITIVE AI AGENT ---
-with tab_counsel:
-    st.markdown("<h2 style='margin-top:0;'>Intelligent Cognitive Counseling Agent</h2>", unsafe_allow_html=True)
-    st.markdown(f"<p style='color:{cfg['sub_text']}; margin-bottom:20px;'>Context-aware model loaded with localized academic guidelines and dynamic vector search optimizations.</p>", unsafe_allow_html=True)
+    with col_right:
+        st.markdown(f"""
+            <div style="border: 1px solid {border_color}; background-color: {card_bg}; padding: 24px; border-radius: 12px; min-height: 270px; backdrop-filter: blur(8px); margin-bottom:15px;">
+                <h3 style="margin-top:0; color:#ea580c;">📋 Institutional Notice Dashboard</h3>
+                <p style="font-size:0.95rem; line-height:1.6;">
+                    Access formal administrative directives, mid-term evaluation plans, and departmental announcements directly via the college's public communication network stack.
+                </p>
+                <span style="font-size:0.85rem; background-color:#ffedd5; color:#c2410c; padding:6px 12px; border-radius:6px; font-weight:600; display:inline-block; margin-top:10px;">
+                    📢 Verified Structural Pipeline
+                </span>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        st.link_button("📢 Launch Official Notice Board Terminal", "https://bsnvpgcollege.ac.in/NoticeHome.aspx?Type=Notice", type="primary", use_container_width=True)
+
+# --- TAB: AI ASSISTANT ---
+with tab_ai:
+    st.header("🤖 AI Student Counselor")
+    st.write("Our automated academic agent is loading below. If it does not open automatically, look for the chat container asset.")
     jotform_script = "<script src='https://cdn.jotfor.ms/agent/embedjs/019e014489347343a7b79be9c9855b48569e/embed.js?autoOpenChatIn=1'></script>"
-    components.html(jotform_script, height=520, scrolling=True)
+    components.html(jotform_script, height=550, scrolling=True)
 
-# --- TAB 4: DEEP RESEARCH ENGINE ---
-with tab_deep:
-    st.markdown("<h2 style='margin-top:0;'>Deep Structural Indexing & Dynamic Feeds</h2>", unsafe_allow_html=True)
-    sc1, sc2 = st.columns(2)
-    with sc1:
-        st.markdown(f"""
-        <div class="glass-card" style="min-height:220px;">
-            <h3 style="color:#818cf8; margin-top:0;">Google NotebookLM Framework</h3>
-            <p style="color:{cfg['sub_text']}; font-size:0.95rem; line-height:1.6;">
-                Initializes explicit cross-origin session variables directed toward your tailored analysis clusters. Ideal for handling documentation parsing, complex semantic indexation, and contextual queries.
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
-        st.link_button("🚀 Active NotebookLM Secure Link", NOTEBOOK_LM_URL, type="primary", use_container_width=True)
-    with sc2:
-        st.markdown(f"""
-        <div class="glass-card" style="min-height:220px;">
-            <h3 style="color:#f43f5e; margin-top:0;">Multimedia Educational Pipeline</h3>
-            <p style="color:{cfg['sub_text']}; font-size:0.95rem; line-height:1.6;">
-                Input research objectives or dynamic geological topics below. The query will sanitize string variants and auto-format programmatic indexing arrays.
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
-        yt_input = st.text_input("Syllabus Reference / Vector Query Input:", placeholder="e.g., Crystallography Hermann Mauguin symmetry notation BSc", key="nexus_yt_search")
-        if yt_input:
-            encoded_query = urllib.parse.quote(yt_input.strip())
-            st.link_button("📺 Stream Filtered Search Payload", f"https://www.youtube.com/results?search_query={encoded_query}", type="secondary", use_container_width=True)
-
-# --- TAB 5: LIVE BULLETIN ARRAYS (ASYNC SCRAPER) ---
-with tab_news:
-    st.markdown("<h2 style='margin-top:0;'>Live Distributed Institutional Database Sync</h2>", unsafe_allow_html=True)
-    lu_target = "https://www.lkouniv.ac.in/en/news?Newslistslug=en-notices&cd=MwAzADcA"
+# --- TAB: STREAMLINED DEEP SEARCH & VIDEO TERMINAL ---
+with tab_deep_search:
+    st.header("🔍 Deep Search & Multimedia Research")
+    st.write("Direct external bridge pipelines to your academic analysis and video lecture workspaces.")
     
-    if st.button("Initialize Secure Scrape Request Pipeline", type="primary", use_container_width=True):
-        # Isolation wrapper to prevent MainThread freezing
-        def fetch_bulletins():
-            h = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
-            r = requests.get(lu_target, headers=h, timeout=8)
-            s = BeautifulSoup(r.content, 'html.parser')
-            return [{"text": a.text.strip(), "href": a['href']} for a in s.find_all('a', href=True) if "news" in a['href'] and len(a.text.strip()) > 15]
-
-        with st.spinner("Executing thread-isolated extraction..."):
-            try:
-                with ThreadPoolExecutor() as executor:
-                    bulletin_records = executor.submit(fetch_bulletins).result()
-                
-                if not bulletin_records:
-                    st.warning("Query returned zero matching records.")
-                else:
-                    for i, b in enumerate(bulletin_records[:10]):
-                        clean_lbl = b['text'].replace("[", "").replace("]", "")
-                        destination = b['href'] if b['href'].startswith('http') else f"https://www.lkouniv.ac.in{b['href']}"
-                        st.markdown(f"""
-                        <div style="padding:12px; margin-bottom:8px; border-radius:8px; background:rgba(56,189,248,0.05); border-left:3px solid #38bdf8;">
-                            <a href="{destination}" target="_blank" style="text-decoration:none; color:{cfg['text_color']}; font-weight:500;">🔗 Grid Element {i+1}: {clean_lbl}</a>
-                        </div>
-                        """, unsafe_allow_html=True)
-            except Exception as e:
-                st.error("Automated mining encountered an exception wrapper.")
-                st.markdown(f"📦 [Access Source Registry Directory Interactively]({lu_target})")
-
-# --- TAB 6: DIGITAL COURSE VAULT ---
-with tab_vault:
-    st.markdown("<h2 style='margin-top:0;'>Cloud Storage Virtual Classrooms</h2>", unsafe_allow_html=True)
-    with st.container():
+    search_col1, search_col2 = st.columns(2)
+    
+    with search_col1:
         st.markdown(f"""
-        <div class="glass-card">
-            <h4 style='margin:0 0 10px 0;'>B.Sc Academic Core Operations Cluster</h4>
-            <p style='font-size:0.9rem; color:{cfg['sub_text']};'>Access synchronized syllabus distribution folders, file asset directories, and assignment delivery endpoints.</p>
-            <div style='background:rgba(0,0,0,0.2); padding:10px 15px; border-radius:8px; margin-bottom:15px; border:1px dashed {cfg['border']}'>
-                🔑 Cryptographic Access Token: <code style='color:#38bdf8;'>shf3hsat</code>
+            <div style="border: 1px solid {border_color}; background-color: {card_bg}; padding: 24px; border-radius: 12px; height: 260px; backdrop-filter: blur(8px);">
+                <h3 style="margin-top:0; color:#2563eb;">Google NotebookLM Gateway</h3>
+                <p style="font-size:0.95rem; line-height:1.6; margin-bottom: 20px;">
+                    Clicking the link below establishes an external session handshake directly into your configured NotebookLM cluster. 
+                    Manage documentation parsing, contextual index creation, and text automation routines.
+                </p>
+                <span style="font-size:0.85rem; background-color:#dcfce7; color:#15803d; padding:6px 12px; border-radius:6px; font-weight:600;">
+                    🔗 Connection Pipeline Ready
+                </span>
             </div>
-        </div>
         """, unsafe_allow_html=True)
-        st.link_button("📂 Launch Google Classroom Infrastructure", "https://classroom.google.com/c/ODU0MzQ2NjI2MDQ2?cjc=shf3hsat", type="primary", use_container_width=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        st.link_button(
+            "🚀 Launch Connected NotebookLM Chat Session", 
+            NOTEBOOK_LM_URL, 
+            type="primary", 
+            use_container_width=True
+        )
 
-# --- TAB 7: MATRIX TOOLKIT (GPA CRITERIA) ---
-with tab_matrix:
-    st.markdown("<h2 style='margin-top:0;'>Mathematical Performance Matrix</h2>", unsafe_allow_html=True)
-    calc1, calc2 = st.tabs(["Weighted Term GPA Calculator", "Cumulative Multi-Term Aggregator"])
-    
-    with calc1:
-        st.markdown("$$GPA = \\frac{\\sum_{i=1}^{n} (GradePoint_i \\times Credit_i)}{\\sum_{i=1}^{n} Credit_i}$$")
-        subjects_num = st.number_input("Computational Subject Arrays:", min_value=1, max_value=12, value=4, step=1)
+    with search_col2:
+        st.markdown(f"""
+            <div style="border: 1px solid {border_color}; background-color: {card_bg}; padding: 24px; border-radius: 12px; height: 260px; backdrop-filter: blur(8px); margin-bottom: 0px;">
+                <h3 style="margin-top:0; color:#ff0000;">YouTube Video Lecture Terminal</h3>
+                <p style="font-size:0.95rem; line-height:1.6;">
+                    Type your research topic, complex formula, or specific syllabus chapter below. 
+                    The portal will sync the data string and launch YouTube directly with your filtered educational feed.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
         
-        scores_vector = []
-        credits_vector = []
-        g_map = {"O (Outstanding)": 10, "A+ (Excellent)": 9, "A (Very Good)": 8, "B+ (Good)": 7, "B (Average)": 6, "C (Passing)": 5, "F (Failure)": 0}
+        yt_query = st.text_input(
+            "Search YouTube Lectures / वीडियो लेक्चर खोजें:", 
+            placeholder="e.g., Structural geology faulting dynamics BSc lectures",
+            key="portal_youtube_search"
+        )
         
-        for idx in range(int(subjects_num)):
-            c1, c2 = st.columns(2)
-            with c1:
-                sel_g = st.selectbox(f"Course Matrix Record {idx+1} Grade Point:", list(g_map.keys()), key=f"mat_g_{idx}")
-                scores_vector.append(g_map[sel_g])
-            with c2:
-                sel_c = st.number_input(f"Course Matrix Record {idx+1} Credit Weights:", min_value=1, max_value=8, value=4, key=f"mat_c_{idx}")
-                credits_vector.append(sel_c)
-                
-        if st.button("Compute Term GPA Output", type="primary", use_container_width=True):
-            dot_product = sum(s * c for s, c in zip(scores_vector, credits_vector))
-            sigma_credits = sum(credits_vector)
-            term_gpa = dot_product / sigma_credits if sigma_credits > 0 else 0
-            st.metric("Vector Quantized Term GPA Matrix", f"{term_gpa:.4f} / 10.0000")
+        if yt_query:
+            encoded_yt_query = urllib.parse.quote(yt_query.strip())
+            YOUTUBE_SYNC_URL = f"https://www.youtube.com/results?search_query={encoded_yt_query}"
             
-    with calc2:
-        st.markdown("$$CGPA = \\frac{(CGPA_{Hist} \\times Credit_{Hist}) + (GPA_{Term} \\times Credit_{Term})}{Credit_{Hist} + Credit_{Term}}$$")
-        hist_cgpa = st.number_input("Historical Base Reference CGPA:", min_value=0.0, max_value=10.0, value=8.0, step=0.01)
-        hist_cred = st.number_input("Sum total of Historical Earned Credits:", min_value=0, max_value=240, value=44, step=1)
-        st.divider()
-        latest_gpa = st.number_input("Target Runtime Term GPA Score:", min_value=0.0, max_value=10.0, value=8.5, step=0.01)
-        latest_cred = st.number_input("Target Runtime Term Credit Allocation:", min_value=0, max_value=32, value=20, step=1)
-        
-        if st.button("Consolidate Complete Matrix CGPA", use_container_width=True):
-            aggregate_points = (hist_cgpa * hist_cred) + (latest_gpa * latest_cred)
-            aggregate_credits = hist_cred + latest_cred
-            final_cgpa = aggregate_points / aggregate_credits if aggregate_credits > 0 else 0
-            st.metric("Consolidated Aggregate Global Portfolio CGPA", f"{final_cgpa:.4f} / 10.0000")
-
-# --- TAB 8: JAVASCRIPT NATIVE FOCUS ENGINE ---
-with tab_focus:
-    st.markdown("<h2 style='margin-top:0;'>High-Performance JavaScript Chronometer Focus Engine</h2>", unsafe_allow_html=True)
-    st.markdown(f"<p style='color:{cfg['sub_text']};'>State-isolated client-side timer architecture engineered to eliminate container pipeline redraw stuttering and backend latency errors.</p>", unsafe_allow_html=True)
-    
-    # Pure sandboxed web-component timer logic
-    timer_js_code = """
-    <div id="chronometer-box">
-        <div id="chrono-display">25:00</div>
-        <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
-            <button class="btn" onclick="startTimer(25)">Focus Frame (25m)</button>
-            <button class="btn" onclick="startTimer(5)">Recuperate (5m)</button>
-            <button class="btn btn-stop" onclick="stopTimer()">Halt Frame</button>
-        </div>
-    </div>
-    <style>
-        #chronometer-box {
-            background: linear-gradient(135deg, #0f172a, #1e293b);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 16px; padding: 40px; text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
-        #chrono-display {
-            font-size: 5rem; font-weight: 800; color: #38bdf8;
-            letter-spacing: 2px; text-shadow: 0 0 20px rgba(56,189,248,0.3);
-            font-variant-numeric: tabular-nums;
-        }
-        .btn {
-            background: #2563eb; color: white; border: none;
-            padding: 10px 20px; font-weight: 600; border-radius: 8px;
-            cursor: pointer; transition: background 0.2s;
-        }
-        .btn:hover { background: #1d4ed8; }
-        .btn-stop { background: #dc2626; }
-        .btn-stop:hover { background: #b91c1c; }
-    </style>
-    <script>
-        let countdownTimer = null;
-        function startTimer(minutes) {
-            clearInterval(countdownTimer);
-            let timeRemaining = minutes * 60;
-            const display = document.getElementById('chrono-display');
-            
-            countdownTimer = setInterval(() => {
-                let mins = Math.floor(timeRemaining / 60);
-                let secs = timeRemaining % 60;
-                display.textContent = String(mins).padStart(2, '0') + ":" + String(secs).padStart(2, '0');
-                if (--timeRemaining < 0) {
-                    clearInterval(countdownTimer);
-                    display.textContent = "DONE";
-                }
-            }, 1000);
-        }
-        function stopTimer() {
-            clearInterval(countdownTimer);
-            document.getElementById('chrono-display').textContent = "00:00";
-        }
-    </script>
-    """
-    components.html(timer_js_code, height=240)
-
-# --- TAB 9: CORE NODE ESCALATION ---
-with tab_escalate:
-    st.markdown("<h2 style='margin-top:0;'>Administrative Incident Escalation Desk</h2>", unsafe_allow_html=True)
-    
-    with st.form("incident_matrix_form", clear_on_submit=False):
-        st.markdown(f"<p style='color:{cfg['sub_text']}; font-size:0.9rem;'>Ensure fields contain valid syntax arrays. Missing tokens will flag edge exceptions.</p>", unsafe_allow_html=True)
-        
-        st.text_input("User Verification Email *", placeholder="identity@domain.com", key="e_email")
-        st.text_input("Full Legal Name Entry *", key="e_name")
-        st.text_input("Institutional Roll Registry Reference *", key="e_roll")
-        st.selectbox("System Error Domain Classification", ["Database Routing Error", "Missing Subject Profiles", "Document Discrepancy", "Transaction Failures"], key="e_class")
-        st.text_area("Comprehensive Description Log Matrix *", key="e_desc")
-        
-        trigger_escalation = st.form_submit_button("Deploy Ticket Payload to Admin Nodes", use_container_width=True)
-        
-    if trigger_escalation:
-        m_email = st.session_state.e_email.strip()
-        m_name = st.session_state.e_name.strip()
-        m_roll = st.session_state.e_roll.strip()
-        m_class = st.session_state.e_class
-        m_desc = st.session_state.e_desc.strip()
-        
-        if m_email and m_name and m_roll and m_desc:
-            payload = {
-                "email": m_email,
-                "Name Vector": m_name,
-                "Roll Target": m_roll,
-                "Domain Class": m_class,
-                "Telemetry Log": m_desc,
-                "_subject": f"🚨 Nexus Failure Escalation Event: Code-{m_roll}",
-                "_captcha": "false"
-            }
-            
-            with st.spinner("Broadcasting ticket payload across Ajax Formsubmit pipelines..."):
-                try:
-                    res_status = requests.post(f"https://formsubmit.co/ajax/{ADMIN_EMAIL}", data=payload, timeout=8)
-                    if res_status.status_code == 200:
-                        st.toast("Telemetry data package delivered successfully.", icon="🚀")
-                    else:
-                        st.error(f"External API dropped packet stream. HTTP Status Code: {res_status.status_code}")
-                except Exception:
-                    st.error("Connection timed out. Initializing backup fallback logic vectors.")
-            
-            # Format message string safely for instant messaging pipelines
-            whatsapp_payload_str = f"*Incident Ticket Open*\n\n*Operator Name:* {m_name}\n*Register Roll No:* {m_roll}\n*Domain:* {m_class}\n*Diagnostics:* {m_desc}"
-            wa_endpoint_formatted = f"https://wa.me/{ADMIN_PHONE}?text={urllib.parse.quote(whatsapp_payload_str)}"
-            
-            st.success("🎉 Local validation passed. Incident packet written to data buffer.")
-            st.link_button("Verify Node Escalation via WhatsApp Endpoint ✅", wa_endpoint_formatted, use_container_width=True)
-            st.balloons()
+            st.link_button(
+                "📺 Launch Synchronized YouTube Search", 
+                YOUTUBE_SYNC_URL, 
+                type="secondary", 
+                use_container_width=True
+            )
         else:
-            st.error("❌ Form payload structure invalid. Missing mandatory text arrays.")
+            st.markdown('<div class="highlight-box">⚠️ Enter search query above & Press here to apply!</div>', unsafe_allow_html=True)
+            st.button("📺 Terminal Standby (Awaiting Input)", disabled=True, use_container_width=True)
 
-# ==========================================
-# 7. FOOTER
-# ==========================================
-st.markdown("<br><br>", unsafe_allow_html=True)
-st.markdown(f"<hr style='border-color:{cfg['border']};'><center style='font-size: 11px; color:{cfg['sub_text']}; letter-spacing:1px;'>OPERATIONAL INFRASTRUCTURE PROVIDED BY NEXUS AGENT CORE NETWORKS</center>", unsafe_allow_html=True)
+# --- TAB: NEWS & ANNOUNCEMENTS ---
+with tab_news:
+    st.header("📢 University Bulletins & Notices")
+    lu_url = "https://www.lkouniv.ac.in/en/news?Newslistslug=en-notices&cd=MwAzADcA"
+    if st.button("Query Live Database Feed", type="primary", use_container_width=True):
+        try:
+            headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+            res = requests.get(lu_url, headers=headers, timeout=10)
+            soup = BeautifulSoup(res.content, 'html.parser')
+            links = soup.find_all('a', href=True)
+            found = 0
+            for link in links:
+                if "news" in link['href'] and len(link.text.strip()) > 15:
+                    clean_text = link.text.strip().replace("[", "").replace("]", "")
+                    href_val = link['href']
+                    url = href_val if href_val.startswith('http') else "https://www.lkouniv.ac.in" + href_val
+                    st.info(f"🔗 [{clean_text}]({url})")
+                    found += 1
+                if found > 10: break
+        except Exception:
+            st.error(f"Live parsing connection error. Access raw terminal index directly: [Lucknow University Notice Board]({lu_url})")
+
+# --- TAB: STUDY MATERIAL ---
+with tab_study:
+    st.header("📚 Digital Course Assets")
+    st.write("Access interconnected institutional cloud infrastructure below.")
+    with st.container():
+        st.subheader("BSc Management Core")
+        st.info("Classroom Code Token: shf3hsat")
+        st.link_button("Open Google Classroom Link Structure", "https://classroom.google.com/c/ODU0MzQ2NjI2MDQ2?cjc=shf3hsat", type="primary", use_container_width=True)
+    st.caption("Further syllabi data segments are structured automatically upon academic validation.")
+
+# --- TAB: PERFORMANCE TOOLKIT ---
+with tab_perf:
+    st.header("🧮 Academic Performance Calculator")
+    calc_tab1, calc_tab2 = st.tabs(["Semester GPA Matrix", "Cumulative CGPA Calculator"])
+    with calc_tab1:
+        st.subheader("Current Semester Track")
+        num_courses = st.number_input("Number of Registered Subjects", min_value=1, max_value=10, value=4, step=1)
+        scores, credits = [], []
+        for i in range(int(num_courses)):
+            col_c1, col_c2 = st.columns(2)
+            with col_c1:
+                score = st.selectbox(f"Grade - Course {i+1}", ["O (Outstanding - 10)", "A+ (Excellent - 9)", "A (Very Good - 8)", "B+ (Good - 7)", "B (Above Average - 6)", "C (Average - 5)", "F (Fail - 0)"], key=f"grade_{i}")
+                grade_map = {"O": 10, "A+": 9, "A": 8, "B+": 7, "B": 6, "C": 5, "F": 0}
+                scores.append(grade_map[score.split(" ")[0]])
+            with col_c2:
+                credit = st.number_input(f"Credits {i+1}", min_value=1, max_value=6, value=4, key=f"credit_{i}")
+                credits.append(credit)
+        if st.button("Compute Semester Index", type="primary", use_container_width=True):
+            total_points = sum(s * c for s, c in zip(scores, credits))
+            total_credits = sum(credits)
+            calculated_gpa = total_points / total_credits if total_credits > 0 else 0
+            st.metric(label="Calculated GPA for Current Term", value=f"{calculated_gpa:.2f} / 10.00")
+    with calc_tab2:
+        st.subheader("Historical CGPA Consolidation")
+        prior_cgpa = st.number_input("Current Historical Cumulative CGPA", min_value=0.0, max_value=10.0, value=8.0, step=0.1)
+        completed_credits = st.number_input("Total Assessment Credits Earned Historically", min_value=0, max_value=200, value=48, step=1)
+        st.markdown("---")
+        curr_gpa = st.number_input("Latest Term Semester GPA Result", min_value=0.0, max_value=10.0, value=8.5, step=0.1)
+        curr_credits = st.number_input("Latest Term Credits Taken", min_value=0, max_value=30, value=20, step=1)
+        if st.button("Consolidate Global CGPA", use_container_width=True):
+            total_historical_points = prior_cgpa * completed_credits
+            total_current_points = curr_gpa * curr_credits
+            global_credits = completed_credits + curr_credits
+            calculated_cgpa = (total_historical_points + total_current_points) / global_credits if global_credits > 0 else 0
+            st.metric(label="Updated Aggregate Portfolio CGPA", value=f"{calculated_cgpa:.2f} / 10.00")
+
+# --- TAB: DEEP FOCUS ENGINE ---
+with tab_focus:
+    st.header("⏱️ Academic Focus Engine")
+    if "timer_running" not in st.session_state: st.session_state.timer_running = False
+    duration_selection = st.selectbox("Configure Study Matrix Track:", ["25 Minutes (Standard Study)", "5 Minutes (Short Break)", "15 Minutes (Extended Intermission)"])
+    duration_map = {"25": 25 * 60, "5": 5 * 60, "15": 15 * 60}
+    target_seconds = duration_map[duration_selection.split(" ")[0]]
+    progress_bar = st.progress(0.0)
+    timer_display = st.empty()
+    if st.button("Initialize Focus Session Pipeline", type="primary", use_container_width=True):
+        st.session_state.timer_running = True
+        start_time = time.time()
+        while st.session_state.timer_running:
+            elapsed = time.time() - start_time
+            remaining = target_seconds - elapsed
+            if remaining <= 0:
+                st.session_state.timer_running = False
+                progress_bar.progress(1.0)
+                timer_display.subheader("⏱️ Session Finalized! Re-allocate tasks.")
+                st.balloons()
+                break
+            mins, secs = divmod(int(remaining), 60)
+            timer_display.markdown(f"<h1 style='font-size:42px; font-weight:700;'>{mins:02d}:{secs:02d}</h1>", unsafe_allow_html=True)
+            progress_bar.progress(min(elapsed / target_seconds, 1.0))
+            time.sleep(1)
+
+# --- TAB: REPORT REGISTRATION ISSUE ---
+with tab_report:
+    st.header("🚨 Administrative Issue Escalation")
+    with st.form("issue_form", clear_on_submit=False):
+        student_email = st.text_input("Your Email Address *", placeholder="student@example.com")
+        name = st.text_input("Full Name *")
+        roll_no = st.text_input("Roll Number / Student ID *")
+        issue_type = st.selectbox("Issue Category", ["Login Problem", "Subject Not Showing", "Document Error", "Other"])
+        details = st.text_area("Detailed Description *")
+        submitted = st.form_submit_button("Submit & Notify Admin", use_container_width=True)
+    if submitted:
+        if student_email and name and roll_no and details:
+            email_payload = {"email": student_email.strip(), "Student Name": name.strip(), "Roll Number": roll_no.strip(), "Issue Type": issue_type, "Detailed Description": details.strip(), "_subject": f"🚨 Urgent: Registration Issue from {name.strip()}", "_captcha": "false"}
+            with st.spinner("Processing form with target server..."):
+                try:
+                    response = requests.post(f"https://formsubmit.co/ajax/{ADMIN_EMAIL}", data=email_payload, timeout=10)
+                    if response.status_code == 200: st.toast("Form processed! Email confirmation sent.", icon="📧")
+                    else: st.error(f"Endpoint verification issue encountered. Status Code: {response.status_code}")
+                except Exception: st.error("Automated transmission pipeline timeout. Proceeding to alternative routing.")
+            wa_text = f"*Registration Issue Report*\n\n*Name:* {name}\n*Roll No:* {roll_no}\n*Email:* {student_email}\n*Issue:* {issue_type}\n*Details:* {details}"
+            wa_url = f"https://wa.me/{ADMIN_PHONE}?text={urllib.parse.quote(wa_text)}"
+            st.success("🎉 Local data entry recorded successfully!")
+            st.link_button("Finalize via WhatsApp Message ✅", wa_url, use_container_width=True)
+            st.balloons()
+        else: st.error("⚠️ Validation failure: Please fill out all required fields marked with (*).")
+
+# --- FOOTER ---
+st.markdown("---")
+st.markdown("<center style='font-size: 11px;'>Powered by Google Workspace and Microhnm Technologies</center>", unsafe_allow_html=True)
