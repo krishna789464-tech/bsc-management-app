@@ -451,72 +451,110 @@ with tab_ai:
     jotform_script = "<script src='https://cdn.jotfor.ms/agent/embedjs/019e014489347343a7b79be9c9855b48569e/embed.js?autoOpenChatIn=1'></script>"
     components.html(jotform_script, height=550, scrolling=True)
 
-# --- TAB: AI PLANNER & FLASHCARDS ---
+# --- TAB: AI PLANNER & FLASHCARDS (UPDATED WITH SINGLE BUTTON & PERPLEXITY SYNC) ---
 with tab_planner:
-    st.header("📚 Study Material & Flashcard Synthesizer")
-    st.write("Generate interactive structural summaries, mock assessment questionnaires, or flashcard lists directly from a core topic.")
+    st.header("📚 Unified Study Pack Synthesizer & Perplexity Sync")
+    st.write("Generate a complete study guide, mock assessments, and flashcards in a single action from a topic or uploaded reference file.")
     
-    col_p1, col_p2 = st.columns([1, 1])
+    # Inputs Setup
+    col_input, col_settings = st.columns([1, 1])
     
-    with col_p1:
-        st.subheader("🛠️ Study Material Engine")
+    with col_input:
         syllabus_topic = st.text_input(
-            "Syllabus Topic Name",
+            "Syllabus Topic Name / Concept",
             placeholder="e.g., Optical Properties of Uniaxial Minerals under Polarizing Microscope",
             key="p_topic_input"
         )
-        generation_type = st.radio(
-            "Synthesis Goal",
-            ["Summarized Study Guide", "5 Question Assessment Practice Quiz", "Interactive Conceptual Analogies"]
+        uploaded_file = st.file_uploader(
+            "Upload Reference Document (Optional - PDF, TXT)",
+            type=["pdf", "txt"],
+            key="p_file_uploader"
         )
         
-        if st.button("Generate Learning Asset", type="primary", use_container_width=True):
-            if syllabus_topic:
-                system_prompt = f"Act as an educational material developer. The user is on the {major_focus} track. Provide highly structured output."
-                user_prompt = f"Create a '{generation_type}' for the academic topic: '{syllabus_topic}'."
-                with st.spinner("Synthesizing concept trees..."):
-                    learning_output = execute_academic_ai(user_prompt, system_prompt)
-                    st.markdown("---")
-                    st.markdown(learning_output)
-            else:
-                st.error("Please enter a syllabus topic to trigger synthesis.")
-                
-    with col_p2:
-        st.subheader("🃏 Interactive Flashcard Generator")
-        flash_topic = st.text_input("Enter Topic for Flashcards", placeholder="e.g., Plate Tectonics Boundaries")
-        
-        if st.button("Generate Digital Flashcards", type="secondary", use_container_width=True):
-            if flash_topic:
-                system_prompt = "Act as an academic flashcard developer. Output exactly 3 clear Flashcards. Format each card clearly as: **CARD [Number]: Front (Term/Concept)** followed by a collapsible `with st.expander('Reveal Answer')` style text block or plain text answer block."
-                user_prompt = f"Generate 3 flashcards for: '{flash_topic}'."
-                with st.spinner("Processing cards..."):
-                    flash_output = execute_academic_ai(user_prompt, system_prompt)
-                    st.markdown("---")
-                    st.markdown(flash_output)
-            else:
-                st.error("Please specify a topic to generate flashcards.")
-        
-        # --- PERPLEXITY AI INTEGRATION ---
-        st.markdown("---")
-        st.markdown("##### 🌐 Deepen Research with Perplexity AI")
-        st.write("Search the web, parse research journals, or check contemporary citations for this concept via Perplexity AI.")
-        
-        if flash_topic:
-            encoded_flash_topic = urllib.parse.quote(f"Explain and generate academic flashcards/study terms on: {flash_topic}")
-            perplexity_url = f"https://www.perplexity.ai/?q={encoded_flash_topic}"
-            st.link_button(
-                f"🔍 Search '{flash_topic}' on Perplexity", 
-                perplexity_url, 
-                type="primary", 
-                use_container_width=True
-            )
+    with col_settings:
+        generation_type = st.radio(
+            "Synthesis Goal",
+            ["Summarized Study Guide", "5 Question Assessment Practice Quiz", "Interactive Conceptual Analogies"],
+            key="p_gen_type"
+        )
+        st.info("💡 Generating the study pack will automatically synthesize your custom study assets and sync with Perplexity AI concurrently.")
+
+    # Single Action Trigger Button
+    search_pack = st.button("🔍 Generate Study Pack & Sync Perplexity", type="primary", use_container_width=True)
+
+    # Process File Upload (if any)
+    extracted_text = ""
+    if uploaded_file is not None:
+        file_name = uploaded_file.name
+        if file_name.endswith(".txt"):
+            try:
+                extracted_text = uploaded_file.read().decode("utf-8", errors="ignore")
+            except Exception as e:
+                st.error(f"Error reading TXT file: {e}")
+        elif file_name.endswith(".pdf"):
+            try:
+                import pypdf
+                reader = pypdf.PdfReader(uploaded_file)
+                pages_text = []
+                for page in reader.pages:
+                    text_extracted = page.extract_text()
+                    if text_extracted:
+                        pages_text.append(text_extracted)
+                extracted_text = "\n".join(pages_text)
+            except ImportError:
+                extracted_text = f"[PDF parsing metadata: {file_name}]"
+                st.warning("For direct PDF text analysis, please install the pypdf library: `pip install pypdf`")
+            except Exception as e:
+                st.error(f"Error parsing PDF: {e}")
+
+    # Execution logic
+    if search_pack:
+        if not syllabus_topic and not extracted_text:
+            st.error("Please provide a topic or upload a study file to trigger generation.")
         else:
-            st.link_button(
-                "🌐 Launch Perplexity AI Dashboard", 
-                "https://www.perplexity.ai", 
-                type="secondary", 
-                use_container_width=True
-            )
+            # Build combined context
+            final_context = f"Topic Name: {syllabus_topic}\n" if syllabus_topic else "Analyzed from uploaded file\n"
+            if extracted_text:
+                # Limit size to prevent context window issue in standard execution
+                final_context += f"\nFile Reference Content:\n{extracted_text[:3000]}"
+                
+            system_prompt = f"Act as an educational material developer. The student is in the {major_focus} track. Generate highly structured responses."
+            user_prompt = f"""
+            Create a unified study package for:
+            {final_context}
+            
+            Please provide:
+            1. A '{generation_type}' matching the concept.
+            2. Exactly 3 detailed concept Flashcards. Format each card as:
+               **CARD [Number]: Front (Concept Name)**
+               *Answer:* [Detailed explanation]
+            """
+            with st.spinner("Synthesizing Study Pack..."):
+                synthesized_output = execute_academic_ai(user_prompt, system_prompt)
+                st.session_state.last_study_pack = synthesized_output
+                st.session_state.active_search_topic = syllabus_topic if syllabus_topic else "Reference Academic Document"
+
+    # Display Output & Active Perplexity Sync Link
+    if "last_study_pack" in st.session_state:
+        st.success("✨ Study Pack Successfully Compiled!")
+        
+        # Build Perplexity Sync Link
+        sync_topic = st.session_state.get("active_search_topic", "Syllabus Topic")
+        encoded_sync = urllib.parse.quote(f"Explain and find academic research on: {sync_topic}")
+        perplexity_url = f"https://www.perplexity.ai/?q={encoded_sync}"
+        
+        # Display Perplexity Sync Portal
+        st.markdown("### 🌐 Perplexity AI Synchronized Channel")
+        st.link_button(
+            f"🔗 Open Synced Search for '{sync_topic}' on Perplexity AI", 
+            perplexity_url, 
+            type="primary", 
+            use_container_width=True
+        )
+        
+        st.markdown("---")
+        st.markdown("### 📚 Compiled Study Pack Details")
+        st.markdown(st.session_state.last_study_pack)
 
 # --- TAB: STREAMLINED DEEP SEARCH & VIDEO TERMINAL ---
 with tab_deep_search:
@@ -584,6 +622,7 @@ with tab_news:
     st.write("Query official notice channels and run cognitive analysis on active institutional releases.")
     
     lu_url = "https://www.lkouniv.ac.in/en/news?Newslistslug=en-notices&cd=MwAzADcA"
+    
     col_n1, col_n2 = st.columns([1, 1])
     
     with col_n1:
@@ -609,104 +648,4 @@ with tab_news:
                 st.session_state.active_scraped_notices = scraped_titles
             except Exception:
                 st.error(f"Live parsing connection error. Access raw terminal index directly: [Lucknow University Notice Board]({lu_url})")
-                st.session_state.active_scraped_notices = []
-                
-    with col_n2:
-        st.subheader("🧠 Cognitive AI Notice Interpreter")
-        if "active_scraped_notices" in st.session_state and st.session_state.active_scraped_notices:
-            st.write("Our cognitive engine can process and classify scraped announcements by critical index levels.")
-            if st.button("Run Priority Classifier", type="secondary", use_container_width=True):
-                notice_blob = "\n- ".join(st.session_state.active_scraped_notices)
-                system_prompt = "You are an administrative coordinator assistant. Categorize these announcements into three tiers: 🔴 Urgent (Exams/Fee deadlines), 🟡 Moderate (Events/Schedules), 🟢 Info (General updates). Keep descriptions extremely brief."
-                user_prompt = f"Please categorize these active notices:\n- {notice_blob}"
-                with st.spinner("Analyzing semantic structures..."):
-                    classification = execute_academic_ai(user_prompt, system_prompt)
-                    st.markdown(classification)
-        else:
-            st.info("Query the Live Database Feed on the left first to enable cognitive notice processing.")
-
-# --- TAB: STUDY MATERIAL ---
-with tab_study:
-    st.header("📚 Digital Course Assets")
-    st.write("Access interconnected institutional cloud infrastructure below.")
-    with st.container():
-        st.subheader("BSc Management Core")
-        st.info("Classroom Code Token: shf3hsat")
-        st.link_button("Open Google Classroom Link Structure", "https://classroom.google.com/c/ODU0MzQ2NjI2MDQ2?cjc=shf3hsat", type="primary", use_container_width=True)
-    st.caption("Further syllabi data segments are structured automatically upon academic validation.")
-
-# --- TAB: PERFORMANCE TOOLKIT (WITH GEMINI ADVISOR) ---
-with tab_perf:
-    st.header("🧮 Academic Performance Calculator & Gemini Advisor")
-    calc_tab1, calc_tab2, calc_tab3 = st.tabs(["Semester GPA Matrix", "Cumulative CGPA Calculator", "🔮 AI Predictive Insights"])
-    
-    with calc_tab1:
-        st.subheader("Current Semester Track")
-        num_courses = st.number_input("Number of Registered Subjects", min_value=1, max_value=10, value=4, step=1)
-        scores, credits = [], []
-        
-        for i in range(int(num_courses)):
-            col_c1, col_c2 = st.columns(2)
-            with col_c1:
-                score = st.selectbox(
-                    f"Grade - Course {i+1}", 
-                    ["O (Outstanding - 10)", "A+ (Excellent - 9)", "A (Very Good - 8)", "B+ (Good - 7)", "B (Above Average - 6)", "C (Average - 5)", "F (Fail - 0)"], 
-                    key=f"grade_{i}"
-                )
-                grade_map = {"O": 10, "A+": 9, "A": 8, "B+": 7, "B": 6, "C": 5, "F": 0}
-                scores.append(grade_map[score.split(" ")[0]])
-            with col_c2:
-                cred = st.number_input(f"Credits - Course {i+1}", min_value=1, max_value=8, value=4, step=1, key=f"cred_{i}")
-                credits.append(cred)
-                
-        if st.button("Calculate Semester GPA", type="primary", use_container_width=True):
-            total_points = sum(s * c for s, c in zip(scores, credits))
-            total_credits = sum(credits)
-            sgpa = total_points / total_credits if total_credits > 0 else 0.0
-            st.metric(label="Calculated Semester GPA", value=f"{sgpa:.2f}")
-
-    with calc_tab2:
-        st.subheader("Cumulative CGPA Tracker")
-        num_semesters = st.number_input("Number of Completed Semesters", min_value=1, max_value=10, value=2, step=1)
-        sgpas = []
-        for j in range(int(num_semesters)):
-            sgpa_val = st.number_input(f"SGPA for Semester {j+1}", min_value=0.0, max_value=10.0, value=7.5, step=0.1, key=f"sgpa_{j}")
-            sgpas.append(sgpa_val)
-            
-        if st.button("Calculate Cumulative CGPA", type="primary", use_container_width=True):
-            cgpa = sum(sgpas) / len(sgpas) if len(sgpas) > 0 else 0.0
-            st.metric(label="Calculated Cumulative CGPA", value=f"{cgpa:.2f}")
-
-    with calc_tab3:
-        st.subheader("🔮 AI Performance Advisor")
-        performance_prompt = st.text_area(
-            "Provide your recent grade details or academic doubts for custom AI study strategies:",
-            placeholder="e.g., I scored an A in Mechanics, but I am struggling with Structural Geology diagrams. Recommend some study tips."
-        )
-        if st.button("Generate Strategy Blueprint", type="primary", use_container_width=True):
-            if performance_prompt:
-                strategy = execute_academic_ai(performance_prompt, "Act as an academic counselor optimizing student performance.")
-                st.markdown(strategy)
-            else:
-                st.warning("Please provide context or queries to generate an advisory blueprint.")
-
-# --- TAB: FOCUS ENGINE ---
-with tab_focus:
-    st.header("⏱️ Academic Focus Engine")
-    st.write("A simple productivity countdown timer to track your study intervals.")
-    minutes = st.number_input("Study Session Length (Minutes)", min_value=1, max_value=120, value=25)
-    if st.button("Start Timer", type="primary", use_container_width=True):
-        st.info(f"Focus session started! (Simulated timer active for {minutes} minutes. Maintain your momentum!)")
-
-# --- TAB: REPORT ISSUE ---
-with tab_report:
-    st.header("🚨 Report System Issues / Feedback")
-    st.write("Encountered a bug or have administrative feedback? Submit a brief report to the portal engineers.")
-    with st.form("feedback_form"):
-        issue_desc = st.text_area("Describe the issue or feedback:", placeholder="Detail your experience or report functional bugs here...")
-        submit_btn = st.form_submit_button("Submit Ticket")
-        if submit_btn:
-            if issue_desc.strip():
-                st.success(f"Feedback ticket submitted successfully! For urgent concerns, reach out directly via {ADMIN_EMAIL}.")
-            else:
-                st.error("Please enter a description before submitting.")
+                st.session_stat
