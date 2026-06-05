@@ -8,3 +8,27 @@ google-generativeai
 pip install pypdf
 pip install streamlit
 pip install google-generativeai
+streamlit
+pandas
+numpy
+matplotlib
+scikit-learn
+freeglut3-dev
+libgl1-mesa-glx
+libglib2.0-0
+gfortran
+# 1. Navigate to your project folder
+cd path/to/your/project
+
+# 2. Check if the files are named correctly (must be strictly lowercase)
+ls -a
+
+# 3. Add the updated configuration files to git tracking
+git add requirements.txt
+git add packages.txt
+
+# 4. Commit your changes with a descriptive message
+git commit -m "fix: update deployment requirements and packages"
+
+# 5. Push the changes to your main branch to trigger a redeploy
+git push origin main
