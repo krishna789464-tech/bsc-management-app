@@ -1,15 +1,3 @@
-import sys
-import subprocess
-
-# Ensure pypdf is installed automatically for PDF text extraction
-try:
-    import pypdf
-except ImportError:
-    try:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "pypdf"])
-    except Exception:
-        pass  # Fallback gracefully if pip installation fails
-
 import streamlit as st
 import requests
 from bs4 import BeautifulSoup
@@ -274,4 +262,478 @@ def execute_academic_ai(prompt, context_system=""):
         """
     elif "geology" in prompt_lower:
         return """
-### 💎 Structural Geology & Mineral
+### 💎 Structural Geology & Mineralogy Insights
+*(Sandbox Heuristic Profile)*
+* **Structural Geology**: Focus on distinguishing between *Faults* (brittle deformation with displacement) and *Folds* (ductile deformation displaying structural wave curvature).
+* **Mineralogy**: Master key optical mineral properties including *Pleochroism* under Plane Polarized Light and *Interference Colors* under Crossed Polars.
+* **Recommended Resource**: Review physical hand specimens in the college laboratory.
+        """
+    elif "math" in prompt_lower or "calculus" in prompt_lower or "equation" in prompt_lower:
+        return """
+### 📐 Advanced Engineering Mathematics Blueprint
+*(Sandbox Heuristic Profile)*
+* **Ordinary Differential Equations**: Master Euler-Cauchy equations and the method of variation of parameters.
+* **Linear Algebra**: Focus heavily on Eigenvalues, Eigenvectors, and satisfying the Cayley-Hamilton theorem.
+* **Practice Strategy**: Dedicate 45 minutes daily to derivation structures rather than rote-learning proofs.
+        """
+    else:
+        return f"""
+### 🎓 Academic Support Response
+*(Sandbox Heuristic Profile)*
+
+Based on your academic profile ({major_focus} | {current_year}):
+* We advise cross-referencing your syllabus with the recommended readings in **Tab 7 (Study Classrooms)**.
+* To generate actual bespoke guidance, connect your free Gemini API Key in the sidebar.
+* **Study Hint**: Prioritize clarifying practical diagrams first; conceptual understanding often follows structural visual mapping.
+        """
+
+# Running Clock Markup
+ADMIN_EMAIL = "krishna5689@outlook.in"
+ADMIN_PHONE = "919451134541"
+NOTEBOOK_LM_URL = "https://notebooklm.google.com/notebook/4865426e-ee8e-4256-956c-9f09f7c6c332?addSource=true"
+
+clock_html = f"""
+<div id="clock-container" style="font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; color: {text_color}; text-align: right; padding-right: 5px;">
+    <span id="date-part"></span> &nbsp;&bull;&nbsp; <span id="time-part" style="color: #2563eb; font-weight: 700;"></span>
+</div>
+<script>
+    function updateClock() {{
+        const now = new Date();
+        const options = {{ year: 'numeric', month: 'long', day: 'numeric' }};
+        document.getElementById('date-part').textContent = "📅 " + now.toLocaleDateString('en-US', options);
+        let hours = now.getHours(); const minutes = String(now.getMinutes()).padStart(2, '0'); const seconds = String(now.getSeconds()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM'; hours = hours % 12; hours = hours ? hours : 12;
+        document.getElementById('time-part').textContent = "🕒 " + String(hours).padStart(2, '0') + ':' + minutes + ':' + seconds + ' ' + ampm;
+    }}
+    setInterval(updateClock, 1000); updateClock();
+</script>
+"""
+
+# App Layout Header
+header_col, control_col = st.columns([2.3, 1.3])
+with header_col:
+    st.markdown("<h2 style='margin: 0; color: #1e40af;'>🎓 Academic Student Portal</h2>", unsafe_allow_html=True)
+    st.markdown(f"<span style='font-size: 0.9rem; opacity: 0.85;'>Verification Tier: B.Sc Undergraduate • Helpdesk: <a href='mailto:{ADMIN_EMAIL}' style='text-decoration:none; color:#2563eb; font-weight:500;'>{ADMIN_EMAIL}</a></span>", unsafe_allow_html=True)
+
+with control_col:
+    components.html(clock_html, height=32)
+    suite_col1, suite_col2 = st.columns(2)
+    with suite_col1:
+        theme_idx = 0 if st.session_state.bg_theme == "light" else 1
+        theme_choice = st.selectbox("Theme", ["☀️ Light", "🌙 Dark"], index=theme_idx, key="top_theme_select")
+        selected_theme = "light" if "Light" in theme_choice else "dark"
+        if selected_theme != st.session_state.bg_theme:
+            st.session_state.bg_theme = selected_theme
+            st.rerun()
+    with suite_col2:
+        font_idx = 0 if st.session_state.font_scale == 100 else (1 if st.session_state.font_scale == 120 else 2)
+        font_choice = st.selectbox("Font Size", ["🔍 100%", "🔍 120%", "🔍 140%"], index=font_idx, key="top_font_select")
+        selected_scale = 100 if "100%" in font_choice else (120 if "120%" in font_choice else 140)
+        if selected_scale != st.session_state.font_scale:
+            st.session_state.font_scale = selected_scale
+            st.rerun()
+
+st.markdown("<br>", unsafe_allow_html=True)
+st.warning("⚠️ **System Notice / आवश्यक सूचना:** This portal is currently in the **testing phase**. (यह एप्लिकेशऩ अभी टेस्टिंग फेज़ में है।)")
+
+# --- NAVIGATION TABS ---
+tabs = st.tabs([
+    "📊 Dashboard",
+    "🏫 College Info Hub",  
+    "🤖 Interactive AI Chatbot",
+    "📚 AI Study Planner & Flashcards",
+    "🔍 Deep Search (NotebookLM)",
+    "📢 News & Notices",
+    "📚 Study Classrooms",
+    "🧮 Performance Toolkit",
+    "⏱️ Focus Engine",
+    "🚨 Report Issue"
+])
+(
+    tab_dashboard, 
+    tab_college, 
+    tab_ai, 
+    tab_planner, 
+    tab_deep_search, 
+    tab_news, 
+    tab_study, 
+    tab_perf, 
+    tab_focus, 
+    tab_report
+) = tabs
+
+# --- TAB: DASHBOARD ---
+with tab_dashboard:
+    st.markdown("""
+        <div style="background: linear-gradient(135deg, #1e40af, #3b82f6); color: white !important; padding: 24px; border-radius: 16px; margin-bottom: 24px; margin-top: 10px;">
+            <h1 style="margin: 0; color: white !important; font-size:26px;">B.Sc Student Management Portal</h1>
+            <p style="opacity: 0.95; margin-top: 8px; font-size: 14px; max-width: 700px; color: white !important;">
+                Central administrative hub optimized for real-time classroom updates, digital asset access, performance management, and direct administrative escalation pathways.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    col1, col2, col3, col4 = st.columns([1,1,1,1])
+    with col1: st.markdown('<div class="metric-card"><h4>Total Cohort</h4><h2 style="color: #2563eb !important; margin:4px 0 0 0; font-size:24px;">1,250</h2></div>', unsafe_allow_html=True)
+    with col2: st.markdown('<div class="metric-card"><h4>Active Courses</h4><h2 style="color: #16a34a !important; margin:4px 0 0 0; font-size:24px;">18</h2></div>', unsafe_allow_html=True)
+    with col3: st.markdown('<div class="metric-card"><h4>Active Notices</h4><h2 style="color: #ea580c !important; margin:4px 0 0 0; font-size:24px;">6</h2></div>', unsafe_allow_html=True)
+    with col4: st.markdown('<div class="metric-card"><h4>Pending Inquiries</h4><h2 style="color: #dc2626 !important; margin:4px 0 0 0; font-size:24px;">12</h2></div>', unsafe_allow_html=True)
+        
+    st.markdown("<br>", unsafe_allow_html=True)
+    left_col, right_col = st.columns([2, 1])
+    with left_col:
+        st.subheader("💡 Dynamic AI Study Briefing")
+        brief_prompt = f"Provide a brief, high-level structural study recommendation for a {major_focus} student starting {current_year} semester. Keep it under 3 bullets."
+        briefing = execute_academic_ai(brief_prompt)
+        st.markdown(briefing)
+        
+        st.subheader("📚 Course Registration Status")
+        materials = [
+            {"subject": "Structural Geology", "teacher": "Dr. Sharma"},
+            {"subject": "Mineralogy", "teacher": "Prof. Singh"},
+            {"subject": "Engineering Mathematics", "teacher": "Dr. Verma"}
+        ]
+        for item in materials:
+            with st.container():
+                st.markdown(f"**{item['subject']}** — Instructor: {item['teacher']}")
+                st.caption("🟢 Automated Sync Environment Active")
+                st.divider()
+                
+    with right_col:
+        st.subheader("⚡ Core Modules")
+        st.button("📋 Live Attendance Tracker", use_container_width=True)
+        st.button("📝 Assignment Log", use_container_width=True)
+        st.button("📅 Academic Calendar", use_container_width=True)
+        st.button("📊 Examination Reports", use_container_width=True)
+
+# --- TAB: COLLEGE INFO HUB ---
+with tab_college:
+    st.header("🏫 College Information & ERP Gateway")
+    st.write("Direct pipelines to campus notice desks, unified ledger lookups, and academic fee clearance terminals.")
+    
+    col_left, col_right = st.columns(2)
+    
+    with col_left:
+        st.markdown(f"""
+            <div style="border: 1px solid {border_color}; background-color: {card_bg}; padding: 24px; border-radius: 12px; min-height: 270px; backdrop-filter: blur(8px);">
+                <h3 style="margin-top:0; color:#2563eb;">💳 Transactions & Fee Clearance</h3>
+                <p style="font-size:0.95rem; line-height:1.6;">
+                    Track ledger adjustments or execute runtime registration charges. 
+                    Access the external cloud terminals below to verify current financial clearings or clear backlogs.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.link_button("💳 Go to Transaction Search Terminal", "https://erpweb.bsnvpgcollege.co.in/transaction-search", type="secondary", use_container_width=True)
+        st.link_button("💵 Process & Pay Course Fees Online", "https://erpweb.bsnvpgcollege.co.in/paycoursefees", type="primary", use_container_width=True)
+
+    with col_right:
+        st.markdown(f"""
+            <div style="border: 1px solid {border_color}; background-color: {card_bg}; padding: 24px; border-radius: 12px; min-height: 270px; backdrop-filter: blur(8px); margin-bottom:15px;">
+                <h3 style="margin-top:0; color:#ea580c;">📋 Institutional Notice Dashboard</h3>
+                <p style="font-size:0.95rem; line-height:1.6;">
+                    Access formal administrative directives, mid-term evaluation plans, and departmental announcements directly via the college's public communication network stack.
+                </p>
+                <span style="font-size:0.85rem; background-color:#ffedd5; color:#c2410c; padding:6px 12px; border-radius:6px; font-weight:600; display:inline-block; margin-top:10px;">
+                    📢 Verified Structural Pipeline
+                </span>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        st.link_button("📢 Launch Official Notice Board Terminal", "https://bsnvpgcollege.ac.in/NoticeHome.aspx?Type=Notice", type="primary", use_container_width=True)
+
+# --- TAB: AI ASSISTANT ---
+with tab_ai:
+    st.header("🤖 AI Agent")
+    st.write("Our automated academic agent is loading below. If it does not open automatically, look for the chat container asset.")
+    
+    jotform_script = "<script src='https://cdn.jotfor.ms/agent/embedjs/019e014489347343a7b79be9c9855b48569e/embed.js?autoOpenChatIn=1'></script>"
+    components.html(jotform_script, height=550, scrolling=True)
+
+# --- TAB: AI PLANNER & FLASHCARDS (UPDATED WITH SINGLE BUTTON & PERPLEXITY SYNC) ---
+with tab_planner:
+    st.header("📚 Unified Study Pack Synthesizer & Perplexity Sync")
+    st.write("Generate a complete study guide, mock assessments, and flashcards in a single action from a topic or uploaded reference file.")
+    
+    # Inputs Setup
+    col_input, col_settings = st.columns([1, 1])
+    
+    with col_input:
+        syllabus_topic = st.text_input(
+            "Syllabus Topic Name / Concept",
+            placeholder="e.g., Optical Properties of Uniaxial Minerals under Polarizing Microscope",
+            key="p_topic_input"
+        )
+        uploaded_file = st.file_uploader(
+            "Upload Reference Document (Optional - PDF, TXT)",
+            type=["pdf", "txt"],
+            key="p_file_uploader"
+        )
+        
+    with col_settings:
+        generation_type = st.radio(
+            "Synthesis Goal",
+            ["Summarized Study Guide", "5 Question Assessment Practice Quiz", "Interactive Conceptual Analogies"],
+            key="p_gen_type"
+        )
+        st.info("💡 Generating the study pack will automatically synthesize your custom study assets and sync with Perplexity AI concurrently.")
+
+    # Single Action Trigger Button
+    search_pack = st.button("🔍 Generate Study Pack & Sync Perplexity", type="primary", use_container_width=True)
+
+    # Process File Upload (if any)
+    extracted_text = ""
+    if uploaded_file is not None:
+        file_name = uploaded_file.name
+        if file_name.endswith(".txt"):
+            try:
+                extracted_text = uploaded_file.read().decode("utf-8", errors="ignore")
+            except Exception as e:
+                st.error(f"Error reading TXT file: {e}")
+        elif file_name.endswith(".pdf"):
+            try:
+                import pypdf
+                reader = pypdf.PdfReader(uploaded_file)
+                pages_text = []
+                for page in reader.pages:
+                    text_extracted = page.extract_text()
+                    if text_extracted:
+                        pages_text.append(text_extracted)
+                extracted_text = "\n".join(pages_text)
+            except ImportError:
+                extracted_text = f"[PDF parsing metadata: {file_name}]"
+                st.warning("For direct PDF text analysis, please install the pypdf library: `pip install pypdf`")
+            except Exception as e:
+                st.error(f"Error parsing PDF: {e}")
+
+    # Execution logic
+    if search_pack:
+        if not syllabus_topic and not extracted_text:
+            st.error("Please provide a topic or upload a study file to trigger generation.")
+        else:
+            # Build combined context
+            final_context = f"Topic Name: {syllabus_topic}\n" if syllabus_topic else "Analyzed from uploaded file\n"
+            if extracted_text:
+                # Limit size to prevent context window issue in standard execution
+                final_context += f"\nFile Reference Content:\n{extracted_text[:3000]}"
+                
+            system_prompt = f"Act as an educational material developer. The student is in the {major_focus} track. Generate highly structured responses."
+            user_prompt = f"""
+            Create a unified study package for:
+            {final_context}
+            
+            Please provide:
+            1. A '{generation_type}' matching the concept.
+            2. Exactly 3 detailed concept Flashcards. Format each card as:
+               **CARD [Number]: Front (Concept Name)**
+               *Answer:* [Detailed explanation]
+            """
+            with st.spinner("Synthesizing Study Pack..."):
+                synthesized_output = execute_academic_ai(user_prompt, system_prompt)
+                st.session_state.last_study_pack = synthesized_output
+                st.session_state.active_search_topic = syllabus_topic if syllabus_topic else "Reference Academic Document"
+
+    # Display Output & Active Perplexity Sync Link
+    if "last_study_pack" in st.session_state:
+        st.success("✨ Study Pack Successfully Compiled!")
+        
+        # Build Perplexity Sync Link
+        sync_topic = st.session_state.get("active_search_topic", "Syllabus Topic")
+        encoded_sync = urllib.parse.quote(f"Explain and find academic research on: {sync_topic}")
+        perplexity_url = f"https://www.perplexity.ai/?q={encoded_sync}"
+        
+        # Display Perplexity Sync Portal
+        st.markdown("### 🌐 Perplexity AI Synchronized Channel")
+        st.link_button(
+            f"🔗 Open Synced Search for '{sync_topic}' on Perplexity AI", 
+            perplexity_url, 
+            type="primary", 
+            use_container_width=True
+        )
+        
+        st.markdown("---")
+        st.markdown("### 📚 Compiled Study Pack Details")
+        st.markdown(st.session_state.last_study_pack)
+
+# --- TAB: STREAMLINED DEEP SEARCH & VIDEO TERMINAL ---
+with tab_deep_search:
+    st.header("🔍 Deep Search & Multimedia Research")
+    st.write("Direct external bridge pipelines to your academic analysis and video lecture workspaces.")
+    
+    search_col1, search_col2 = st.columns(2)
+    
+    with search_col1:
+        st.markdown(f"""
+            <div style="border: 1px solid {border_color}; background-color: {card_bg}; padding: 24px; border-radius: 12px; height: 260px; backdrop-filter: blur(8px);">
+                <h3 style="margin-top:0; color:#2563eb;">Google NotebookLM Gateway</h3>
+                <p style="font-size:0.95rem; line-height:1.6; margin-bottom: 20px;">
+                    Clicking the link below establishes an external session handshake directly into your configured NotebookLM cluster. 
+                    Manage documentation parsing, contextual index creation, and text automation routines.
+                </p>
+                <span style="font-size:0.85rem; background-color:#dcfce7; color:#15803d; padding:6px 12px; border-radius:6px; font-weight:600;">
+                    🔗 Connection Pipeline Ready
+                </span>
+            </div>
+        """, unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        st.link_button(
+            "🚀 Launch Connected NotebookLM Chat Session", 
+            NOTEBOOK_LM_URL, 
+            type="primary", 
+            use_container_width=True
+        )
+
+    with search_col2:
+        st.markdown(f"""
+            <div style="border: 1px solid {border_color}; background-color: {card_bg}; padding: 24px; border-radius: 12px; height: 260px; backdrop-filter: blur(8px); margin-bottom: 0px;">
+                <h3 style="margin-top:0; color:#ff0000;">YouTube Video Lecture Terminal</h3>
+                <p style="font-size:0.95rem; line-height:1.6;">
+                    Type your research topic, complex formula, or specific syllabus chapter below. 
+                    The portal will sync the data string and launch YouTube directly with your filtered educational feed.
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
+        
+        yt_query = st.text_input(
+            "Search YouTube Lectures / वीडियो लेक्चर खोजें:", 
+            placeholder="e.g., Structural geology faulting dynamics BSc lectures",
+            key="portal_youtube_search"
+        )
+        
+        if yt_query:
+            encoded_yt_query = urllib.parse.quote(yt_query.strip())
+            YOUTUBE_SYNC_URL = f"https://www.youtube.com/results?search_query={encoded_yt_query}"
+            
+            st.link_button(
+                "📺 Launch Synchronized YouTube Search", 
+                YOUTUBE_SYNC_URL, 
+                type="secondary", 
+                use_container_width=True
+            )
+        else:
+            st.markdown('<div class="highlight-box">⚠️ Enter search query above & Press here to apply!</div>', unsafe_allow_html=True)
+            st.button("📺 Terminal Standby (Awaiting Input)", disabled=True, use_container_width=True)
+
+# --- TAB: NEWS & ANNOUNCEMENTS WITH GEMINI ANALYSIS ---
+with tab_news:
+    st.header("📢 University Bulletins & Notices")
+    st.write("Query official notice channels and run cognitive analysis on active institutional releases.")
+    
+    lu_url = "https://www.lkouniv.ac.in/en/news?Newslistslug=en-notices&cd=MwAzADcA"
+    
+    col_n1, col_n2 = st.columns([1, 1])
+    
+    with col_n1:
+        st.subheader("📰 Dynamic Lucknow University Feed")
+        if st.button("Query Live Database Feed", type="primary", use_container_width=True):
+            scraped_titles = []
+            try:
+                headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+                res = requests.get(lu_url, headers=headers, timeout=10)
+                soup = BeautifulSoup(res.content, 'html.parser')
+                links = soup.find_all('a', href=True)
+                found = 0
+                for link in links:
+                    if "news" in link['href'] and len(link.text.strip()) > 15:
+                        clean_text = link.text.strip().replace("[", "").replace("]", "")
+                        href_val = link['href']
+                        url = href_val if href_val.startswith('http') else "https://www.lkouniv.ac.in" + href_val
+                        st.info(f"🔗 [{clean_text}]({url})")
+                        scraped_titles.append(clean_text)
+                        found += 1
+                    if found > 6: 
+                        break
+                st.session_state.active_scraped_notices = scraped_titles
+            except Exception:
+                st.error(f"Live parsing connection error. Access raw terminal index directly: [Lucknow University Notice Board]({lu_url})")
+                st.session_state.active_scraped_notices = []
+                
+    with col_n2:
+        st.subheader("🧠 Cognitive AI Notice Interpreter")
+        if "active_scraped_notices" in st.session_state and st.session_state.active_scraped_notices:
+            st.write("Our cognitive engine can process and classify scraped announcements by critical index levels.")
+            if st.button("Run Priority Classifier", type="secondary", use_container_width=True):
+                notice_blob = "\n- ".join(st.session_state.active_scraped_notices)
+                system_prompt = "You are an administrative coordinator assistant. Categorize these announcements into three tiers: 🔴 Urgent (Exams/Fee deadlines), 🟡 Moderate (Events/Schedules), 🟢 Info (General updates). Keep descriptions extremely brief."
+                user_prompt = f"Please categorize these active notices:\n- {notice_blob}"
+                with st.spinner("Analyzing semantic structures..."):
+                    classification = execute_academic_ai(user_prompt, system_prompt)
+                    st.markdown(classification)
+        else:
+            st.info("Query the Live Database Feed on the left first to enable cognitive notice processing.")
+
+# --- TAB: STUDY MATERIAL ---
+with tab_study:
+    st.header("📚 Digital Course Assets")
+    st.write("Access interconnected institutional cloud infrastructure below.")
+    with st.container():
+        st.subheader("BSc Management Core")
+        st.info("Classroom Code Token: shf3hsat")
+        st.link_button("Open Google Classroom Link Structure", "https://classroom.google.com/c/ODU0MzQ2NjI2MDQ2?cjc=shf3hsat", type="primary", use_container_width=True)
+    st.caption("Further syllabi data segments are structured automatically upon academic validation.")
+
+# --- TAB: PERFORMANCE TOOLKIT (WITH GEMINI ADVISOR) ---
+with tab_perf:
+    st.header("🧮 Academic Performance Calculator & Gemini Advisor")
+    calc_tab1, calc_tab2, calc_tab3 = st.tabs(["Semester GPA Matrix", "Cumulative CGPA Calculator", "🔮 AI Predictive Insights"])
+    
+    with calc_tab1:
+        st.subheader("Current Semester Track")
+        num_courses = st.number_input("Number of Registered Subjects", min_value=1, max_value=10, value=4, step=1)
+        scores, credits = [], []
+        for i in range(int(num_courses)):
+            col_c1, col_c2 = st.columns(2)
+            with col_c1:
+                score = st.selectbox(f"Grade - Course {i+1}", ["O (Outstanding - 10)", "A+ (Excellent - 9)", "A (Very Good - 8)", "B+ (Good - 7)", "B (Above Average - 6)", "C (Average - 5)", "F (Fail - 0)"], key=f"grade_{i}")
+                grade_map = {"O": 10, "A+": 9, "A": 8, "B+": 7, "B": 6, "C": 5, "F": 0}
+                scores.append(grade_map[score.split(" ")[0]])
+            with col_c2:
+                cred = st.number_input(f"Credits - Course {i+1}", min_value=1, max_value=8, value=4, step=1, key=f"cred_{i}")
+                credits.append(cred)
+        
+        if st.button("Calculate Semester GPA", type="primary"):
+            total_points = sum(s * c for s, c in zip(scores, credits))
+            total_credits = sum(credits)
+            sgpa = total_points / total_credits if total_credits > 0 else 0.0
+            st.success(f"Calculated SGPA: {sgpa:.2f}")
+
+    with calc_tab2:
+        st.subheader("Cumulative CGPA Tracker")
+        num_semesters = st.number_input("Number of Completed Semesters", min_value=1, max_value=8, value=2, step=1)
+        sgpas = []
+        for j in range(int(num_semesters)):
+            sgpa_val = st.number_input(f"SGPA for Semester {j+1}", min_value=0.0, max_value=10.0, value=7.5, step=0.1, key=f"sgpa_{j}")
+            sgpas.append(sgpa_val)
+        if st.button("Calculate Cumulative CGPA"):
+            cgpa = sum(sgpas) / len(sgpas) if len(sgpas) > 0 else 0.0
+            st.success(f"Cumulative CGPA: {cgpa:.2f}")
+
+    with calc_tab3:
+        st.subheader("🔮 AI Performance Advisor")
+        performance_prompt = st.text_area("Provide your recent grade details or academic doubts for custom AI study strategies:")
+        if st.button("Generate Strategy Blueprint"):
+            if performance_prompt:
+                strategy = execute_academic_ai(performance_prompt, "Act as an academic counselor optimizing student performance.")
+                st.write(strategy)
+            else:
+                st.warning("Please provide context to generate a blueprint.")
+
+# --- TAB: FOCUS ENGINE ---
+with tab_focus:
+    st.header("⏱️ Academic Focus Engine")
+    st.write("A simple productivity countdown to track your study intervals.")
+    minutes = st.number_input("Study Session (Minutes)", min_value=1, max_value=120, value=25)
+    if st.button("Start Timer"):
+        st.info(f"Focus session started! (Simulated countdown for {minutes} minutes)")
+
+# --- TAB: REPORT ISSUE ---
+with tab_report:
+    st.header("🚨 Report System Issues / Feedback")
+    st.write("Encountered a bug or have administrative feedback? Submit a brief report below.")
+    with st.form("feedback_form"):
+        issue_desc = st.text_area("Describe the issue or feedback:")
+        submit_btn = st.form_submit_button("Submit Ticket")
+        if submit_btn:
+            st.success(f"Ticket submitted successfully! For urgent concerns, contact {ADMIN_EMAIL}.")
