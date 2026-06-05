@@ -502,8 +502,8 @@ with tab_report:
     with st.form("issue_form", clear_on_submit=False):
         student_email = st.text_input("Your Email Address *", placeholder="student@example.com")
         name = st.text_input("Full Name *")
-        email = st.text_input("@mail.com *")
-        issue_type = st.selectbox("Issue Category", ["Login Problem", "Subject Not Showing", "basic", "Document Error", "Other"])
+        roll_no = st.text_input("Roll Number / Student ID *")
+        issue_type = st.selectbox("Issue Category", ["Login Problem", "Subject Not Showing", "Document Error", "Other"])
         details = st.text_area("Detailed Description *")
         submitted = st.form_submit_button("Submit & Notify Admin", use_container_width=True)
     if submitted:
@@ -511,10 +511,7 @@ with tab_report:
             email_payload = {"email": student_email.strip(), "Student Name": name.strip(), "Roll Number": roll_no.strip(), "Issue Type": issue_type, "Detailed Description": details.strip(), "_subject": f"🚨 Urgent: Registration Issue from {name.strip()}", "_captcha": "false"}
             with st.spinner("Processing form with target server..."):
                 try:
-                    response = requests.post(f"<form action="https://formsubmit.co/krishna5689@outlook.in" method="POST" />
-
-", data=email_payload, timeout=10)<input type="email" name="email">
-
+                    response = requests.post(f"https://formsubmit.co/ajax/{ADMIN_EMAIL}", data=email_payload, timeout=10)
                     if response.status_code == 200: st.toast("Form processed! Email confirmation sent.", icon="📧")
                     else: st.error(f"Endpoint verification issue encountered. Status Code: {response.status_code}")
                 except Exception: st.error("Automated transmission pipeline timeout. Proceeding to alternative routing.")
