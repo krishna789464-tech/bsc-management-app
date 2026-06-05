@@ -443,15 +443,30 @@ with tab_college:
         
         st.link_button("📢 Launch Official Notice Board Terminal", "https://bsnvpgcollege.ac.in/NoticeHome.aspx?Type=Notice", type="primary", use_container_width=True)
 
-# --- TAB: AI ASSISTANT ---
+# --- TAB: AI ASSISTANT (REPLACED JOTFORM WITH PERPLEXITY AI) ---
 with tab_ai:
-    st.header("🤖 AI Agent")
-    st.write("Our automated academic agent is loading below. If it does not open automatically, look for the chat container asset.")
+    st.header("🤖 Perplexity AI Chatbot")
+    st.write("Interact with Perplexity AI for live, web-scale academic research and query resolution.")
     
-    jotform_script = "<script src='https://cdn.jotfor.ms/agent/embedjs/019e014489347343a7b79be9c9855b48569e/embed.js?autoOpenChatIn=1'></script>"
-    components.html(jotform_script, height=550, scrolling=True)
+    # Simple search form for Perplexity
+    perplex_query_tab = st.text_input(
+        "Ask anything to Perplexity / परप्लेक्सिटी एआई से पूछें:", 
+        placeholder="e.g., Explain standard deviation and variance formulas with geological examples",
+        key="tab_ai_perplex_input"
+    )
+    
+    if perplex_query_tab:
+        encoded_perplex_query = urllib.parse.quote(perplex_query_tab.strip())
+        PERPLEXITY_CHAT_URL = f"https://www.perplexity.ai/?q={encoded_perplex_query}"
+        st.link_button("💬 Open Thread on Perplexity AI", PERPLEXITY_CHAT_URL, type="primary", use_container_width=True)
+    else:
+        st.link_button("🌐 Open Perplexity AI Search Page", "https://www.perplexity.ai", type="primary", use_container_width=True)
+        
+    st.markdown("---")
+    st.write("💡 *Tip: If the embedded terminal below is blank due to safety policies or browser extensions, please use the button above to open Perplexity in a new tab.*")
+    components.iframe("https://www.perplexity.ai", height=550, scrolling=True)
 
-# --- TAB: AI PLANNER & FLASHCARDS (UPDATED WITH SINGLE BUTTON & PERPLEXITY SYNC) ---
+# --- TAB: AI PLANNER & FLASHCARDS (UPDATED WITH JOTFORM AI EMBED AT THE BOTTOM) ---
 with tab_planner:
     st.header("📚 Unified Study Pack Synthesizer & Perplexity Sync")
     st.write("Generate a complete study guide, mock assessments, and flashcards in a single action from a topic or uploaded reference file.")
@@ -556,6 +571,13 @@ with tab_planner:
         st.markdown("### 📚 Compiled Study Pack Details")
         st.markdown(st.session_state.last_study_pack)
 
+    # Jotform AI Agent Embed Linked Here as requested
+    st.markdown("---")
+    st.subheader("🤖 Jotform Interactive Study Advisor")
+    st.write("Use the automated Jotform interactive chatbot below to receive real-time guidance on your flashcards or study materials.")
+    jotform_script = "<script src='https://cdn.jotfor.ms/agent/embedjs/019e014489347343a7b79be9c9855b48569e/embed.js?autoOpenChatIn=1'></script>"
+    components.html(jotform_script, height=550, scrolling=True)
+
 # --- TAB: STREAMLINED DEEP SEARCH & VIDEO TERMINAL ---
 with tab_deep_search:
     st.header("🔍 Deep Search & Multimedia Research")
@@ -656,84 +678,4 @@ with tab_news:
             st.write("Our cognitive engine can process and classify scraped announcements by critical index levels.")
             if st.button("Run Priority Classifier", type="secondary", use_container_width=True):
                 notice_blob = "\n- ".join(st.session_state.active_scraped_notices)
-                system_prompt = "You are an administrative coordinator assistant. Categorize these announcements into three tiers: 🔴 Urgent (Exams/Fee deadlines), 🟡 Moderate (Events/Schedules), 🟢 Info (General updates). Keep descriptions extremely brief."
-                user_prompt = f"Please categorize these active notices:\n- {notice_blob}"
-                with st.spinner("Analyzing semantic structures..."):
-                    classification = execute_academic_ai(user_prompt, system_prompt)
-                    st.markdown(classification)
-        else:
-            st.info("Query the Live Database Feed on the left first to enable cognitive notice processing.")
-
-# --- TAB: STUDY MATERIAL ---
-with tab_study:
-    st.header("📚 Digital Course Assets")
-    st.write("Access interconnected institutional cloud infrastructure below.")
-    with st.container():
-        st.subheader("BSc Management Core")
-        st.info("Classroom Code Token: shf3hsat")
-        st.link_button("Open Google Classroom Link Structure", "https://classroom.google.com/c/ODU0MzQ2NjI2MDQ2?cjc=shf3hsat", type="primary", use_container_width=True)
-    st.caption("Further syllabi data segments are structured automatically upon academic validation.")
-
-# --- TAB: PERFORMANCE TOOLKIT (WITH GEMINI ADVISOR) ---
-with tab_perf:
-    st.header("🧮 Academic Performance Calculator & Gemini Advisor")
-    calc_tab1, calc_tab2, calc_tab3 = st.tabs(["Semester GPA Matrix", "Cumulative CGPA Calculator", "🔮 AI Predictive Insights"])
-    
-    with calc_tab1:
-        st.subheader("Current Semester Track")
-        num_courses = st.number_input("Number of Registered Subjects", min_value=1, max_value=10, value=4, step=1)
-        scores, credits = [], []
-        for i in range(int(num_courses)):
-            col_c1, col_c2 = st.columns(2)
-            with col_c1:
-                score = st.selectbox(f"Grade - Course {i+1}", ["O (Outstanding - 10)", "A+ (Excellent - 9)", "A (Very Good - 8)", "B+ (Good - 7)", "B (Above Average - 6)", "C (Average - 5)", "F (Fail - 0)"], key=f"grade_{i}")
-                grade_map = {"O": 10, "A+": 9, "A": 8, "B+": 7, "B": 6, "C": 5, "F": 0}
-                scores.append(grade_map[score.split(" ")[0]])
-            with col_c2:
-                cred = st.number_input(f"Credits - Course {i+1}", min_value=1, max_value=8, value=4, step=1, key=f"cred_{i}")
-                credits.append(cred)
-        
-        if st.button("Calculate Semester GPA", type="primary"):
-            total_points = sum(s * c for s, c in zip(scores, credits))
-            total_credits = sum(credits)
-            sgpa = total_points / total_credits if total_credits > 0 else 0.0
-            st.success(f"Calculated SGPA: {sgpa:.2f}")
-
-    with calc_tab2:
-        st.subheader("Cumulative CGPA Tracker")
-        num_semesters = st.number_input("Number of Completed Semesters", min_value=1, max_value=8, value=2, step=1)
-        sgpas = []
-        for j in range(int(num_semesters)):
-            sgpa_val = st.number_input(f"SGPA for Semester {j+1}", min_value=0.0, max_value=10.0, value=7.5, step=0.1, key=f"sgpa_{j}")
-            sgpas.append(sgpa_val)
-        if st.button("Calculate Cumulative CGPA"):
-            cgpa = sum(sgpas) / len(sgpas) if len(sgpas) > 0 else 0.0
-            st.success(f"Cumulative CGPA: {cgpa:.2f}")
-
-    with calc_tab3:
-        st.subheader("🔮 AI Performance Advisor")
-        performance_prompt = st.text_area("Provide your recent grade details or academic doubts for custom AI study strategies:")
-        if st.button("Generate Strategy Blueprint"):
-            if performance_prompt:
-                strategy = execute_academic_ai(performance_prompt, "Act as an academic counselor optimizing student performance.")
-                st.write(strategy)
-            else:
-                st.warning("Please provide context to generate a blueprint.")
-
-# --- TAB: FOCUS ENGINE ---
-with tab_focus:
-    st.header("⏱️ Academic Focus Engine")
-    st.write("A simple productivity countdown to track your study intervals.")
-    minutes = st.number_input("Study Session (Minutes)", min_value=1, max_value=120, value=25)
-    if st.button("Start Timer"):
-        st.info(f"Focus session started! (Simulated countdown for {minutes} minutes)")
-
-# --- TAB: REPORT ISSUE ---
-with tab_report:
-    st.header("🚨 Report System Issues / Feedback")
-    st.write("Encountered a bug or have administrative feedback? Submit a brief report below.")
-    with st.form("feedback_form"):
-        issue_desc = st.text_area("Describe the issue or feedback:")
-        submit_btn = st.form_submit_button("Submit Ticket")
-        if submit_btn:
-            st.success(f"Ticket submitted successfully! For urgent concerns, contact {ADMIN_EMAIL}.")
+                system_prompt = "You are an administrative coordinator assistant. Categorize these announcements into three tiers: 🔴 Urgent (Exams/Fee deadlines), 🟡 Moderate (Events/Schedules), 🟢 Info (Gene
