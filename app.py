@@ -24,8 +24,10 @@ if "animation_played" not in st.session_state:
     st.session_state.animation_played = False
 if "chat_messages" not in st.session_state:
     st.session_state.chat_messages = [
-        {"role": "assistant", "content": "Hello! I am your Google Gemini-powered Academic Advisor. Paste your API key in the sidebar to run live queries, or test me using standard heuristics!"}
+        {"role": "assistant", "content": "Hello! I am your Academic Advisor. How can I help you today?"}
     ]
+if "active_scraped_notices" not in st.session_state:
+    st.session_state.active_scraped_notices = []
 
 # --- 2. CINEMATIC STARTING ANIMATION ---
 if not st.session_state.animation_played:
@@ -201,34 +203,20 @@ st.markdown(f"""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 5. SIDEBAR: GOOGLE GEMINI KEY & PROFILE MANAGER ---
+# --- 5. BACKGROUND GOOGLE GEMINI KEY RESOLUTION (NO SIDEBAR UI) ---
+# Gemini API key can now be resolved silently via environment variables or secrets
+is_gemini_active = False
+gemini_key = os.environ.get("GEMINI_API_KEY") or st.secrets.get("GEMINI_API_KEY", "")
+
+if gemini_key and gemini_installed:
+    try:
+        genai.configure(api_key=gemini_key.strip())
+        is_gemini_active = True
+    except Exception:
+        pass
+
+# --- 6. SIDEBAR: PROFILE MANAGER ONLY ---
 with st.sidebar:
-    st.markdown("### 🔑 Google Gemini Setup")
-    gemini_key = st.text_input(
-        "Gemini API Key", 
-        type="password", 
-        placeholder="Paste API Key (AIzaSy...)",
-        help="Paste your Gemini key here to activate live AI generation."
-    )
-    
-    st.markdown("[Get a free Gemini API Key 🔑](https://aistudio.google.com/)")
-    
-    # Verify and configure library live
-    is_gemini_active = False
-    if gemini_key:
-        if gemini_installed:
-            try:
-                genai.configure(api_key=gemini_key.strip())
-                is_gemini_active = True
-                st.success("🟢 Connected to Google Gemini")
-            except Exception as e:
-                st.error(f"Configuration failed: {e}")
-        else:
-            st.warning("Please run: `pip install google-generativeai` to support live connection.")
-    else:
-        st.info("Currently in Standard (Heuristic) Sandbox mode.")
-        
-    st.markdown("---")
     st.markdown("### 👤 Student Profile")
     major_focus = st.selectbox("Academic Track", ["B.Sc Geology Group", "B.Sc Physics Group", "B.Sc Mathematics Group"])
     current_year = st.selectbox("Current Semester", ["Semester I", "Semester II", "Semester III", "Semester IV", "Semester V", "Semester VI"])
@@ -236,7 +224,7 @@ with st.sidebar:
 # --- AI CORE QUERY TRANSCEIVER ---
 def execute_academic_ai(prompt, context_system=""):
     """
-    Executes an AI query. If Google Gemini is successfully set up and active, 
+    Executes an AI query. If Google Gemini is successfully set up in background, 
     it retrieves a live response using the 'gemini-1.5-flash' model. 
     Otherwise, it utilizes a local rule-based system.
     """
@@ -283,7 +271,6 @@ def execute_academic_ai(prompt, context_system=""):
 
 Based on your academic profile ({major_focus} | {current_year}):
 * We advise cross-referencing your syllabus with the recommended readings in **Tab 7 (Study Classrooms)**.
-* To generate actual bespoke guidance, connect your free Gemini API Key in the sidebar.
 * **Study Hint**: Prioritize clarifying practical diagrams first; conceptual understanding often follows structural visual mapping.
         """
 
@@ -516,10 +503,6 @@ with tab_planner:
     Generate study packs, flashcards, quizzes, and interact directly with the Jotform AI learning assistant.
     """)
 
-    # =========================
-    # STUDY GENERATOR SECTION
-    # =========================
-
     col_input, col_settings = st.columns([1, 1])
 
     with col_input:
@@ -583,25 +566,15 @@ with tab_planner:
             except Exception as e:
                 st.error(f"PDF Read Error: {e}")
 
-    # =========================
-    # GENERATE STUDY PACK
-    # =========================
-
     if generate_btn:
-
         if not syllabus_topic and not extracted_text:
             st.error("Please enter a topic or upload a file.")
         else:
-
             final_context = f"Topic: {syllabus_topic}\n"
-
             if extracted_text:
                 final_context += extracted_text[:3000]
 
-            system_prompt = f"""
-            You are an advanced AI academic assistant for {major_focus} students.
-            """
-
+            system_prompt = f"You are an advanced AI academic assistant for {major_focus} students."
             user_prompt = f"""
             Create:
             1. {generation_type}
@@ -614,45 +587,23 @@ with tab_planner:
             """
 
             with st.spinner("Generating Study Material..."):
-
-                generated_output = execute_academic_ai(
-                    user_prompt,
-                    system_prompt
-                )
-
+                generated_output = execute_academic_ai(user_prompt, system_prompt)
                 st.session_state.study_output = generated_output
 
-    # =========================
-    # OUTPUT DISPLAY
-    # =========================
-
     if "study_output" in st.session_state:
-
         st.success("✅ Study Material Generated Successfully")
-
         st.markdown(st.session_state.study_output)
 
     st.markdown("---")
 
-    # =========================
-    # JOTFORM AI FLASHCARD AGENT
-    # =========================
-
     st.subheader("🤖 Jotform AI Flashcard Assistant")
-
-    st.write("""
-    Use the embedded Jotform AI Agent for interactive flashcards, question answering, and revision support.
-    """)
+    st.write("Use the embedded Jotform AI Agent for interactive flashcards, question answering, and revision support.")
 
     jotform_flashcard_agent = """
     <script src="https://cdn.jotfor.ms/agent/embedjs/019e014489347343a7b79be9c9855b48569e/embed.js?autoOpenChatIn=0"></script>
     """
+    components.html(jotform_flashcard_agent, height=650, scrolling=True)
 
-    components.html(
-        jotform_flashcard_agent,
-        height=650,
-        scrolling=True
-    )
 # --- TAB: STREAMLINED DEEP SEARCH & VIDEO TERMINAL ---
 with tab_deep_search:
     st.header("🔍 Deep Search & Multimedia Research")
@@ -713,7 +664,7 @@ with tab_deep_search:
             st.markdown('<div class="highlight-box">⚠️ Enter search query above & Press here to apply!</div>', unsafe_allow_html=True)
             st.button("📺 Terminal Standby (Awaiting Input)", disabled=True, use_container_width=True)
 
-# --- TAB: NEWS & ANNOUNCEMENTS WITH GEMINI ANALYSIS ---
+# --- TAB: NEWS & ANNOUNCEMENTS WITH ANALYSIS ---
 with tab_news:
     st.header("📢 University Bulletins & Notices")
     st.write("Query official notice channels and run cognitive analysis on active institutional releases.")
@@ -745,4 +696,119 @@ with tab_news:
                 st.session_state.active_scraped_notices = scraped_titles
             except Exception:
                 st.error(f"Live parsing connection error. Access raw terminal index directly: [Lucknow University Notice Board]({lu_url})")
-                st.session_stat
+                st.session_state.active_scraped_notices = []
+        else:
+            if st.session_state.active_scraped_notices:
+                for clean_text in st.session_state.active_scraped_notices:
+                    st.info(f"📌 {clean_text}")
+            else:
+                st.write("Press 'Query Live Database Feed' to fetch announcements.")
+
+    with col_n2:
+        st.subheader("🤖 Notice Analysis")
+        if st.session_state.active_scraped_notices:
+            raw_notices_text = "\n".join(st.session_state.active_scraped_notices)
+            if st.button("Analyze Notice Context", use_container_width=True):
+                with st.spinner("Analyzing..."):
+                    summary_resp = execute_academic_ai(
+                        f"Analyze and categorize these university notice headlines:\n{raw_notices_text}",
+                        "You are an academic compliance checker."
+                    )
+                    st.write(summary_resp)
+        else:
+            st.info("Retrieve notice feed on the left to activate analysis tools.")
+
+# --- TAB: STUDY CLASSROOMS ---
+with tab_study:
+    st.header("📚 Study Classrooms")
+    st.write("Browse digital syllabi, curated notes, and practical reference files.")
+    
+    st.markdown(f"""
+        <div style="border: 1px solid {border_color}; background-color: {card_bg}; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+            <h4>📖 Standard Core Syllabus Handbooks</h4>
+            <p>Access digitized curricula, recommended textbook lists, and structural lab instructions.</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        st.markdown("**Core Geology Units**")
+        st.caption("Crystallography, Paleontology & Petrology resources.")
+        st.button("Open Geology Lab Manual", key="geo_manual_btn", use_container_width=True)
+    with c2:
+        st.markdown("**Advanced Physics Lab**")
+        st.caption("Mechanics, thermodynamics, and optics records.")
+        st.button("Open Physics Lab Handbook", key="phys_manual_btn", use_container_width=True)
+    with c3:
+        st.markdown("**Mathematics Library**")
+        st.caption("Syllabus indices for Real Analysis and Linear Algebra.")
+        st.button("Open Math Syllabus Index", key="math_manual_btn", use_container_width=True)
+
+# --- TAB: PERFORMANCE TOOLKIT ---
+with tab_perf:
+    st.header("🧮 Performance Toolkit")
+    st.write("Calculate your estimated semester GPA based on academic score weights.")
+    
+    st.subheader("📊 SGPA Predictor Engine")
+    
+    col_p1, col_p2 = st.columns(2)
+    with col_p1:
+        core_grade = st.selectbox("Grade in Core Course 1 (e.g. Structural Geology / Mechanics)", ["O (Outstanding)", "A+ (Excellent)", "A (Very Good)", "B+ (Good)", "B (Average)", "F (Fail)"])
+        sub_grade = st.selectbox("Grade in Core Course 2 (e.g. Mineralogy / Math)", ["O (Outstanding)", "A+ (Excellent)", "A (Very Good)", "B+ (Good)", "B (Average)", "F (Fail)"])
+    with col_p2:
+        prac_grade = st.selectbox("Grade in Practical / Lab Exams", ["O (Outstanding)", "A+ (Excellent)", "A (Very Good)", "B+ (Good)", "B (Average)", "F (Fail)"])
+        elective_grade = st.selectbox("Grade in Minor Elective", ["O (Outstanding)", "A+ (Excellent)", "A (Very Good)", "B+ (Good)", "B (Average)", "F (Fail)"])
+
+    grade_points = {"O (Outstanding)": 10, "A+ (Excellent)": 9, "A (Very Good)": 8, "B+ (Good)": 7, "B (Average)": 6, "F (Fail)": 0}
+    
+    if st.button("Calculate SGPA", type="primary", use_container_width=True):
+        total_points = (grade_points[core_grade]*4) + (grade_points[sub_grade]*4) + (grade_points[prac_grade]*2) + (grade_points[elective_grade]*2)
+        sgpa = total_points / 12
+        st.success(f"🎯 Projected SGPA Estimate: **{sgpa:.2f} / 10.00**")
+        st.caption("Disclaimer: This calculations acts as a heuristic simulation based on selected credit assignments.")
+
+# --- TAB: FOCUS ENGINE ---
+with tab_focus:
+    st.header("⏱️ Focus Engine")
+    st.write("A clean digital workspace environment optimized for deep studying with zero interruptions.")
+    
+    col_t1, col_t2 = st.columns([2, 1])
+    
+    with col_t1:
+        st.subheader("⏲️ Pomodoro Session Timer")
+        dur_choice = st.slider("Select Duration (Minutes)", min_value=5, max_value=60, value=25, step=5)
+        
+        timer_col1, timer_col2 = st.columns(2)
+        with timer_col1:
+            start_btn = st.button("⏱️ Initiate Deep Study Block", use_container_width=True)
+        with timer_col2:
+            stop_btn = st.button("🛑 Stand Down Timer", use_container_width=True)
+            
+        if start_btn:
+            st.info(f"Focus window initiated. Keep browser open for {dur_choice} minutes.")
+            st.progress(100)
+    
+    with col_t2:
+        st.subheader("🎧 Minimal Ambience")
+        st.markdown("Use natural sounds to block surrounding interference:")
+        st.caption("🌧️ White Noise Player Placeholder")
+        st.audio("https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3")
+
+# --- TAB: REPORT ISSUE ---
+with tab_report:
+    st.header("🚨 Administration & Bug Escalation Portal")
+    st.write("Direct communication pipeline to academic helpdesk and system administrators.")
+    
+    with st.form("escalation_form"):
+        student_roll = st.text_input("Enrollment / Roll Number", placeholder="e.g. LKU2026...")
+        issue_cat = st.selectbox("Issue Category", ["Registration Backlogs", "Fee Clearance Adjustments", "AI Module Bug", "Notice Parsing Error"])
+        issue_desc = st.text_area("Detailed Context of Issue")
+        
+        submit_btn = st.form_submit_button("Submit Formal Ticket")
+        
+        if submit_btn:
+            if student_roll and issue_desc:
+                st.success("Ticket logged. Administrative team has been dispatched to parse this issue.")
+                st.markdown(f"**Escalation Details:** Dispatching telemetry payload to `{ADMIN_EMAIL}`")
+            else:
+                st.error("Please fill in both your identification number and context narrative.")
