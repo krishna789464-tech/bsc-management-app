@@ -443,119 +443,216 @@ with tab_college:
         
         st.link_button("📢 Launch Official Notice Board Terminal", "https://bsnvpgcollege.ac.in/NoticeHome.aspx?Type=Notice", type="primary", use_container_width=True)
 
-# --- TAB: AI ASSISTANT ---
+# --- TAB: PERPLEXITY AI INTERACTIVE CHATBOT ---
 with tab_ai:
-    st.header("🤖 AI Agent")
-    st.write("Our automated academic agent is loading below. If it does not open automatically, look for the chat container asset.")
-    
-    jotform_script = "<script src='https://cdn.jotfor.ms/agent/embedjs/019e014489347343a7b79be9c9855b48569e/embed.js?autoOpenChatIn=1'></script>"
-    components.html(jotform_script, height=550, scrolling=True)
+    st.header("🤖 Perplexity AI Academic Assistant")
+    st.write("Access real-time AI-powered academic research, explanations, and deep web-assisted answers using Perplexity AI.")
 
-# --- TAB: AI PLANNER & FLASHCARDS (UPDATED WITH SINGLE BUTTON & PERPLEXITY SYNC) ---
+    st.markdown("""
+    <div style="
+        border: 1px solid #2563eb;
+        padding: 20px;
+        border-radius: 14px;
+        background: rgba(37,99,235,0.08);
+        margin-bottom: 20px;
+    ">
+        <h3 style="color:#2563eb;">🌐 Perplexity AI Research Engine</h3>
+        <p>
+            Use Perplexity AI for:
+        </p>
+        <ul>
+            <li>📚 Academic Research</li>
+            <li>🔍 Real-time Internet Search</li>
+            <li>🧠 Concept Explanations</li>
+            <li>📖 Geological & Scientific Queries</li>
+            <li>🎯 AI-assisted Study Guidance</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Search Input
+    perplexity_query = st.text_input(
+        "Ask Anything Academic",
+        placeholder="e.g., Explain plate tectonics in structural geology",
+        key="perplexity_search"
+    )
+
+    if perplexity_query:
+        encoded_query = urllib.parse.quote(perplexity_query)
+        perplexity_url = f"https://www.perplexity.ai/search?q={encoded_query}"
+
+        st.link_button(
+            "🚀 Open in Perplexity AI",
+            perplexity_url,
+            type="primary",
+            use_container_width=True
+        )
+
+    st.markdown("---")
+
+    st.subheader("⚡ Quick Access")
+    
+    quick_col1, quick_col2 = st.columns(2)
+
+    with quick_col1:
+        st.link_button(
+            "📘 Open Perplexity Homepage",
+            "https://www.perplexity.ai/",
+            use_container_width=True
+        )
+
+    with quick_col2:
+        st.link_button(
+            "🎥 Research Scientific Topics",
+            "https://www.perplexity.ai/",
+            use_container_width=True
+        )
+
+# --- TAB: AI STUDY PLANNER + FLASHCARDS + JOTFORM AGENT ---
 with tab_planner:
-    st.header("📚 Unified Study Pack Synthesizer & Perplexity Sync")
-    st.write("Generate a complete study guide, mock assessments, and flashcards in a single action from a topic or uploaded reference file.")
-    
-    # Inputs Setup
+    st.header("📚 AI Study Planner & Smart Flashcards")
+
+    st.write("""
+    Generate study packs, flashcards, quizzes, and interact directly with the Jotform AI learning assistant.
+    """)
+
+    # =========================
+    # STUDY GENERATOR SECTION
+    # =========================
+
     col_input, col_settings = st.columns([1, 1])
-    
+
     with col_input:
         syllabus_topic = st.text_input(
-            "Syllabus Topic Name / Concept",
-            placeholder="e.g., Optical Properties of Uniaxial Minerals under Polarizing Microscope",
-            key="p_topic_input"
+            "Enter Topic / Chapter",
+            placeholder="e.g., Optical Mineralogy",
+            key="study_topic_input"
         )
+
         uploaded_file = st.file_uploader(
-            "Upload Reference Document (Optional - PDF, TXT)",
+            "Upload Study Material (Optional)",
             type=["pdf", "txt"],
-            key="p_file_uploader"
+            key="study_file_upload"
         )
-        
+
     with col_settings:
         generation_type = st.radio(
-            "Synthesis Goal",
-            ["Summarized Study Guide", "5 Question Assessment Practice Quiz", "Interactive Conceptual Analogies"],
-            key="p_gen_type"
+            "Select Study Mode",
+            [
+                "Summarized Notes",
+                "Practice Quiz",
+                "Concept Revision",
+                "Flashcards"
+            ],
+            key="study_mode"
         )
-        st.info("💡 Generating the study pack will automatically synthesize your custom study assets and sync with Perplexity AI concurrently.")
 
-    # Single Action Trigger Button
-    search_pack = st.button("🔍 Generate Study Pack & Sync Perplexity", type="primary", use_container_width=True)
+        st.info("✨ AI will generate personalized study materials instantly.")
 
-    # Process File Upload (if any)
+    generate_btn = st.button(
+        "🚀 Generate AI Study Pack",
+        type="primary",
+        use_container_width=True
+    )
+
     extracted_text = ""
+
     if uploaded_file is not None:
         file_name = uploaded_file.name
+
         if file_name.endswith(".txt"):
             try:
                 extracted_text = uploaded_file.read().decode("utf-8", errors="ignore")
             except Exception as e:
-                st.error(f"Error reading TXT file: {e}")
+                st.error(f"TXT Read Error: {e}")
+
         elif file_name.endswith(".pdf"):
             try:
                 import pypdf
+
                 reader = pypdf.PdfReader(uploaded_file)
-                pages_text = []
+                pdf_text = []
+
                 for page in reader.pages:
-                    text_extracted = page.extract_text()
-                    if text_extracted:
-                        pages_text.append(text_extracted)
-                extracted_text = "\n".join(pages_text)
-            except ImportError:
-                extracted_text = f"[PDF parsing metadata: {file_name}]"
-                st.warning("For direct PDF text analysis, please install the pypdf library: `pip install pypdf`")
+                    text = page.extract_text()
+                    if text:
+                        pdf_text.append(text)
+
+                extracted_text = "\n".join(pdf_text)
+
             except Exception as e:
-                st.error(f"Error parsing PDF: {e}")
+                st.error(f"PDF Read Error: {e}")
 
-    # Execution logic
-    if search_pack:
+    # =========================
+    # GENERATE STUDY PACK
+    # =========================
+
+    if generate_btn:
+
         if not syllabus_topic and not extracted_text:
-            st.error("Please provide a topic or upload a study file to trigger generation.")
+            st.error("Please enter a topic or upload a file.")
         else:
-            # Build combined context
-            final_context = f"Topic Name: {syllabus_topic}\n" if syllabus_topic else "Analyzed from uploaded file\n"
+
+            final_context = f"Topic: {syllabus_topic}\n"
+
             if extracted_text:
-                # Limit size to prevent context window issue in standard execution
-                final_context += f"\nFile Reference Content:\n{extracted_text[:3000]}"
-                
-            system_prompt = f"Act as an educational material developer. The student is in the {major_focus} track. Generate highly structured responses."
-            user_prompt = f"""
-            Create a unified study package for:
-            {final_context}
-            
-            Please provide:
-            1. A '{generation_type}' matching the concept.
-            2. Exactly 3 detailed concept Flashcards. Format each card as:
-               **CARD [Number]: Front (Concept Name)**
-               *Answer:* [Detailed explanation]
+                final_context += extracted_text[:3000]
+
+            system_prompt = f"""
+            You are an advanced AI academic assistant for {major_focus} students.
             """
-            with st.spinner("Synthesizing Study Pack..."):
-                synthesized_output = execute_academic_ai(user_prompt, system_prompt)
-                st.session_state.last_study_pack = synthesized_output
-                st.session_state.active_search_topic = syllabus_topic if syllabus_topic else "Reference Academic Document"
 
-    # Display Output & Active Perplexity Sync Link
-    if "last_study_pack" in st.session_state:
-        st.success("✨ Study Pack Successfully Compiled!")
-        
-        # Build Perplexity Sync Link
-        sync_topic = st.session_state.get("active_search_topic", "Syllabus Topic")
-        encoded_sync = urllib.parse.quote(f"Explain and find academic research on: {sync_topic}")
-        perplexity_url = f"https://www.perplexity.ai/?q={encoded_sync}"
-        
-        # Display Perplexity Sync Portal
-        st.markdown("### 🌐 Perplexity AI Synchronized Channel")
-        st.link_button(
-            f"🔗 Open Synced Search for '{sync_topic}' on Perplexity AI", 
-            perplexity_url, 
-            type="primary", 
-            use_container_width=True
-        )
-        
-        st.markdown("---")
-        st.markdown("### 📚 Compiled Study Pack Details")
-        st.markdown(st.session_state.last_study_pack)
+            user_prompt = f"""
+            Create:
+            1. {generation_type}
+            2. 5 Flashcards
+            3. Quick Revision Notes
+            4. Important Questions
 
+            Based on:
+            {final_context}
+            """
+
+            with st.spinner("Generating Study Material..."):
+
+                generated_output = execute_academic_ai(
+                    user_prompt,
+                    system_prompt
+                )
+
+                st.session_state.study_output = generated_output
+
+    # =========================
+    # OUTPUT DISPLAY
+    # =========================
+
+    if "study_output" in st.session_state:
+
+        st.success("✅ Study Material Generated Successfully")
+
+        st.markdown(st.session_state.study_output)
+
+    st.markdown("---")
+
+    # =========================
+    # JOTFORM AI FLASHCARD AGENT
+    # =========================
+
+    st.subheader("🤖 Jotform AI Flashcard Assistant")
+
+    st.write("""
+    Use the embedded Jotform AI Agent for interactive flashcards, question answering, and revision support.
+    """)
+
+    jotform_flashcard_agent = """
+    <script src="https://cdn.jotfor.ms/agent/embedjs/019e014489347343a7b79be9c9855b48569e/embed.js?autoOpenChatIn=0"></script>
+    """
+
+    components.html(
+        jotform_flashcard_agent,
+        height=650,
+        scrolling=True
+    )
 # --- TAB: STREAMLINED DEEP SEARCH & VIDEO TERMINAL ---
 with tab_deep_search:
     st.header("🔍 Deep Search & Multimedia Research")
